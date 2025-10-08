@@ -1,11 +1,3 @@
-// ============================================
-// FILE: src/index.js
-// This is the main SDK file
-// ============================================
-
-// ============================================
-// CORE SDK - Handles WebSocket, Auth, Audio
-// ============================================
 
 class AgentSDK {
   constructor(config) {
