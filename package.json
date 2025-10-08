@@ -1,0 +1,21 @@
+{
+  "name": "ttp-agent-sdk",
+  "version": "1.0.0",
+  "description": "Voice Agent SDK for web integration",
+  "main": "dist/agent-widget.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development",
+    "watch": "webpack --watch --mode development",
+    "start-backend": "node test-server.js",
+    "test": "npm run start-backend"
+  },
+  "keywords": ["voice", "agent", "sdk", "widget"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
+}
