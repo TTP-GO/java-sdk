@@ -105,7 +105,7 @@ Test page for the widget
   </div>
 
   <!-- Load the widget -->
-  <script src="../agent-widget.js"></script>
+  <script src="../agent-widget.js" onload="console.log('SDK script loaded successfully')" onerror="console.error('Failed to load SDK script')"></script>
   
   <script>
     // Override console.log to show in page
@@ -140,6 +140,16 @@ Test page for the widget
     // Initialize the widget
     try {
       console.log('Initializing widget...');
+      console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
+      console.log('TTPAgentSDK.AgentWidget available:', typeof TTPAgentSDK?.AgentWidget);
+      
+      if (typeof TTPAgentSDK === 'undefined') {
+        throw new Error('TTPAgentSDK is not defined. Check if the script loaded correctly.');
+      }
+      
+      if (typeof TTPAgentSDK.AgentWidget === 'undefined') {
+        throw new Error('TTPAgentSDK.AgentWidget is not defined. Check the SDK build.');
+      }
       
       TTPAgentSDK.AgentWidget.init({
         agentId: 'agent_test_123',
