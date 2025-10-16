@@ -37,12 +37,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/ttp-agent-sdk.git"
+    "url": "https://github.com/yinon11/ttp-sdk-front.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/ttp-agent-sdk/issues"
+    "url": "https://github.com/yinon11/ttp-sdk-front/issues"
   },
-  "homepage": "https://github.com/your-org/ttp-agent-sdk#readme",
+  "homepage": "https://github.com/yinon11/ttp-sdk-front#readme",
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
