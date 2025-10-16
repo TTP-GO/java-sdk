@@ -1,6 +1,6 @@
 {
   "name": "ttp-agent-sdk",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Comprehensive Voice Agent SDK for web integration with real-time audio, WebSocket communication, and React components",
   "main": "dist/agent-widget.js",
   "module": "dist/agent-widget.js",
