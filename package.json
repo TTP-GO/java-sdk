@@ -9,7 +9,8 @@
     "dist/",
     "src/",
     "examples/",
-    "README.md"
+    "README.md",
+    "GETTING_STARTED.md"
   ],
   "scripts": {
     "build": "webpack --mode production",
