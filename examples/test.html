@@ -81,10 +81,11 @@ Test page for the widget
     <div class="info">
       <strong>📝 Testing Instructions:</strong>
       <ol style="margin: 10px 0 0 20px; line-height: 1.8;">
-        <li>Make sure your mock backend server is running on port 3000</li>
+        <li><strong>No backend required!</strong> This demo uses a mock session URL</li>
         <li>Look for the floating voice button in the bottom-right corner</li>
         <li>Click the button to open the widget</li>
         <li>Click the microphone to start (will request mic permission)</li>
+        <li>Widget will connect to production backend at speech.bidme.co.il</li>
         <li>Check the status updates below</li>
       </ol>
     </div>
@@ -213,7 +214,7 @@ Test page for the widget
         }
       } catch (error) {
         console.error('Cannot reach backend:', error);
-        alert('Backend connection FAILED! Make sure server is running on port 3000.');
+        alert('Widget initialization FAILED! Check console for details.');
       }
     }
 
