@@ -6,7 +6,7 @@ import VoiceSDK from '../core/VoiceSDK.js';
 export default class VoiceButton {
   constructor(options = {}) {
     this.options = {
-      websocketUrl: options.websocketUrl || 'wss://speech.bidme.co.il/ws/conv',
+      websocketUrl: options.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
       agentId: options.agentId, // Optional - for direct agent access (unsecured method)
       voice: options.voice || 'default',
       language: options.language || 'en',

@@ -85,7 +85,7 @@ Test page for the widget
         <li>Look for the floating voice button in the bottom-right corner</li>
         <li>Click the button to open the widget</li>
         <li>Click the microphone to start (will request mic permission)</li>
-        <li>Widget will connect to production backend at speech.bidme.co.il</li>
+        <li>Widget will connect to production backend at speech.talktopc.com</li>
         <li>Check the status updates below</li>
       </ol>
     </div>
@@ -168,7 +168,7 @@ Test page for the widget
             await new Promise(resolve => setTimeout(resolve, 500));
             
             // Create a mock WebSocket URL for testing
-            const mockSignedUrl = `wss://speech.bidme.co.il/ws/conv?agentId=${agentId}&appId=test_app_123`;
+            const mockSignedUrl = `wss://speech.talktopc.com/ws/conv?agentId=${agentId}&appId=test_app_123`;
             
             console.log('Generated mock session URL:', mockSignedUrl);
             updateStatus('Mock session URL created ✓', 'success');

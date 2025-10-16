@@ -234,7 +234,7 @@
     <div class="code-block">
       <div>// VoiceSDK Usage Example</div>
       <div>const voiceSDK = new VoiceSDK({</div>
-      <div>  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',</div>
+      <div>  websocketUrl: 'wss://speech.talktopc.com/ws/conv',</div>
       <div>  agentId: 'your_agent_id',</div>
       <div>  appId: 'your_app_id'</div>
       <div>});</div>
@@ -271,7 +271,7 @@
     // Initialize VoiceSDK
     function initializeVoiceSDK() {
       voiceSDK = new TTPAgentSDK.VoiceSDK({
-        websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
         agentId: 'demo_agent_123',
         appId: 'demo_app_456',
         voice: 'default',
@@ -425,7 +425,7 @@
       // Create a simple voice button using the VanillaVoiceButton
       const voiceButton = new TTPAgentSDK.VanillaVoiceButton({
         container: container,
-        websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
         agentId: 'demo_agent_123',
         appId: 'demo_app_456',
         onConnected: () => {

@@ -20,7 +20,7 @@ function VoiceChatApp() {
   // Initialize VoiceSDK
   useEffect(() => {
     const voiceSDK = new VoiceSDK({
-      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+      websocketUrl: 'wss://speech.talktopc.com/ws/conv',
       agentId: 'demo_agent_123',
       appId: 'demo_app_456',
       voice: 'default',
@@ -199,7 +199,7 @@ function VoiceChatApp() {
       <div style={{ marginBottom: '20px' }}>
         <h3>Voice Button Component:</h3>
         <VoiceButton
-          websocketUrl="wss://speech.bidme.co.il/ws/conv"
+          websocketUrl="wss://speech.talktopc.com/ws/conv"
           agentId="demo_agent_123"
           appId="demo_app_456"
           onConnected={() => console.log('VoiceButton connected')}

@@ -27,7 +27,7 @@ npm install ttp-agent-sdk
 import { VoiceSDK } from 'ttp-agent-sdk';
 
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+  websocketUrl: 'wss://speech.talktopc.com/ws/conv',
   agentId: 'your_agent_id',
   appId: 'your_app_id',
   voice: 'default',
@@ -45,7 +45,7 @@ await voiceSDK.startRecording();
 import { VoiceSDK } from 'ttp-agent-sdk';
 
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+  websocketUrl: 'wss://speech.talktopc.com/ws/conv',
   // No agentId needed - server validates signed token from URL
 });
 
@@ -86,7 +86,7 @@ import { VoiceButton } from 'ttp-agent-sdk';
 function App() {
   return (
     <VoiceButton
-      websocketUrl="wss://speech.bidme.co.il/ws/conv"
+      websocketUrl="wss://speech.talktopc.com/ws/conv"
       agentId="your_agent_id"
       appId="your_app_id"
       onConnected={() => console.log('Connected!')}
@@ -107,7 +107,7 @@ The main SDK class for voice interaction.
 
 ```javascript
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv', // Required
+  websocketUrl: 'wss://speech.talktopc.com/ws/conv', // Required
   agentId: 'agent_12345', // Optional - for direct agent access
   appId: 'app_67890', // Optional - user's app ID for authentication
   ttpId: 'ttp_abc123', // Optional - custom TTP ID (fallback)
@@ -146,7 +146,7 @@ A React component that provides a voice interaction button.
 
 ```jsx
 <VoiceButton
-  websocketUrl="wss://speech.bidme.co.il/ws/conv"
+  websocketUrl="wss://speech.talktopc.com/ws/conv"
   agentId="agent_12345"
   appId="app_67890"
   voice="default"
@@ -190,7 +190,7 @@ TTPAgentSDK.AgentWidget.init({
 
 ```javascript
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+  websocketUrl: 'wss://speech.talktopc.com/ws/conv',
   agentId: 'agent_12345', // Visible in network traffic
   appId: 'app_67890'
 });

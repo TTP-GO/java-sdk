@@ -13,7 +13,7 @@ export default class VoiceSDK extends EventEmitter {
     
     // Configuration
     this.config = {
-      websocketUrl: config.websocketUrl || 'wss://speech.bidme.co.il/ws/conv',
+      websocketUrl: config.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
       agentId: config.agentId, // Optional - for direct agent access (unsecured method)
       appId: config.appId, // User's app ID for authentication
       ttpId: config.ttpId, // Optional - custom TTP ID (fallback if appId not provided)

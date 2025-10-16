@@ -54,7 +54,7 @@ import { VoiceButton } from 'ttp-agent-sdk';
 function App() {
   return (
     <VoiceButton
-      websocketUrl="wss://speech.bidme.co.il/ws/conv"
+        websocketUrl="wss://speech.talktopc.com/ws/conv"
       agentId="your_agent_id"
       appId="your_app_id"
       onConnected={() => console.log('Connected!')}
@@ -70,7 +70,7 @@ function App() {
 import { VoiceSDK } from 'ttp-agent-sdk';
 
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
   agentId: 'your_agent_id',
   appId: 'your_app_id'
 });
@@ -88,7 +88,7 @@ For development and testing, you can use direct agent ID authentication:
 
 ```javascript
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
   agentId: 'your_agent_id',  // Direct agent ID
   appId: 'your_app_id'       // User's app ID
 });
@@ -127,7 +127,7 @@ async function getSignedUrl(agentId, variables = {}) {
 
 ```javascript
 const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.bidme.co.il/ws/conv', // Required
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv', // Required
   agentId: 'agent_12345',                           // Optional - for direct access
   appId: 'app_67890',                               // Optional - user's app ID
   ttpId: 'ttp_abc123',                              // Optional - custom TTP ID
@@ -260,7 +260,7 @@ function VoiceChat() {
 
   useEffect(() => {
     const voiceSDK = new VoiceSDK({
-      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
       agentId: 'your_agent_id',
       appId: 'your_app_id'
     });
@@ -327,7 +327,7 @@ function VoiceChat() {
     import { VoiceSDK } from 'https://unpkg.com/ttp-agent-sdk/dist/agent-widget.js';
 
     const voiceSDK = new VoiceSDK({
-      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
       agentId: 'your_agent_id',
       appId: 'your_app_id'
     });

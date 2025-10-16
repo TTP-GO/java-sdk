@@ -98,7 +98,7 @@ function VoiceChat() {
 
   useEffect(() => {
     const voiceSDK = new VoiceSDK({
-      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
       agentId: 'your_agent_id',
       appId: 'your_app_id'
     });
@@ -158,7 +158,7 @@ import { VoiceButton } from 'ttp-agent-sdk';
 function App() {
   return (
     &lt;VoiceButton
-      websocketUrl="wss://speech.bidme.co.il/ws/conv"
+        websocketUrl="wss://speech.talktopc.com/ws/conv"
       agentId="your_agent_id"
       appId="your_app_id"
       onConnected={() => console.log('Connected!')}
@@ -187,7 +187,7 @@ function AdvancedVoiceChat() {
 
   useEffect(() => {
     const voiceSDK = new VoiceSDK({
-      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        websocketUrl: 'wss://speech.talktopc.com/ws/conv',
       agentId: 'your_agent_id',
       appId: 'your_app_id',
       voice: 'default',
