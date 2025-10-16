@@ -62,7 +62,25 @@ export default class VoiceSDK extends EventEmitter {
     });
     
     this.webSocketManager.on('message', (message) => {
-      this.emit('message', message);
+      // Handle greeting audio message
+      if (message.t === 'greeting_audio' && message.data) {
+        try {
+          // Convert base64 audio data to Uint8Array
+          const binaryString = atob(message.data);
+          const audioData = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            audioData[i] = binaryString.charCodeAt(i);
+          }
+          
+          console.log('🎵 VoiceSDK: Received greeting audio, playing...');
+          this.audioPlayer.playAudio(audioData);
+          this.emit('greetingStarted');
+        } catch (error) {
+          console.error('VoiceSDK: Error playing greeting audio:', error);
+        }
+      } else {
+        this.emit('message', message);
+      }
     });
     
     this.webSocketManager.on('binaryAudio', (audioData) => {
