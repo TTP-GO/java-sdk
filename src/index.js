@@ -15,24 +15,38 @@
  */
 
 // Core SDK
-export { default as VoiceSDK } from './core/VoiceSDK.js';
-export { default as WebSocketManager } from './core/WebSocketManager.js';
-export { default as WebSocketManagerV2 } from './core/WebSocketManagerV2.js';
-export { default as AudioRecorder } from './core/AudioRecorder.js';
-export { default as AudioPlayer } from './core/AudioPlayer.js';
-export { default as EventEmitter } from './core/EventEmitter.js';
+import VoiceSDK from './core/VoiceSDK.js';
+import WebSocketManager from './core/WebSocketManager.js';
+import WebSocketManagerV2 from './core/WebSocketManagerV2.js';
+import AudioRecorder from './core/AudioRecorder.js';
+import AudioPlayer from './core/AudioPlayer.js';
+import EventEmitter from './core/EventEmitter.js';
 
 // React components
-export { default as VoiceButton } from './react/VoiceButton.jsx';
+import VoiceButton from './react/VoiceButton.jsx';
 
 // Vanilla JavaScript components
-export { default as VanillaVoiceButton } from './vanilla/VoiceButton.js';
+import VanillaVoiceButton from './vanilla/VoiceButton.js';
 
 // Legacy AgentSDK (for backward compatibility)
-export { AgentSDK, AgentWidget } from './legacy/AgentSDK.js';
+import { AgentSDK, AgentWidget } from './legacy/AgentSDK.js';
 
 // Version
 export const VERSION = '2.0.0';
+
+// Named exports
+export {
+  VoiceSDK,
+  WebSocketManager,
+  WebSocketManagerV2,
+  AudioRecorder,
+  AudioPlayer,
+  EventEmitter,
+  VoiceButton,
+  VanillaVoiceButton,
+  AgentSDK,
+  AgentWidget
+};
 
 // Default export for convenience
 export default {
