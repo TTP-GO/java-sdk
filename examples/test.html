@@ -151,7 +151,8 @@ Test page for the widget
         throw new Error('TTPAgentSDK.AgentWidget is not defined. Check the SDK build.');
       }
       
-      TTPAgentSDK.AgentWidget.init({
+      // Create a new AgentWidget instance
+      const widget = new TTPAgentSDK.AgentWidget({
         agentId: 'agent_test_123',
         
         // Point to your mock backend
