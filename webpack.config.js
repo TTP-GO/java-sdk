@@ -1,6 +1,6 @@
 // ============================================
 // FILE: webpack.config.js
-// Build configuration
+// Build configuration for TTP Agent SDK
 // ============================================
 
 const path = require('path');
@@ -11,14 +11,70 @@ module.exports = {
     filename: 'agent-widget.js',
     path: path.resolve(__dirname, 'dist'),
     library: {
-      name: 'VoiceAgentSDK',
+      name: 'TTPAgentSDK',
       type: 'umd',
       export: 'default',
     },
     globalObject: 'this',
+    clean: true,
   },
   mode: 'development',
   devtool: 'source-map',
+  
+  // Module resolution
+  resolve: {
+    extensions: ['.js', '.jsx', '.json'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  
+  // Module rules
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              ['@babel/preset-env', {
+                targets: {
+                  browsers: ['last 2 versions', 'ie >= 11']
+                }
+              }],
+              ['@babel/preset-react', {
+                runtime: 'automatic'
+              }]
+            ]
+          }
+        }
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
+  },
+  
+  // External dependencies (for React components)
+  externals: {
+    'react': {
+      commonjs: 'react',
+      commonjs2: 'react',
+      amd: 'react',
+      root: 'React'
+    },
+    'react-dom': {
+      commonjs: 'react-dom',
+      commonjs2: 'react-dom',
+      amd: 'react-dom',
+      root: 'ReactDOM'
+    }
+  },
+  
+  // Development server
   devServer: {
     static: [
       {
@@ -32,5 +88,22 @@ module.exports = {
     compress: true,
     port: 8080,
     open: true,
+    hot: true,
+    historyApiFallback: true,
+  },
+  
+  // Optimization
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
+          chunks: 'all',
+          filename: 'vendor.js',
+        },
+      },
+    },
   },
 };

@@ -1,19 +1,59 @@
 {
   "name": "ttp-agent-sdk",
-  "version": "1.0.0",
-  "description": "Voice Agent SDK for web integration",
+  "version": "2.0.0",
+  "description": "Comprehensive Voice Agent SDK for web integration with real-time audio, WebSocket communication, and React components",
   "main": "dist/agent-widget.js",
+  "module": "src/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "examples/",
+    "README.md"
+  ],
   "scripts": {
     "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
     "dev": "webpack serve --mode development",
     "watch": "webpack --watch --mode development",
     "start-backend": "node test-server.js",
-    "test": "npm run start-backend"
+    "test": "npm run start-backend",
+    "clean": "rm -rf dist/",
+    "prebuild": "npm run clean"
   },
-  "keywords": ["voice", "agent", "sdk", "widget"],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "voice",
+    "agent", 
+    "sdk",
+    "widget",
+    "websocket",
+    "audio",
+    "real-time",
+    "react",
+    "ai",
+    "conversation"
+  ],
+  "author": "TTP Agent Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/ttp-agent-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/ttp-agent-sdk/issues"
+  },
+  "homepage": "https://github.com/your-org/ttp-agent-sdk#readme",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
   "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@babel/preset-react": "^7.22.0",
+    "babel-loader": "^9.1.0",
+    "css-loader": "^6.8.0",
+    "style-loader": "^3.3.0",
     "webpack": "^5.102.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.2"
