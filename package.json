@@ -3,11 +3,10 @@
   "version": "2.0.1",
   "description": "Comprehensive Voice Agent SDK for web integration with real-time audio, WebSocket communication, and React components",
   "main": "dist/agent-widget.js",
-  "module": "src/index.js",
+  "module": "dist/agent-widget.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/",
-    "src/",
     "examples/",
     "README.md",
     "GETTING_STARTED.md"
