@@ -23,7 +23,7 @@
   },
   "keywords": [
     "voice",
-    "agent", 
+    "agent",
     "sdk",
     "widget",
     "websocket",
@@ -52,6 +52,7 @@
     "@babel/preset-env": "^7.23.0",
     "@babel/preset-react": "^7.22.0",
     "babel-loader": "^9.1.0",
+    "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^6.8.0",
     "style-loader": "^3.3.0",
     "webpack": "^5.102.1",

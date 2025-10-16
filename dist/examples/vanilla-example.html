@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceSDK - Vanilla JavaScript Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #F9FAFB;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      color: #111827;
+      margin-top: 0;
+    }
+    
+    .status {
+      padding: 12px;
+      border-radius: 6px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    
+    .status.connected {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #10B981;
+    }
+    
+    .status.disconnected {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #EF4444;
+    }
+    
+    .status.connecting {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #F59E0B;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #4338CA;
+    }
+
+    button:disabled {
+      background: #9CA3AF;
+      cursor: not-allowed;
+    }
+
+    button.recording {
+      background: #EF4444;
+      animation: pulse 1.5s infinite;
+    }
+
+    button.recording:hover {
+      background: #DC2626;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .messages {
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      height: 300px;
+      overflow-y: auto;
+      padding: 16px;
+      background: #F9FAFB;
+      margin: 20px 0;
+    }
+
+    .message {
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      max-width: 80%;
+    }
+
+    .message.user {
+      background: #E5E7EB;
+      margin-left: auto;
+    }
+
+    .message.agent {
+      background: #F3F4F6;
+    }
+
+    .message.system {
+      background: #EFF6FF;
+      color: #1E40AF;
+    }
+
+    .message.error {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .indicators {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #6B7280;
+    }
+
+    .indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9CA3AF;
+    }
+
+    .indicator-dot.active {
+      background: #10B981;
+    }
+
+    .indicator-dot.recording {
+      background: #EF4444;
+    }
+
+    .code-block {
+      background: #1F2937;
+      color: #F9FAFB;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    .voice-button-demo {
+      margin: 20px 0;
+      padding: 20px;
+      border: 2px dashed #D1D5DB;
+      border-radius: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎤 VoiceSDK - Vanilla JavaScript Example</h1>
+    
+    <div class="info">
+      <p>This example demonstrates how to use the VoiceSDK with vanilla JavaScript. 
+         The SDK provides real-time voice interaction with AI agents using WebSocket communication.</p>
+    </div>
+
+    <!-- Connection Status -->
+    <div id="status" class="status disconnected">
+      Status: Disconnected
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="connectBtn">Connect</button>
+      <button id="disconnectBtn" disabled>Disconnect</button>
+      <button id="recordBtn" disabled>Start Recording</button>
+      <button id="stopBtn" disabled>Stop Recording</button>
+    </div>
+
+    <!-- Voice Button Demo -->
+    <div class="voice-button-demo">
+      <h3>Voice Button Component Demo:</h3>
+      <p>This is a pre-built voice button component:</p>
+      <div id="voice-button-container"></div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages">
+      <div class="message system">
+        <strong>System:</strong> Ready to connect. Click "Connect" to start.
+      </div>
+    </div>
+
+    <!-- Status Indicators -->
+    <div class="indicators">
+      <div class="indicator">
+        <div id="connectionDot" class="indicator-dot"></div>
+        <span>Connection</span>
+      </div>
+      <div class="indicator">
+        <div id="recordingDot" class="indicator-dot"></div>
+        <span>Recording</span>
+      </div>
+      <div class="indicator">
+        <div id="playingDot" class="indicator-dot"></div>
+        <span>Playing</span>
+      </div>
+    </div>
+
+    <!-- Code Example -->
+    <div class="code-block">
+      <div>// VoiceSDK Usage Example</div>
+      <div>const voiceSDK = new VoiceSDK({</div>
+      <div>  websocketUrl: 'wss://speech.bidme.co.il/ws/conv',</div>
+      <div>  agentId: 'your_agent_id',</div>
+      <div>  appId: 'your_app_id'</div>
+      <div>});</div>
+      <div></div>
+      <div>voiceSDK.on('connected', () => console.log('Connected!'));</div>
+      <div>voiceSDK.on('recordingStarted', () => console.log('Recording...'));</div>
+      <div></div>
+      <div>await voiceSDK.connect();</div>
+      <div>await voiceSDK.startRecording();</div>
+    </div>
+  </div>
+
+  <!-- Load the SDK -->
+  <script src="/agent-widget.js"></script>
+  
+  <script>
+    // VoiceSDK instance
+    let voiceSDK = null;
+    let isConnected = false;
+    let isRecording = false;
+    let isPlaying = false;
+
+    // DOM elements
+    const statusDiv = document.getElementById('status');
+    const messagesDiv = document.getElementById('messages');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const connectionDot = document.getElementById('connectionDot');
+    const recordingDot = document.getElementById('recordingDot');
+    const playingDot = document.getElementById('playingDot');
+
+    // Initialize VoiceSDK
+    function initializeVoiceSDK() {
+      voiceSDK = new TTPAgentSDK.VoiceSDK({
+        websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        agentId: 'demo_agent_123',
+        appId: 'demo_app_456',
+        voice: 'default',
+        language: 'en',
+        autoReconnect: true
+      });
+
+      // Set up event handlers
+      voiceSDK.on('connected', () => {
+        isConnected = true;
+        updateStatus('Connected', 'connected');
+        updateIndicators();
+        updateButtons();
+        addMessage('system', 'Connected to voice agent successfully!');
+      });
+
+      voiceSDK.on('disconnected', () => {
+        isConnected = false;
+        isRecording = false;
+        isPlaying = false;
+        updateStatus('Disconnected', 'disconnected');
+        updateIndicators();
+        updateButtons();
+        addMessage('system', 'Disconnected from voice agent');
+      });
+
+      voiceSDK.on('recordingStarted', () => {
+        isRecording = true;
+        updateIndicators();
+        updateButtons();
+        addMessage('user', '🎤 Recording started...');
+      });
+
+      voiceSDK.on('recordingStopped', () => {
+        isRecording = false;
+        updateIndicators();
+        updateButtons();
+        addMessage('user', '⏹️ Recording stopped');
+      });
+
+      voiceSDK.on('playbackStarted', () => {
+        isPlaying = true;
+        updateIndicators();
+        addMessage('agent', '🔊 Agent is speaking...');
+      });
+
+      voiceSDK.on('playbackStopped', () => {
+        isPlaying = false;
+        updateIndicators();
+      });
+
+      voiceSDK.on('message', (message) => {
+        if (message.type === 'agent_response') {
+          addMessage('agent', message.agent_response);
+        } else if (message.type === 'user_transcript') {
+          addMessage('user', message.user_transcription);
+        }
+      });
+
+      voiceSDK.on('error', (error) => {
+        console.error('VoiceSDK Error:', error);
+        addMessage('error', `Error: ${error.message}`);
+      });
+    }
+
+    // Update status display
+    function updateStatus(message, type) {
+      statusDiv.textContent = `Status: ${message}`;
+      statusDiv.className = `status ${type}`;
+    }
+
+    // Update status indicators
+    function updateIndicators() {
+      connectionDot.className = `indicator-dot ${isConnected ? 'active' : ''}`;
+      recordingDot.className = `indicator-dot ${isRecording ? 'recording' : ''}`;
+      playingDot.className = `indicator-dot ${isPlaying ? 'active' : ''}`;
+    }
+
+    // Update button states
+    function updateButtons() {
+      connectBtn.disabled = isConnected;
+      disconnectBtn.disabled = !isConnected;
+      recordBtn.disabled = !isConnected || isRecording;
+      stopBtn.disabled = !isConnected || !isRecording;
+      
+      if (isRecording) {
+        recordBtn.classList.add('recording');
+      } else {
+        recordBtn.classList.remove('recording');
+      }
+    }
+
+    // Add message to chat
+    function addMessage(type, text) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      
+      const timestamp = new Date().toLocaleTimeString();
+      const typeLabel = type === 'user' ? '👤 You' :
+                       type === 'agent' ? '🤖 Agent' :
+                       type === 'error' ? '❌ Error' : 'ℹ️ System';
+      
+      messageDiv.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 4px;">${typeLabel}</div>
+        <div>${text}</div>
+        <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">${timestamp}</div>
+      `;
+      
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Event handlers
+    connectBtn.addEventListener('click', async () => {
+      try {
+        updateStatus('Connecting...', 'connecting');
+        await voiceSDK.connect();
+      } catch (error) {
+        console.error('Connection failed:', error);
+        updateStatus('Connection failed', 'disconnected');
+        addMessage('error', `Connection failed: ${error.message}`);
+      }
+    });
+
+    disconnectBtn.addEventListener('click', () => {
+      voiceSDK.disconnect();
+    });
+
+    recordBtn.addEventListener('click', async () => {
+      try {
+        await voiceSDK.startRecording();
+      } catch (error) {
+        console.error('Recording start failed:', error);
+        addMessage('error', `Recording failed: ${error.message}`);
+      }
+    });
+
+    stopBtn.addEventListener('click', async () => {
+      try {
+        await voiceSDK.stopRecording();
+      } catch (error) {
+        console.error('Recording stop failed:', error);
+        addMessage('error', `Stop recording failed: ${error.message}`);
+      }
+    });
+
+    // Initialize Voice Button Component
+    function initializeVoiceButton() {
+      const container = document.getElementById('voice-button-container');
+      
+      // Create a simple voice button using the VanillaVoiceButton
+      const voiceButton = new TTPAgentSDK.VanillaVoiceButton({
+        container: container,
+        websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+        agentId: 'demo_agent_123',
+        appId: 'demo_app_456',
+        onConnected: () => {
+          console.log('Voice Button connected');
+          addMessage('system', 'Voice Button connected');
+        },
+        onRecordingStarted: () => {
+          console.log('Voice Button recording started');
+          addMessage('system', 'Voice Button recording started');
+        },
+        onPlaybackStarted: () => {
+          console.log('Voice Button playback started');
+          addMessage('system', 'Voice Button playback started');
+        }
+      });
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Initializing VoiceSDK example...');
+      
+      // Check if SDK is loaded
+      if (typeof TTPAgentSDK === 'undefined') {
+        addMessage('error', 'VoiceSDK not loaded. Make sure the script is included.');
+        return;
+      }
+      
+      initializeVoiceSDK();
+      initializeVoiceButton();
+      
+      addMessage('system', 'VoiceSDK example initialized. Click "Connect" to start.');
+      console.log('VoiceSDK example ready!');
+    });
+  </script>
+</body>
+</html>
