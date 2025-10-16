@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React VoiceSDK Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #F9FAFB;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      color: #111827;
+      margin-top: 0;
+    }
+    
+    .info {
+      background: #EFF6FF;
+      border-left: 4px solid #3B82F6;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .code-block {
+      background: #1F2937;
+      color: #F9FAFB;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    
+    .note {
+      background: #FEF3C7;
+      border-left: 4px solid #F59E0B;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .back-link {
+      display: inline-block;
+      background: #4F46E5;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    
+    .back-link:hover {
+      background: #4338CA;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">← Back to SDK Home</a>
+  
+  <div class="container">
+    <h1>⚛️ React VoiceSDK Example</h1>
+    
+    <div class="info">
+      <strong>Note:</strong> This is a code example showing how to integrate the VoiceSDK with React. 
+      To run this example, you'll need a React development environment.
+    </div>
+    
+    <h2>Installation</h2>
+    <div class="code-block">
+npm install ttp-agent-sdk react react-dom
+    </div>
+    
+    <h2>Basic React Component</h2>
+    <div class="code-block">
+import React, { useState, useEffect, useRef } from 'react';
+import { VoiceSDK } from 'ttp-agent-sdk';
+
+function VoiceChat() {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const voiceSDKRef = useRef(null);
+
+  useEffect(() => {
+    const voiceSDK = new VoiceSDK({
+      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+      agentId: 'your_agent_id',
+      appId: 'your_app_id'
+    });
+
+    voiceSDK.on('connected', () => setIsConnected(true));
+    voiceSDK.on('disconnected', () => setIsConnected(false));
+    voiceSDK.on('recordingStarted', () => setIsRecording(true));
+    voiceSDK.on('recordingStopped', () => setIsRecording(false));
+    voiceSDK.on('message', (message) => {
+      if (message.type === 'agent_response') {
+        setMessages(prev => [...prev, { type: 'agent', text: message.agent_response }]);
+      }
+    });
+
+    voiceSDKRef.current = voiceSDK;
+
+    return () => voiceSDK.destroy();
+  }, []);
+
+  const handleConnect = async () => {
+    await voiceSDKRef.current.connect();
+  };
+
+  const handleToggleRecording = async () => {
+    if (isRecording) {
+      await voiceSDKRef.current.stopRecording();
+    } else {
+      await voiceSDKRef.current.startRecording();
+    }
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={handleConnect} disabled={isConnected}&gt;
+        Connect
+      &lt;/button&gt;
+      &lt;button onClick={handleToggleRecording} disabled={!isConnected}&gt;
+        {isRecording ? 'Stop Recording' : 'Start Recording'}
+      &lt;/button&gt;
+      &lt;div&gt;
+        {messages.map((msg, i) => (
+          &lt;div key={i}&gt;{msg.type}: {msg.text}&lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default VoiceChat;
+    </div>
+    
+    <h2>Using the VoiceButton Component</h2>
+    <div class="code-block">
+import React from 'react';
+import { VoiceButton } from 'ttp-agent-sdk';
+
+function App() {
+  return (
+    &lt;VoiceButton
+      websocketUrl="wss://speech.bidme.co.il/ws/conv"
+      agentId="your_agent_id"
+      appId="your_app_id"
+      onConnected={() => console.log('Connected!')}
+      onRecordingStarted={() => console.log('Recording...')}
+      onPlaybackStarted={() => console.log('Playing audio...')}
+    /&gt;
+  );
+}
+
+export default App;
+    </div>
+    
+    <h2>Advanced React Integration</h2>
+    <div class="code-block">
+import React, { useState, useEffect, useRef } from 'react';
+import { VoiceSDK } from 'ttp-agent-sdk';
+
+function AdvancedVoiceChat() {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  
+  const voiceSDKRef = useRef(null);
+
+  useEffect(() => {
+    const voiceSDK = new VoiceSDK({
+      websocketUrl: 'wss://speech.bidme.co.il/ws/conv',
+      agentId: 'your_agent_id',
+      appId: 'your_app_id',
+      voice: 'default',
+      language: 'en',
+      autoReconnect: true
+    });
+
+    // Set up comprehensive event handlers
+    voiceSDK.on('connected', () => {
+      setIsConnected(true);
+      setConnectionStatus('Connected');
+      addMessage('system', 'Connected to voice agent');
+    });
+
+    voiceSDK.on('disconnected', () => {
+      setIsConnected(false);
+      setIsRecording(false);
+      setIsPlaying(false);
+      setConnectionStatus('Disconnected');
+      addMessage('system', 'Disconnected from voice agent');
+    });
+
+    voiceSDK.on('recordingStarted', () => {
+      setIsRecording(true);
+      addMessage('user', '🎤 Recording...');
+    });
+
+    voiceSDK.on('recordingStopped', () => {
+      setIsRecording(false);
+      addMessage('user', '⏹️ Recording stopped');
+    });
+
+    voiceSDK.on('playbackStarted', () => {
+      setIsPlaying(true);
+      addMessage('agent', '🔊 Agent is speaking...');
+    });
+
+    voiceSDK.on('playbackStopped', () => {
+      setIsPlaying(false);
+    });
+
+    voiceSDK.on('message', (message) => {
+      if (message.type === 'agent_response') {
+        addMessage('agent', message.agent_response);
+      } else if (message.type === 'user_transcript') {
+        addMessage('user', message.user_transcription);
+      }
+    });
+
+    voiceSDK.on('error', (error) => {
+      console.error('VoiceSDK Error:', error);
+      addMessage('error', `Error: ${error.message}`);
+    });
+
+    voiceSDKRef.current = voiceSDK;
+
+    return () => {
+      if (voiceSDKRef.current) {
+        voiceSDKRef.current.destroy();
+      }
+    };
+  }, []);
+
+  const addMessage = (type, text) => {
+    setMessages(prev => [...prev, { type, text, timestamp: new Date() }]);
+  };
+
+  const handleConnect = async () => {
+    if (voiceSDKRef.current) {
+      try {
+        setConnectionStatus('Connecting...');
+        await voiceSDKRef.current.connect();
+      } catch (error) {
+        console.error('Connection failed:', error);
+        setConnectionStatus('Connection failed');
+      }
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (voiceSDKRef.current) {
+      voiceSDKRef.current.disconnect();
+    }
+  };
+
+  const handleToggleRecording = async () => {
+    if (voiceSDKRef.current) {
+      try {
+        if (isRecording) {
+          await voiceSDKRef.current.stopRecording();
+        } else {
+          await voiceSDKRef.current.startRecording();
+        }
+      } catch (error) {
+        console.error('Recording toggle failed:', error);
+      }
+    }
+  };
+
+  return (
+    &lt;div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}&gt;
+      &lt;h1&gt;🎤 Voice Chat App&lt;/h1&gt;
+      
+      &lt;div style={{
+        padding: '12px',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        backgroundColor: isConnected ? '#D1FAE5' : '#FEE2E2',
+        color: isConnected ? '#065F46' : '#991B1B',
+        border: `1px solid ${isConnected ? '#10B981' : '#EF4444'}`
+      }}&gt;
+        &lt;strong&gt;Status:&lt;/strong&gt; {connectionStatus}
+      &lt;/div&gt;
+
+      &lt;div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}&gt;
+        &lt;button
+          onClick={handleConnect}
+          disabled={isConnected}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: isConnected ? '#9CA3AF' : '#4F46E5',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: isConnected ? 'not-allowed' : 'pointer'
+          }}
+        &gt;
+          Connect
+        &lt;/button&gt;
+        
+        &lt;button
+          onClick={handleDisconnect}
+          disabled={!isConnected}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: !isConnected ? '#9CA3AF' : '#EF4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: !isConnected ? 'not-allowed' : 'pointer'
+          }}
+        &gt;
+          Disconnect
+        &lt;/button&gt;
+        
+        &lt;button
+          onClick={handleToggleRecording}
+          disabled={!isConnected}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: !isConnected ? '#9CA3AF' : (isRecording ? '#EF4444' : '#10B981'),
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: !isConnected ? 'not-allowed' : 'pointer'
+          }}
+        &gt;
+          {isRecording ? 'Stop Recording' : 'Start Recording'}
+        &lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;div style={{
+        border: '1px solid #E5E7EB',
+        borderRadius: '8px',
+        height: '400px',
+        overflowY: 'auto',
+        padding: '16px',
+        backgroundColor: '#F9FAFB'
+      }}&gt;
+        &lt;h3&gt;Messages:&lt;/h3&gt;
+        {messages.length === 0 ? (
+          &lt;p style={{ color: '#6B7280', fontStyle: 'italic' }}&gt;
+            No messages yet. Connect and start recording to begin the conversation.
+          &lt;/p&gt;
+        ) : (
+          messages.map((message, index) => (
+            &lt;div
+              key={index}
+              style={{
+                marginBottom: '12px',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                backgroundColor: message.type === 'user' ? '#E5E7EB' : 
+                                message.type === 'agent' ? '#F3F4F6' :
+                                message.type === 'error' ? '#FEE2E2' : '#EFF6FF',
+                color: message.type === 'error' ? '#991B1B' : '#111827',
+                alignSelf: message.type === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '80%',
+                marginLeft: message.type === 'user' ? 'auto' : '0',
+                marginRight: message.type === 'user' ? '0' : 'auto'
+              }}
+            &gt;
+              &lt;div style={{ fontWeight: 'bold', marginBottom: '4px' }}&gt;
+                {message.type === 'user' ? '👤 You' :
+                 message.type === 'agent' ? '🤖 Agent' :
+                 message.type === 'error' ? '❌ Error' : 'ℹ️ System'}
+              &lt;/div&gt;
+              &lt;div&gt;{message.text}&lt;/div&gt;
+              &lt;div style={{ 
+                fontSize: '12px', 
+                color: '#6B7280', 
+                marginTop: '4px' 
+              }}&gt;
+                {message.timestamp.toLocaleTimeString()}
+              &lt;/div&gt;
+            &lt;/div&gt;
+          ))
+        )}
+      &lt;/div&gt;
+
+      &lt;div style={{ 
+        display: 'flex', 
+        gap: '20px', 
+        marginTop: '20px',
+        fontSize: '14px',
+        color: '#6B7280'
+      }}&gt;
+        &lt;div&gt;
+          &lt;span style={{ 
+            display: 'inline-block', 
+            width: '8px', 
+            height: '8px', 
+            borderRadius: '50%',
+            backgroundColor: isConnected ? '#10B981' : '#EF4444',
+            marginRight: '8px'
+          }}&gt;&lt;/span&gt;
+          Connection
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;span style={{ 
+            display: 'inline-block', 
+            width: '8px', 
+            height: '8px', 
+            borderRadius: '50%',
+            backgroundColor: isRecording ? '#EF4444' : '#9CA3AF',
+            marginRight: '8px'
+          }}&gt;&lt;/span&gt;
+          Recording
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;span style={{ 
+            display: 'inline-block', 
+            width: '8px', 
+            height: '8px', 
+            borderRadius: '50%',
+            backgroundColor: isPlaying ? '#10B981' : '#9CA3AF',
+            marginRight: '8px'
+          }}&gt;&lt;/span&gt;
+          Playing
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AdvancedVoiceChat;
+    </div>
+    
+    <div class="note">
+      <strong>Note:</strong> This is a comprehensive React example showing how to integrate the VoiceSDK. 
+      Copy this code into your React application and customize the agentId and appId values.
+    </div>
+  </div>
+</body>
+</html>
