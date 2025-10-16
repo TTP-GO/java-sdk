@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDK Test - Local</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .component { margin: 5px 0; padding: 5px; background: #f8f9fa; border-radius: 3px; }
+        .widget-demo { margin-top: 20px; padding: 20px; background: #e9ecef; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 TTP Agent SDK - Local Test</h1>
+        <div id="status" class="status info">Loading SDK...</div>
+        <div id="components"></div>
+        <div id="widget-demo" class="widget-demo" style="display: none;">
+            <h3>Widget Demo</h3>
+            <p>Click the button below to test the widget functionality:</p>
+            <button onclick="testWidget()">Test Widget</button>
+            <div id="widget-status"></div>
+        </div>
+    </div>
+    
+    <script src="agent-widget.js"></script>
+    <script>
+        console.log('🧪 Testing SDK locally...');
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function addComponent(name, type, available) {
+            const components = document.getElementById('components');
+            const div = document.createElement('div');
+            div.className = 'component';
+            div.innerHTML = `${available ? '✅' : '❌'} <strong>${name}</strong>: ${type} ${available ? '(Available)' : '(Missing)'}`;
+            components.appendChild(div);
+        }
+        
+        // Test if TTPAgentSDK is available
+        if (typeof TTPAgentSDK !== 'undefined') {
+            console.log('✅ TTPAgentSDK is available:', TTPAgentSDK);
+            updateStatus('✅ TTPAgentSDK loaded successfully!', 'success');
+            
+            // Test individual components
+            const components = [
+                { name: 'VoiceSDK', type: 'Class' },
+                { name: 'WebSocketManager', type: 'Class' },
+                { name: 'WebSocketManagerV2', type: 'Class' },
+                { name: 'AudioRecorder', type: 'Class' },
+                { name: 'AudioPlayer', type: 'Class' },
+                { name: 'EventEmitter', type: 'Class' },
+                { name: 'VoiceButton', type: 'React Component' },
+                { name: 'VanillaVoiceButton', type: 'Class' },
+                { name: 'AgentSDK', type: 'Class' },
+                { name: 'AgentWidget', type: 'Class' },
+                { name: 'VERSION', type: 'String' }
+            ];
+            
+            let allComponentsAvailable = true;
+            
+            components.forEach(component => {
+                const available = TTPAgentSDK[component.name] !== undefined;
+                if (!available) allComponentsAvailable = false;
+                addComponent(component.name, component.type, available);
+                console.log(`${available ? '✅' : '❌'} ${component.name}: ${typeof TTPAgentSDK[component.name]}`);
+            });
+            
+            if (allComponentsAvailable) {
+                updateStatus('✅ All SDK components loaded successfully!', 'success');
+                document.getElementById('widget-demo').style.display = 'block';
+            } else {
+                updateStatus('⚠️ Some SDK components are missing!', 'error');
+            }
+            
+        } else {
+            console.log('❌ TTPAgentSDK is not available');
+            updateStatus('❌ TTPAgentSDK failed to load', 'error');
+        }
+        
+        function testWidget() {
+            const widgetStatus = document.getElementById('widget-status');
+            widgetStatus.innerHTML = '<p>Creating widget...</p>';
+            
+            try {
+                // Create a test widget with mock backend
+                const widget = new TTPAgentSDK.AgentWidget({
+                    agentId: 'test_agent_123',
+                    getSessionUrl: async ({ agentId, variables }) => {
+                        console.log('Test widget requesting session for:', agentId);
+                        console.log('Variables:', variables);
+                        
+                        // Simulate backend delay
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
+                        // Return a mock WebSocket URL for testing
+                        const mockUrl = `wss://speech.bidme.co.il/ws/conv?agentId=${agentId}&appId=test_app_123`;
+                        console.log('Generated mock URL:', mockUrl);
+                        return mockUrl;
+                    },
+                    position: 'bottom-right',
+                    primaryColor: '#10B981'
+                });
+                
+                widgetStatus.innerHTML = '<p style="color: green;">✅ Widget created successfully! Check the bottom-right corner for the widget button.</p>';
+                console.log('✅ Widget created successfully:', widget);
+                
+            } catch (error) {
+                widgetStatus.innerHTML = `<p style="color: red;">❌ Widget creation failed: ${error.message}</p>`;
+                console.error('❌ Widget creation failed:', error);
+            }
+        }
+    </script>
+</body>
+</html>

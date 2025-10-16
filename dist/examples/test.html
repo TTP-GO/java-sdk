@@ -155,34 +155,27 @@ Test page for the widget
       const widget = new TTPAgentSDK.AgentWidget({
         agentId: 'agent_test_123',
         
-        // Point to your mock backend
+        // Mock backend for local testing (no real backend needed!)
         getSessionUrl: async ({ agentId, variables }) => {
           console.log('Requesting session URL for agent:', agentId);
           console.log('Variables:', variables);
           
-          updateStatus('Connecting to backend...', 'info');
+          updateStatus('Creating mock session URL...', 'info');
           
           try {
-            const response = await fetch('http://localhost:3000/api/get-session', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ agentId, variables })
-            });
+            // Simulate a small delay like a real backend
+            await new Promise(resolve => setTimeout(resolve, 500));
             
-            if (!response.ok) {
-              throw new Error(`Backend returned ${response.status}`);
-            }
+            // Create a mock WebSocket URL for testing
+            const mockSignedUrl = `wss://speech.bidme.co.il/ws/conv?agentId=${agentId}&appId=test_app_123`;
             
-            const data = await response.json();
-            console.log('Got session URL:', data.signedUrl);
-            updateStatus('Got signed URL from backend ✓', 'success');
+            console.log('Generated mock session URL:', mockSignedUrl);
+            updateStatus('Mock session URL created ✓', 'success');
             
-            return data.signedUrl;
+            return mockSignedUrl;
           } catch (error) {
-            console.error('Failed to get session URL:', error);
-            updateStatus('Failed to connect to backend ✗', 'error');
+            console.error('Failed to create mock session URL:', error);
+            updateStatus('Failed to create mock session URL ✗', 'error');
             throw error;
           }
         },
