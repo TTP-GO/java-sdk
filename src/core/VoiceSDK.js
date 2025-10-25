@@ -54,6 +54,16 @@ export default class VoiceSDK extends EventEmitter {
     
     this.webSocketManager.on('disconnected', () => {
       this.isConnected = false;
+      
+      // IMPORTANT: Stop recording when WebSocket disconnects (e.g., no credits, max duration exceeded)
+      // This ensures microphone is released and no more audio is streamed
+      if (this.isRecording) {
+        console.log('🎤 VoiceSDK: Auto-stopping recording due to WebSocket disconnection');
+        this.stopRecording().catch(err => {
+          console.error('VoiceSDK: Error stopping recording on disconnect:', err);
+        });
+      }
+      
       this.emit('disconnected');
     });
     
