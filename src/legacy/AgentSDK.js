@@ -9,7 +9,7 @@ import { VoiceSDK } from '../index.js';
 
 export class AgentSDK {
   constructor(config) {
-    console.log('🚀 AgentSDK v2.1.6 initialized with config:', config);
+    console.log('🚀 AgentSDK v2.1.7 initialized with config:', config);
     this.config = config;
     this.voiceSDK = null;
     this.isConnected = false;
@@ -159,7 +159,7 @@ export class AgentSDK {
 
 export class AgentWidget {
   constructor(config) {
-    console.log('🎯 AgentWidget v2.1.6 initialized with config:', config);
+    console.log('🎯 AgentWidget v2.1.7 initialized with config:', config);
     this.config = config;
     this.sdk = new AgentSDK(config); // ✅ Pass config to AgentSDK
     this.isOpen = false;
