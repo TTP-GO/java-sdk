@@ -256,6 +256,7 @@ export default class VoiceSDK extends EventEmitter {
     }
     
     try {
+      console.log('🎤 VoiceSDK: Starting continuous mode...');
       // Send start continuous mode message
       this.webSocketManager.sendMessage({
         t: 'start_continuous_mode',
@@ -264,10 +265,13 @@ export default class VoiceSDK extends EventEmitter {
         language: this.config.language
       });
       
+      console.log('🎤 VoiceSDK: Starting audio recorder...');
       // Start audio recording
       await this.audioRecorder.start();
+      console.log('✅ VoiceSDK: Audio recording started successfully');
       return true;
     } catch (error) {
+      console.error('❌ VoiceSDK: Failed to start recording:', error);
       this.emit('error', error);
       return false;
     }

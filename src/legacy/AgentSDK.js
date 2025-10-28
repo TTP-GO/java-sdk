@@ -109,7 +109,17 @@ export class AgentSDK {
 
   async startListening() {
     if (this.voiceSDK) {
-      await this.voiceSDK.startRecording();
+      try {
+        console.log('🎤 AgentSDK: Starting recording...');
+        await this.voiceSDK.startRecording();
+        console.log('✅ AgentSDK: Recording started successfully');
+      } catch (error) {
+        console.error('❌ AgentSDK: Failed to start recording:', error);
+        throw error;
+      }
+    } else {
+      console.error('❌ AgentSDK: No voiceSDK instance available');
+      throw new Error('No voiceSDK instance available');
     }
   }
 
