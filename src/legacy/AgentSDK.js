@@ -159,23 +159,29 @@ export class AgentWidget {
 
   setupEventHandlers() {
     this.sdk.onConnected = () => {
+      console.log('✅ SDK connected');
       this.updateStatus('connected');
     };
 
     this.sdk.onDisconnected = () => {
+      console.log('❌ SDK disconnected');
       this.updateStatus('disconnected');
       this.isActive = false;
+      this.updateMicButtonState(false);
     };
 
     this.sdk.onError = (error) => {
+      console.error('❌ SDK error:', error);
       this.showError(error.message);
     };
 
     this.sdk.onTranscript = (text) => {
+      console.log('📝 User transcript:', text);
       this.addMessage('user', text);
     };
 
     this.sdk.onAgentSpeaking = (isStart) => {
+      console.log('🤖 Agent speaking:', isStart);
       if (isStart) {
         this.showAgentThinking();
       } else {
@@ -373,21 +379,63 @@ export class AgentWidget {
   async toggleVoice() {
     if (!this.isActive) {
       try {
+        console.log('🎤 Starting voice session...');
         const signedUrl = await this.getSignedUrl();
+        console.log('🔗 Got signed URL:', signedUrl);
+        
         await this.sdk.connect(signedUrl);
+        console.log('✅ Connected to WebSocket');
+        
         await this.sdk.startListening();
+        console.log('🎤 Started listening');
+        
         this.isActive = true;
-        document.getElementById('agent-mic-button').classList.add('active');
-        this.addMessage('system', 'Listening...');
+        this.updateMicButtonState(true);
+        this.addMessage('system', '🎤 Listening... Click mic to stop');
       } catch (error) {
-        console.error('Failed to start:', error);
+        console.error('❌ Failed to start:', error);
         this.showError(error.message);
       }
     } else {
+      console.log('🔇 Stopping voice session...');
       this.sdk.stopListening();
       this.sdk.disconnect();
       this.isActive = false;
-      document.getElementById('agent-mic-button').classList.remove('active');
+      this.updateMicButtonState(false);
+      this.addMessage('system', '🔇 Stopped listening');
+    }
+  }
+
+  updateMicButtonState(isListening) {
+    const micButton = document.getElementById('agent-mic-button');
+    const micIcon = micButton.querySelector('svg');
+    
+    if (isListening) {
+      micButton.classList.add('active');
+      micButton.style.background = '#EF4444'; // Red when listening
+      micButton.title = 'Click to stop listening';
+      
+      // Add pulsing animation
+      micButton.style.animation = 'pulse 1.5s infinite';
+      
+      // Change icon to stop icon
+      micIcon.innerHTML = `
+        <rect x="6" y="6" width="12" height="12" rx="2"/>
+        <path d="M9 9h6"/>
+      `;
+    } else {
+      micButton.classList.remove('active');
+      micButton.style.background = this.primaryColor; // Original color
+      micButton.title = 'Click to start listening';
+      
+      // Remove animation
+      micButton.style.animation = '';
+      
+      // Change back to mic icon
+      micIcon.innerHTML = `
+        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+      `;
     }
   }
 
