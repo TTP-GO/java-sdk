@@ -32,7 +32,10 @@ export class AgentSDK {
       // Create VoiceSDK instance
       this.voiceSDK = new VoiceSDK({
         websocketUrl: signedUrl,
-        autoReconnect: false
+        autoReconnect: false,
+        agentId: this.config.agentId,
+        appId: this.config.appId,
+        language: this.config.language || 'en'
       });
       
       // Set up event handlers to map to legacy callbacks
@@ -158,7 +161,7 @@ export class AgentWidget {
   constructor(config) {
     console.log('🎯 AgentWidget v2.1.4 initialized with config:', config);
     this.config = config;
-    this.sdk = new AgentSDK();
+    this.sdk = new AgentSDK(config); // ✅ Pass config to AgentSDK
     this.isOpen = false;
     this.isActive = false;
     
