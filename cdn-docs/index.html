@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTP Agent SDK v2.1.0 - Enhanced Voice Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section h2 {
+            color: #8b5cf6;
+            margin-top: 0;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #4b5563;
+            margin-top: 25px;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #92400e;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .feature-card h4 {
+            color: #8b5cf6;
+            margin-top: 0;
+        }
+        
+        .button {
+            display: inline-block;
+            background: #8b5cf6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+        }
+        
+        .button.secondary {
+            background: #6b7280;
+        }
+        
+        .button.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .demo-section {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .demo-button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.2s;
+        }
+        
+        .demo-button:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+        
+        .demo-button.destroy {
+            background: #ef4444;
+        }
+        
+        .demo-button.destroy:hover {
+            background: #dc2626;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #1e293b;
+            color: white;
+            border-radius: 12px;
+            margin-top: 40px;
+        }
+        
+        .footer a {
+            color: #8b5cf6;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎤 TTP Agent SDK</h1>
+        <p>Enhanced Voice Widget with Extensive Customization</p>
+        <div class="version-badge">v2.1.0 - Enhanced Edition</div>
+    </div>
+
+    <div class="section">
+        <h2>🚀 Quick Start</h2>
+        <p>Get started with the enhanced voice widget in just a few lines of code:</p>
+        
+        <div class="code-block">
+&lt;script src="https://cdn.talktopc.com/ttp-agent-sdk/agent-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  new TTPAgentSDK.EnhancedAgentWidget({
+    agentId: 'your_agent_id',
+    getSessionUrl: async ({ agentId, variables }) => {
+      const response = await fetch('/api/get-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, variables })
+      });
+      const data = await response.json();
+      return data.signedUrl;
+    }
+  });
+&lt;/script&gt;
+        </div>
+        
+        <div class="demo-section">
+            <h3>🎮 Interactive Demo</h3>
+            <p>Try the enhanced widget with different configurations:</p>
+            <button class="demo-button" onclick="createDefaultWidget()">Default Widget</button>
+            <button class="demo-button" onclick="createCustomIconWidget()">Custom Icon</button>
+            <button class="demo-button" onclick="createEmojiWidget()">Emoji Icon</button>
+            <button class="demo-button" onclick="createCustomStyledWidget()">Custom Styling</button>
+            <button class="demo-button destroy" onclick="destroyAllWidgets()">Destroy All</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>✨ Enhanced Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>🎨 Custom Icons</h4>
+                <p>Use your own images, emojis, or text as widget icons. Perfect for branding!</p>
+            </div>
+            <div class="feature-card">
+                <h4>📍 Flexible Positioning</h4>
+                <p>Position anywhere on screen - corners, center, or custom coordinates.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎯 Advanced Styling</h4>
+                <p>Customize colors, sizes, shapes, animations, and glass morphism effects.</p>
+            </div>
+            <div class="feature-card">
+                <h4>♿ Accessibility</h4>
+                <p>Full ARIA support, keyboard navigation, and screen reader compatibility.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎭 Smooth Animations</h4>
+                <p>Hover effects, pulse animations, and smooth slide transitions.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔧 Easy Configuration</h4>
+                <p>Sensible defaults with extensive customization options.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎨 Icon Customization</h2>
+        <p>Choose from multiple icon types to match your brand:</p>
+        
+        <h3>Custom Image</h3>
+        <div class="code-block">
+icon: {
+  type: 'custom',
+  customImage: 'https://yourcompany.com/logo.png',
+  size: 'large'
+}
+        </div>
+        
+        <h3>Emoji Icon</h3>
+        <div class="code-block">
+icon: {
+  type: 'emoji',
+  emoji: '🤖',
+  size: 'xl'
+}
+        </div>
+        
+        <h3>Text Icon</h3>
+        <div class="code-block">
+icon: {
+  type: 'text',
+  text: 'HELP',
+  size: 'medium'
+}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📍 Positioning Options</h2>
+        <p>Flexible positioning with custom offsets:</p>
+        
+        <div class="code-block">
+position: {
+  vertical: 'bottom',    // 'top', 'bottom', 'center'
+  horizontal: 'right',   // 'left', 'right', 'center'
+  offset: { x: 30, y: 30 }  // Custom pixel offset
+}
+        </div>
+        
+        <h3>Position Examples:</h3>
+        <ul>
+            <li><span class="highlight">Top-left</span>: <code>{ vertical: 'top', horizontal: 'left' }</code></li>
+            <li><span class="highlight">Center</span>: <code>{ vertical: 'center', horizontal: 'center' }</code></li>
+            <li><span class="highlight">Custom offset</span>: <code>{ vertical: 'bottom', horizontal: 'right', offset: { x: 50, y: 100 } }</code></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Complete Configuration</h2>
+        <p>Full configuration example with all enhanced options:</p>
+        
+        <div class="code-block">
+new TTPAgentSDK.EnhancedAgentWidget({
+  // Required
+  agentId: 'your_agent_id',
+  getSessionUrl: async ({ agentId, variables }) => { /* ... */ },
+  
+  // Icon Configuration
+  icon: {
+    type: 'custom',
+    customImage: 'https://yourcompany.com/logo.png',
+    size: 'large'
+  },
+  
+  // Positioning
+  position: {
+    vertical: 'bottom',
+    horizontal: 'right',
+    offset: { x: 30, y: 30 }
+  },
+  
+  // Button Styling
+  button: {
+    size: 'large',
+    shape: 'circle',
+    primaryColor: '#8b5cf6',
+    hoverColor: '#7c3aed',
+    activeColor: '#ef4444',
+    shadow: true
+  },
+  
+  // Panel Configuration
+  panel: {
+    width: 380,
+    height: 520,
+    backgroundColor: 'rgba(10, 10, 10, 0.95)',
+    backdropFilter: 'blur(15px)',
+    borderRadius: 16
+  },
+  
+  // Header
+  header: {
+    title: 'Your Company Assistant',
+    backgroundColor: '#8b5cf6',
+    textColor: '#FFFFFF'
+  },
+  
+  // Messages
+  messages: {
+    userBackgroundColor: 'rgba(139, 92, 246, 0.2)',
+    agentBackgroundColor: 'rgba(255, 255, 255, 0.1)',
+    textColor: '#FFFFFF'
+  },
+  
+  // Animations
+  animation: {
+    enableHover: true,
+    enablePulse: true,
+    enableSlide: true,
+    duration: 0.3
+  },
+  
+  // Behavior
+  behavior: {
+    autoOpen: false,
+    showWelcomeMessage: true,
+    welcomeMessage: 'Welcome! How can I help you?'
+  },
+  
+  // Variables
+  variables: {
+    company: 'Your Company',
+    page: 'homepage'
+  }
+});
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📦 Installation Methods</h2>
+        
+        <h3>CDN (Recommended)</h3>
+        <div class="code-block">
+&lt;script src="https://cdn.talktopc.com/ttp-agent-sdk/agent-widget.js"&gt;&lt;/script&gt;
+        </div>
+        
+        <h3>NPM</h3>
+        <div class="code-block">
+npm install ttp-agent-sdk@2.1.0
+        </div>
+        
+        <h3>React Integration</h3>
+        <div class="code-block">
+import { EnhancedAgentWidget } from 'ttp-agent-sdk';
+
+// Use in your React component
+useEffect(() => {
+  new EnhancedAgentWidget({
+    agentId: 'your_agent_id',
+    getSessionUrl: async ({ agentId, variables }) => { /* ... */ }
+  });
+}, []);
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔐 Signed Link Authentication</h2>
+        
+        <p>The enhanced widget uses <strong>signed links</strong> for secure authentication. Your UI backend generates secure, time-limited URLs that connect to the conversation backend.</p>
+        
+        <h3>Architecture</h3>
+        <div class="code-block">
+User's Frontend → User's Backend → TTP UI Backend → TTP Conversation Backend
+      ↓               ↓               ↓                    ↓
+   Requests        Requests        Generates           Handles
+   signed URL      signed URL      signed URL          conversation
+      ↑               ↑               ↑                    ↑
+   Receives        Receives        Returns             Validates
+   signed URL      signed URL      signed URL          signed token
+        </div>
+        
+        <h3>Complete Flow</h3>
+        <ol>
+            <li><strong>User's Frontend</strong> → requests signed URL from <strong>User's Backend</strong></li>
+            <li><strong>User's Backend</strong> → requests signed URL from <strong>TTP UI Backend</strong> (`/api/public/agents`)</li>
+            <li><strong>TTP UI Backend</strong> → generates signed URL and returns to <strong>User's Backend</strong></li>
+            <li><strong>User's Backend</strong> → returns signed URL to <strong>User's Frontend</strong></li>
+            <li><strong>User's Frontend</strong> → connects directly to <strong>TTP Conversation Backend</strong></li>
+        </ol>
+        
+        <h3>User's Backend Implementation</h3>
+        <div class="code-block">
+// User's Backend calls TTP UI Backend
+app.post('/api/get-voice-session', async (req, res) => {
+  const ttpResponse = await fetch('https://backend.talktopc.com/api/public/agents', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.TTP_API_KEY}`
+    },
+    body: JSON.stringify({ agentId, variables })
+  });
+  
+  const ttpData = await ttpResponse.json();
+  res.json({ signedUrl: ttpData.signedUrl });
+});
+        </div>
+        
+        <h3>User's Frontend Implementation</h3>
+        <div class="code-block">
+new TTPAgentSDK.EnhancedAgentWidget({
+  agentId: 'your_agent_id',
+  getSessionUrl: async ({ agentId, variables }) => {
+    // Call your own backend
+    const response = await fetch('/api/get-voice-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentId, variables })
+    });
+    
+    const data = await response.json();
+    return data.signedUrl; // Connects directly to TTP Conversation Backend
+  }
+});
+        </div>
+        
+        <h3>Benefits</h3>
+        <ul>
+            <li>✅ <strong>Secure</strong>: No agent IDs exposed in frontend</li>
+            <li>✅ <strong>Scalable</strong>: UI and conversation backends scale independently</li>
+            <li>✅ <strong>Controlled</strong>: UI backend manages permissions and costs</li>
+            <li>✅ <strong>Time-limited</strong>: Sessions expire automatically</li>
+        </ul>
+        
+        <p><a href="https://cdn.talktopc.com/ttp-agent-sdk/signed-link-guide.html" class="button">📖 Complete Signed Link Guide</a></p>
+    </div>
+
+    <div class="section">
+        <h2>🔗 API Reference</h2>
+        
+        <h3>Public Methods</h3>
+        <div class="code-block">
+// Update configuration dynamically
+widget.updateConfig({
+  button: { primaryColor: '#00FF00' },
+  position: { vertical: 'top' }
+});
+
+// Destroy the widget
+widget.destroy();
+        </div>
+        
+        <h3>Configuration Options</h3>
+        <p>All configuration options with their default values:</p>
+        <ul>
+            <li><strong>icon</strong>: Icon configuration (type, size, custom image, emoji, text)</li>
+            <li><strong>position</strong>: Widget positioning (vertical, horizontal, offset)</li>
+            <li><strong>button</strong>: Button styling (size, shape, colors, shadow)</li>
+            <li><strong>panel</strong>: Panel configuration (dimensions, colors, effects)</li>
+            <li><strong>header</strong>: Header settings (title, colors, close button)</li>
+            <li><strong>messages</strong>: Message styling (colors, fonts, borders)</li>
+            <li><strong>animation</strong>: Animation settings (hover, pulse, slide, duration)</li>
+            <li><strong>behavior</strong>: Behavior options (auto-open, welcome message)</li>
+            <li><strong>accessibility</strong>: Accessibility settings (ARIA, keyboard nav)</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🌐 Browser Support</h2>
+        <ul>
+            <li>Chrome 66+</li>
+            <li>Firefox 60+</li>
+            <li>Safari 11.1+</li>
+            <li>Edge 79+</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <h3>TTP Agent SDK v2.1.0</h3>
+        <p>
+            <a href="https://github.com/yinon11/ttp-sdk-front">GitHub Repository</a> |
+            <a href="https://www.npmjs.com/package/ttp-agent-sdk">NPM Package</a> |
+            <a href="mailto:support@talktopc.com">Support</a>
+        </p>
+        <p>© 2024 TTP Agent Team. MIT License.</p>
+    </div>
+
+    <!-- Load the Enhanced Widget SDK -->
+    <script src="https://cdn.talktopc.com/ttp-agent-sdk/agent-widget.js"></script>
+    
+    <script>
+        let currentWidget = null;
+        
+        function destroyCurrentWidget() {
+            if (currentWidget) {
+                currentWidget.destroy();
+                currentWidget = null;
+            }
+        }
+        
+        function createDefaultWidget() {
+            destroyCurrentWidget();
+            currentWidget = new TTPAgentSDK.EnhancedAgentWidget({
+                agentId: 'demo_agent_default',
+                getSessionUrl: async ({ agentId, variables }) => {
+                    console.log('Creating session for:', agentId);
+                    return `wss://speech.talktopc.com/ws/conv?agentId=${agentId}&demo=true`;
+                }
+            });
+        }
+        
+        function createCustomIconWidget() {
+            destroyCurrentWidget();
+            currentWidget = new TTPAgentSDK.EnhancedAgentWidget({
+                agentId: 'demo_agent_custom',
+                getSessionUrl: async ({ agentId, variables }) => {
+                    return `wss://speech.talktopc.com/ws/conv?agentId=${agentId}&demo=true`;
+                },
+                icon: {
+                    type: 'custom',
+                    customImage: 'https://via.placeholder.com/64x64/8b5cf6/FFFFFF?text=TTP',
+                    size: 'large'
+                },
+                button: {
+                    primaryColor: '#FF6B35',
+                    hoverColor: '#FF8C42'
+                }
+            });
+        }
+        
+        function createEmojiWidget() {
+            destroyCurrentWidget();
+            currentWidget = new TTPAgentSDK.EnhancedAgentWidget({
+                agentId: 'demo_agent_emoji',
+                getSessionUrl: async ({ agentId, variables }) => {
+                    return `wss://speech.talktopc.com/ws/conv?agentId=${agentId}&demo=true`;
+                },
+                icon: {
+                    type: 'emoji',
+                    emoji: '🤖',
+                    size: 'xl'
+                },
+                button: {
+                    primaryColor: '#10B981',
+                    hoverColor: '#059669'
+                }
+            });
+        }
+        
+        function createCustomStyledWidget() {
+            destroyCurrentWidget();
+            currentWidget = new TTPAgentSDK.EnhancedAgentWidget({
+                agentId: 'demo_agent_styled',
+                getSessionUrl: async ({ agentId, variables }) => {
+                    return `wss://speech.talktopc.com/ws/conv?agentId=${agentId}&demo=true`;
+                },
+                button: {
+                    primaryColor: '#1F2937',
+                    hoverColor: '#374151',
+                    activeColor: '#DC2626',
+                    shape: 'square',
+                    size: 'large'
+                },
+                panel: {
+                    backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                    borderRadius: 20,
+                    backdropFilter: 'blur(20px)'
+                },
+                header: {
+                    title: 'Dark Mode Assistant',
+                    backgroundColor: '#1F2937',
+                    textColor: '#FFFFFF'
+                },
+                messages: {
+                    userBackgroundColor: '#3B82F6',
+                    agentBackgroundColor: '#6B7280',
+                    textColor: '#FFFFFF'
+                }
+            });
+        }
+        
+        function destroyAllWidgets() {
+            destroyCurrentWidget();
+            // Also destroy any legacy widgets
+            const legacyWidget = document.getElementById('agent-widget');
+            if (legacyWidget) {
+                legacyWidget.remove();
+            }
+        }
+        
+        // Initialize with default widget
+        window.addEventListener('load', () => {
+            console.log('TTP Agent SDK v2.1.0 Enhanced Widget loaded');
+            console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
+            console.log('EnhancedAgentWidget available:', typeof TTPAgentSDK?.EnhancedAgentWidget);
+        });
+    </script>
+</body>
+</html>

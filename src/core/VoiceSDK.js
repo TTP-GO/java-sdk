@@ -52,7 +52,7 @@ export default class VoiceSDK extends EventEmitter {
       this.emit('connected');
     });
     
-    this.webSocketManager.on('disconnected', () => {
+    this.webSocketManager.on('disconnected', (event) => {
       this.isConnected = false;
       
       // IMPORTANT: Stop recording when WebSocket disconnects (e.g., no credits, max duration exceeded)
@@ -64,7 +64,8 @@ export default class VoiceSDK extends EventEmitter {
         });
       }
       
-      this.emit('disconnected');
+      // Pass close event details (code, reason) to consumers
+      this.emit('disconnected', event);
     });
     
     this.webSocketManager.on('error', (error) => {
@@ -145,20 +146,29 @@ export default class VoiceSDK extends EventEmitter {
    */
   async connect() {
     if (this.isDestroyed) {
+      console.warn('VoiceSDK: Cannot connect - SDK is destroyed');
       return false; // Prevent connect after destroy
     }
     
     try {
       // Build WebSocket URL with query parameters if needed
       const wsUrl = this.buildWebSocketUrl();
-      console.log('VoiceSDK: Using WebSocket URL:', wsUrl);
+      console.log('🔌 VoiceSDK: Attempting connection to:', wsUrl);
+      console.log('🔌 VoiceSDK: Config:', {
+        agentId: this.config.agentId,
+        appId: this.config.appId,
+        language: this.config.language
+      });
       
       // Update the WebSocket manager with the URL that includes query parameters
       this.webSocketManager.config.websocketUrl = wsUrl;
       
+      console.log('🔌 VoiceSDK: Calling webSocketManager.connect()...');
       await this.webSocketManager.connect();
+      console.log('🔌 VoiceSDK: webSocketManager.connect() completed successfully');
       return true;
     } catch (error) {
+      console.error('🔌 VoiceSDK: Connection failed with error:', error);
       this.emit('error', error);
       return false;
     }
