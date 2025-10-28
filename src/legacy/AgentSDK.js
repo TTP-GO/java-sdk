@@ -393,15 +393,22 @@ export class AgentWidget {
 
   async getSignedUrl() {
     if (typeof this.config.getSessionUrl === 'string') {
+      const requestBody = {
+        agentId: this.config.agentId,
+        variables: this.config.variables || {}
+      };
+      
+      // Add appId if provided in config
+      if (this.config.appId) {
+        requestBody.appId = this.config.appId;
+      }
+      
       const response = await fetch(this.config.getSessionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          agentId: this.config.agentId,
-          variables: this.config.variables || {}
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -412,10 +419,17 @@ export class AgentWidget {
       return data.signedUrl || data.wsUrl || data.url;
     }
     else if (typeof this.config.getSessionUrl === 'function') {
-      const result = await this.config.getSessionUrl({
+      const params = {
         agentId: this.config.agentId,
         variables: this.config.variables || {}
-      });
+      };
+      
+      // Add appId if provided in config
+      if (this.config.appId) {
+        params.appId = this.config.appId;
+      }
+      
+      const result = await this.config.getSessionUrl(params);
       
       return typeof result === 'string' ? result : (result.signedUrl || result.wsUrl || result.url);
     }
