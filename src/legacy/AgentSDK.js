@@ -9,6 +9,7 @@ import { VoiceSDK } from '../index.js';
 
 export class AgentSDK {
   constructor(config) {
+    console.log('🚀 AgentSDK v2.1.4 initialized with config:', config);
     this.config = config;
     this.voiceSDK = null;
     this.isConnected = false;
@@ -155,6 +156,7 @@ export class AgentSDK {
 
 export class AgentWidget {
   constructor(config) {
+    console.log('🎯 AgentWidget v2.1.4 initialized with config:', config);
     this.config = config;
     this.sdk = new AgentSDK();
     this.isOpen = false;
