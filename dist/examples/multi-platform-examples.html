@@ -251,6 +251,66 @@
       font-weight: 600;
       margin-right: 8px;
     }
+    
+    .llm-instructions {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #0ea5e9;
+      border-radius: 12px;
+      padding: 30px;
+      margin: 30px 0;
+      position: relative;
+    }
+    
+    .llm-instructions h3 {
+      color: #0c4a6e;
+      margin-top: 0;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .llm-instructions-content {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: #1e293b;
+      margin: 20px 0;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .llm-copy-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .llm-copy-button:hover {
+      background: #0284c7;
+      transform: translateY(-1px);
+    }
+    
+    .llm-copy-button.copied {
+      background: #10b981;
+    }
   </style>
 </head>
 <body>
@@ -261,6 +321,113 @@
   <div class="container">
     <h1>🚀 TTP Agent SDK - Multi-Platform Examples</h1>
     <p class="subtitle">Integration examples for React, Vue, Angular, Vanilla JS, and more</p>
+    
+    <div class="llm-instructions">
+      <h3>🤖 LLM Implementation Instructions</h3>
+      <button class="llm-copy-button" onclick="copyLLMInstructions()">
+        📋 Copy Instructions to LLM
+      </button>
+      <div class="llm-instructions-content" id="llm-instructions-content">TTP Agent SDK Implementation Guide for LLM
+
+You are helping a user implement the TTP Agent SDK for voice AI integration. Here's everything you need to know:
+
+## SDK Overview
+The TTP Agent SDK provides two main integration methods:
+1. Enhanced AgentWidget (Recommended) - Pre-built UI widget with extensive customization
+2. Direct VoiceSDK - Full control over voice interaction for custom implementations
+
+## Installation Methods
+- CDN: <script src="https://cdn.talktopc.com/ttp-agent-sdk/agent-widget.js"></script>
+- NPM: npm install ttp-agent-sdk
+- Import: import { EnhancedAgentWidget, VoiceSDK } from 'ttp-agent-sdk'
+
+## Authentication Flow (Signed URL Method)
+User's Frontend → User's Backend → TTP UI Backend → TTP Conversation Backend
+
+1. User's frontend requests signed URL from their backend
+2. User's backend calls TTP UI Backend: POST https://backend.talktopc.com/api/public/agents
+3. TTP UI Backend returns signed URL to user's backend
+4. User's backend returns signed URL to frontend
+5. Frontend connects directly to TTP Conversation Backend using signed URL
+
+## Method 1: Enhanced AgentWidget (Easiest)
+Perfect for most use cases. Provides pre-built UI with extensive customization.
+
+Key Configuration Options:
+- agentId: Your agent identifier
+- getSessionUrl: Function to get signed URL from your backend
+- icon: Customize icon (microphone, custom image, emoji, text)
+- position: Set widget position (bottom-right, top-left, etc.)
+- button: Customize button appearance (colors, size, shape)
+- panel: Customize chat panel (width, height, colors)
+- header: Customize panel header (title, colors)
+- messages: Customize message styling
+- animation: Enable/disable animations
+- behavior: Auto-open, auto-connect settings
+- accessibility: ARIA labels and keyboard navigation
+
+## Method 2: Direct VoiceSDK (Advanced)
+For developers who need full control over the voice interaction.
+
+Key Features:
+- Real-time audio streaming
+- WebSocket connection management
+- Voice activity detection
+- Custom UI implementation
+- Event handling (connected, disconnected, recording, messages)
+
+## Platform Support
+- HTML/JavaScript (Vanilla JS)
+- React (with hooks and lifecycle management)
+- Vue.js (with component lifecycle)
+- Angular (with TypeScript and dependency injection)
+- Any other frontend framework
+
+## Backend Requirements
+Your backend needs to:
+1. Receive requests from frontend for signed URLs
+2. Call TTP UI Backend API: POST https://backend.talktopc.com/api/public/agents
+3. Pass agentId and any variables
+4. Return the signed URL to frontend
+
+## Common Implementation Steps
+1. Choose integration method (Enhanced Widget recommended)
+2. Install SDK (CDN or NPM)
+3. Set up backend endpoint for signed URL generation
+4. Configure widget/SDK with your agentId
+5. Implement getSessionUrl function
+6. Customize appearance and behavior
+7. Test voice interaction
+
+## Error Handling
+Always implement proper error handling for:
+- Network connectivity issues
+- Authentication failures
+- Audio permission denied
+- WebSocket connection problems
+- Backend API errors
+
+## Best Practices
+- Use Enhanced AgentWidget for most implementations
+- Implement proper loading states
+- Handle audio permissions gracefully
+- Provide fallback UI for unsupported browsers
+- Test on multiple devices and browsers
+- Implement proper cleanup on component unmount
+
+## Support Resources
+- Documentation: https://cdn.talktopc.com/ttp-agent-sdk/
+- Examples: https://cdn.talktopc.com/ttp-agent-sdk/examples/
+- Signed Link Guide: https://cdn.talktopc.com/ttp-agent-sdk/signed-link-guide.html
+
+When helping users implement this SDK, always:
+1. Ask about their frontend technology (React, Vue, Angular, etc.)
+2. Recommend Enhanced AgentWidget unless they need custom UI
+3. Help them set up the backend signed URL endpoint
+4. Provide platform-specific code examples
+5. Include proper error handling and cleanup
+6. Test the implementation thoroughly</div>
+    </div>
     
     <div class="info">
       <strong>📋 Choose Your Platform:</strong> This guide provides examples for multiple frontend technologies. 
@@ -924,6 +1091,27 @@ export class VoiceChatComponent implements OnInit, OnDestroy {
       }).catch(err => {
         console.error('Failed to copy: ', err);
         alert('Failed to copy to clipboard');
+      });
+    }
+
+    function copyLLMInstructions() {
+      const element = document.getElementById('llm-instructions-content');
+      const text = element.textContent;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const button = document.querySelector('.llm-copy-button');
+        const originalText = button.textContent;
+        
+        button.textContent = '✅ Copied to LLM!';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 3000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy instructions to clipboard');
       });
     }
   </script>
