@@ -392,6 +392,8 @@ export class AgentWidget {
   }
 
   async toggleVoice() {
+    console.log('🎤 NODE_MODULES SDK: toggleVoice called - isActive:', this.isActive);
+    
     if (!this.isActive) {
       try {
         console.log('🎤 Starting voice session...');
