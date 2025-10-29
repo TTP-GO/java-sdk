@@ -1,109 +1,112 @@
-// ============================================
-// FILE: test-server.js  
-// Mock Backend Server for Testing
-// ============================================
-// This simulates the customer's backend that would call YOUR API
-// Run this with: node test-server.js
+#!/usr/bin/env node
+
+/**
+ * Simple HTTP Server for Testing TTP Agent SDK
+ * 
+ * This server serves the test pages over HTTP to avoid CORS issues
+ * with AudioWorklet when testing locally.
+ */
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
 
 const PORT = 3000;
+const ROOT_DIR = path.join(__dirname, 'dist');
 
-// Mock WebSocket server URL (you'll replace with your real one)
-const MOCK_WS_URL = 'wss://echo.websocket.org'; // Free echo server for testing
+// MIME types
+const mimeTypes = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
+};
 
+// Create HTTP server
 const server = http.createServer((req, res) => {
-  // Enable CORS for local testing
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
+  const parsedUrl = url.parse(req.url);
+  let pathname = parsedUrl.pathname;
+  
+  // Default to index.html for root
+  if (pathname === '/') {
+    pathname = '/examples/test-agent-app.html';
+  }
+  
+  // Remove leading slash and resolve path
+  const filePath = path.join(ROOT_DIR, pathname.substring(1));
+  
+  // Security check - prevent directory traversal
+  if (!filePath.startsWith(ROOT_DIR)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
     return;
   }
-
-  // Health check endpoint
-  if (req.url === '/health' && req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ 
-      status: 'ok',
-      message: 'Mock backend is running' 
-    }));
-    return;
-  }
-
-  // Mock session endpoint
-  if (req.url === '/api/get-session' && req.method === 'POST') {
-    let body = '';
+  
+  // Check if file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('File not found');
+      return;
+    }
     
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
+    // Get file extension for MIME type
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
     
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
-        console.log('📥 Received session request:');
-        console.log('  Agent ID:', data.agentId);
-        console.log('  Variables:', data.variables);
-        
-        // In production, you would:
-        // 1. Call YOUR API with YOUR secret key
-        // 2. Get back a real signed WebSocket URL
-        // 3. Return it to the frontend
-        
-        // For now, return a mock WebSocket URL
-        const mockSignedUrl = MOCK_WS_URL + '?agent=' + data.agentId;
-        
-        console.log('📤 Returning signed URL:', mockSignedUrl);
-        
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          signedUrl: mockSignedUrl,
-          sessionId: 'session_mock_' + Date.now(),
-          expiresAt: new Date(Date.now() + 3600000).toISOString()
-        }));
-        
-      } catch (error) {
-        console.error('❌ Error processing request:', error);
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid request' }));
+    // Read and serve file
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal server error');
+        return;
       }
+      
+      // Set CORS headers for AudioWorklet
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
+      
+      res.end(data);
     });
-    return;
-  }
-
-  // 404 for other routes
-  res.writeHead(404);
-  res.end('Not Found');
+  });
 });
 
+// Start server
 server.listen(PORT, () => {
-  console.log('');
-  console.log('🚀 Mock Backend Server Started!');
-  console.log('================================');
-  console.log(`✓ Listening on: http://localhost:${PORT}`);
-  console.log(`✓ Health check: http://localhost:${PORT}/health`);
-  console.log(`✓ Session API:  http://localhost:${PORT}/api/get-session`);
-  console.log('');
-  console.log('📝 Next Steps:');
-  console.log('1. Open another terminal');
-  console.log('2. Run: npm run dev');
-  console.log('3. Browser will open with test page');
-  console.log('');
-  console.log('⚠️  Note: This uses a free echo WebSocket server for testing.');
-  console.log('   Replace MOCK_WS_URL with your real WebSocket URL when ready.');
-  console.log('');
+  console.log(`🚀 TTP Agent SDK Test Server running on http://localhost:${PORT}`);
+  console.log(`📁 Serving files from: ${ROOT_DIR}`);
+  console.log(`🎤 Test pages available at:`);
+  console.log(`   - http://localhost:${PORT}/examples/test-agent-app.html`);
+  console.log(`   - http://localhost:${PORT}/examples/test-signed-link.html`);
+  console.log(`   - http://localhost:${PORT}/examples/test-simplified.html`);
+  console.log(`\n💡 Press Ctrl+C to stop the server`);
+});
+
+// Handle server errors
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Please try a different port.`);
+  } else {
+    console.error('❌ Server error:', err);
+  }
+  process.exit(1);
 });
 
 // Handle graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('Shutting down server...');
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down server...');
   server.close(() => {
-    console.log('Server closed');
+    console.log('✅ Server stopped');
     process.exit(0);
   });
 });

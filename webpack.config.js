@@ -103,6 +103,10 @@ module.exports = {
         {
           from: 'examples',
           to: 'examples'
+        },
+        {
+          from: 'src/audio-processor.js',
+          to: 'audio-processor.js'
         }
       ]
     })

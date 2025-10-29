@@ -29,6 +29,13 @@ export class AgentSDK {
         throw new Error('signedUrl is required');
       }
       
+      // Clean up existing connection if any
+      if (this.voiceSDK) {
+        console.log('🔌 AgentSDK: Cleaning up existing connection');
+        this.voiceSDK.destroy();
+        this.voiceSDK = null;
+      }
+      
       // Create VoiceSDK instance
       this.voiceSDK = new VoiceSDK({
         websocketUrl: signedUrl,
@@ -112,6 +119,7 @@ export class AgentSDK {
   }
 
   async startListening() {
+    console.log('🎤 AgentSDK: startListening() called');
     if (this.voiceSDK) {
       try {
         console.log('🎤 AgentSDK: Starting recording...');
@@ -179,10 +187,13 @@ export class AgentWidget {
     };
 
     this.sdk.onDisconnected = () => {
-      console.log('❌ SDK disconnected');
+      console.log('❌ SDK disconnected - conversation ended');
       this.updateStatus('disconnected');
       this.isActive = false;
       this.updateMicButtonState(false);
+      
+      // Show user-friendly message about disconnection
+      this.showError('Conversation ended. Click to start a new conversation.');
     };
 
     this.sdk.onError = (error) => {
@@ -402,6 +413,16 @@ export class AgentWidget {
         
         await this.sdk.connect(signedUrl);
         console.log('✅ Connected to WebSocket');
+        
+        // Wait for the connection to be fully established
+        await new Promise((resolve) => {
+          if (this.sdk.isConnected) {
+            resolve();
+          } else {
+            this.sdk.once('connected', resolve);
+          }
+        });
+        console.log('✅ WebSocket fully ready');
         
         await this.sdk.startListening();
         console.log('🎤 Started listening');

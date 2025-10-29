@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Agent Widget - Signed Link Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #F9FAFB;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #111827;
+      margin-top: 0;
+    }
+    
+    .info {
+      background: #EFF6FF;
+      border-left: 4px solid #3B82F6;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .config-info {
+      background: #FEF3C7;
+      border-left: 4px solid #F59E0B;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .status {
+      margin: 20px 0;
+      padding: 12px;
+      background: #F3F4F6;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    
+    .status.success {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+    
+    .status.error {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 10px 10px 0;
+    }
+
+    button:hover {
+      background: #4338CA;
+    }
+
+    .code-block {
+      background: #1F2937;
+      color: #F9FAFB;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    .api-info {
+      background: #F0FDF4;
+      border-left: 4px solid #10B981;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎤 Voice Agent Widget - Signed Link Test</h1>
+    
+    <div class="config-info">
+      <strong>📝 Configuration:</strong>
+      <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+        <li><strong>Agent ID:</strong> agent_87c4a55a1</li>
+        <li><strong>App ID:</strong> app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC</li>
+        <li><strong>Method:</strong> Signed link via backend API</li>
+      </ul>
+    </div>
+
+    <div class="api-info">
+      <strong>🔗 Backend API:</strong>
+      <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+        <li><strong>Endpoint:</strong> https://backend.talktopc.com/api/public/agents/signed-url</li>
+        <li><strong>Method:</strong> POST</li>
+        <li><strong>Purpose:</strong> Generate signed WebSocket URL for secure connection</li>
+      </ul>
+    </div>
+    
+    <div class="info">
+      <strong>📝 Testing Instructions:</strong>
+      <ol style="margin: 10px 0 0 20px; line-height: 1.8;">
+        <li>Look for the floating voice button in the bottom-right corner</li>
+        <li>Click the button to open the widget</li>
+        <li>Widget will request signed URL from backend API</li>
+        <li>Click the microphone to start (will request mic permission)</li>
+        <li>Widget will connect using the signed WebSocket URL</li>
+        <li>Check the status updates below</li>
+      </ol>
+    </div>
+
+    <h2>Widget Status:</h2>
+    <div id="status" class="status">
+      Waiting for widget to load...
+    </div>
+
+    <h2>Console Log:</h2>
+    <div id="log" style="background: #1F2937; color: #F9FAFB; padding: 16px; border-radius: 6px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;">
+      Console messages will appear here...
+    </div>
+
+    <h2>Implementation Code:</h2>
+    <div class="code-block">
+const widget = new TTPAgentSDK.AgentWidget({
+  agentId: 'agent_87c4a55a1',
+  appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+  
+  // Signed link via backend API
+  getSessionUrl: async ({ agentId, appId, variables }) => {
+    const response = await fetch('https://backend.talktopc.com/api/public/agents/signed-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        agentId: agentId,
+        appId: appId,
+        variables: variables
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.signedUrl || data.url || data.websocketUrl || data.sessionUrl;
+  },
+  
+  variables: {
+    testMode: true,
+    userName: 'Test User',
+    page: 'test-signed-link.html'
+  },
+  
+  primaryColor: '#F59E0B',
+  position: 'bottom-right'
+});
+    </div>
+
+    <h2>Manual Tests:</h2>
+    <button onclick="testMicButton()">Test Mic Button Click</button>
+    <button onclick="testToggleVoice()">Test ToggleVoice Method</button>
+    <button onclick="checkWidgetState()">Check Widget State</button>
+    <button onclick="testMicrophone()">Test Microphone Access</button>
+    <button onclick="testBackendAPI()">Test Backend API</button>
+    <button onclick="testSignedUrlGeneration()">Test Signed URL Generation</button>
+  </div>
+
+  <!-- Load the widget -->
+  <script src="../dist/agent-widget.js" onload="console.log('SDK script loaded successfully')" onerror="console.error('Failed to load SDK script')"></script>
+  
+  <script>
+    // Override console.log to show in page
+    const originalLog = console.log;
+    const originalError = console.error;
+    const logDiv = document.getElementById('log');
+    
+    function addLog(message, type = 'log') {
+      const time = new Date().toLocaleTimeString();
+      const color = type === 'error' ? '#EF4444' : '#10B981';
+      logDiv.innerHTML += `<div style="color: ${color};">[${time}] ${message}</div>`;
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
+    console.log = (...args) => {
+      originalLog(...args);
+      addLog(args.join(' '));
+    };
+    
+    console.error = (...args) => {
+      originalError(...args);
+      addLog(args.join(' '), 'error');
+    };
+
+    // Update status display
+    function updateStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.className = 'status ' + type;
+    }
+
+    // Initialize the widget
+    try {
+      console.log('Initializing widget with signed link...');
+      console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
+      console.log('TTPAgentSDK.AgentWidget available:', typeof TTPAgentSDK?.AgentWidget);
+      
+      if (typeof TTPAgentSDK === 'undefined') {
+        throw new Error('TTPAgentSDK is not defined. Check if the script loaded correctly.');
+      }
+      
+      if (typeof TTPAgentSDK.AgentWidget === 'undefined') {
+        throw new Error('TTPAgentSDK.AgentWidget is not defined. Check the SDK build.');
+      }
+      
+      // Create a new AgentWidget instance with signed link
+      const widget = new TTPAgentSDK.AgentWidget({
+        agentId: 'agent_87c4a55a1',
+        appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+        
+        // Signed link via backend API
+        getSessionUrl: async ({ agentId, appId, variables }) => {
+          console.log('Requesting signed URL from backend API...');
+          console.log('Agent ID:', agentId);
+          console.log('App ID:', appId);
+          console.log('Variables:', variables);
+          
+          updateStatus('Requesting signed URL from backend...', 'info');
+          
+          try {
+            const response = await fetch('https://backend.talktopc.com/api/public/agents/signed-url', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                agentId: agentId,
+                appId: appId,
+                variables: variables
+              })
+            });
+            
+            console.log('Backend API response status:', response.status);
+            
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Backend API error: ${response.status} - ${errorText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Backend API response data:', data);
+            
+            // Handle different possible response formats
+            const signedUrl = data.signedUrl || data.url || data.websocketUrl || data.sessionUrl;
+            
+            if (!signedUrl) {
+              throw new Error('No signed URL found in API response');
+            }
+            
+            console.log('Generated signed URL:', signedUrl);
+            updateStatus('Signed URL received from backend ✓', 'success');
+            
+            return signedUrl;
+          } catch (error) {
+            console.error('Failed to get signed URL from backend:', error);
+            updateStatus('Failed to get signed URL from backend ✗', 'error');
+            
+            // Fallback to direct connection if backend fails
+            console.log('Falling back to direct connection...');
+            const fallbackUrl = `wss://speech.talktopc.com/ws/conv?agentId=${agentId}&appId=${appId}&demo=true`;
+            console.log('Using fallback URL:', fallbackUrl);
+            updateStatus('Using fallback direct connection', 'info');
+            
+            return fallbackUrl;
+          }
+        },
+        
+        // Pass some test variables
+        variables: {
+          testMode: true,
+          userName: 'Test User',
+          page: 'test-signed-link.html',
+          connectionType: 'signed-link'
+        },
+        
+        // Customize appearance
+        primaryColor: '#F59E0B',
+        position: 'bottom-right'
+      });
+      
+      // Store widget reference for testing (like the working implementation)
+      window.testWidget = widget;
+      
+      console.log('Widget initialized successfully with signed link!');
+      console.log('Widget instance:', widget);
+      console.log('Test methods available at window.testWidget');
+      updateStatus('Widget loaded and ready ✓', 'success');
+      
+    } catch (error) {
+      console.error('Failed to initialize widget:', error);
+      updateStatus('Widget failed to load ✗', 'error');
+    }
+
+    // Test functions (matching the working implementation)
+    function testMicButton() {
+      console.log('🎤 Testing mic button manually...');
+      const micButton = document.getElementById('agent-mic-button');
+      if (micButton) {
+        console.log('🎤 Found mic button, clicking...');
+        micButton.click();
+      } else {
+        console.log('🎤 Mic button not found');
+      }
+    }
+
+    function testToggleVoice() {
+      console.log('🎤 Testing toggleVoice method...');
+      if (window.testWidget && window.testWidget.toggleVoice) {
+        window.testWidget.toggleVoice();
+      } else {
+        console.log('🎤 toggleVoice method not available');
+      }
+    }
+
+    function checkWidgetState() {
+      console.log('🎤 Widget state:', {
+        isActive: window.testWidget?.isActive,
+        isOpen: window.testWidget?.isOpen,
+        sdk: window.testWidget?.sdk
+      });
+    }
+
+    async function testMicrophone() {
+      console.log('Testing microphone access...');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('Microphone access granted ✓');
+        stream.getTracks().forEach(track => track.stop());
+        alert('Microphone access OK!');
+      } catch (error) {
+        console.error('Microphone access denied:', error);
+        alert('Microphone access DENIED! Please allow microphone in browser settings.');
+      }
+    }
+
+    // Manual test functions
+    async function testBackendAPI() {
+      console.log('Testing backend API connection...');
+      try {
+        const response = await fetch('https://backend.talktopc.com/api/public/agents/signed-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agentId: 'agent_87c4a55a1',
+            appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+            variables: { testMode: true }
+          })
+        });
+        
+        console.log('Backend API response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Backend API response:', data);
+          alert('Backend API connection OK! Check console for response details.');
+        } else {
+          const errorText = await response.text();
+          throw new Error(`Backend returned error: ${response.status} - ${errorText}`);
+        }
+      } catch (error) {
+        console.error('Backend API test failed:', error);
+        alert('Backend API test FAILED! Check console for details.');
+      }
+    }
+
+    async function testSignedUrlGeneration() {
+      console.log('Testing signed URL generation...');
+      try {
+        const response = await fetch('https://backend.talktopc.com/api/public/agents/signed-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agentId: 'agent_87c4a55a1',
+            appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+            variables: {
+              testMode: true,
+              userName: 'Test User',
+              timestamp: new Date().toISOString()
+            }
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const signedUrl = data.signedUrl || data.url || data.websocketUrl || data.sessionUrl;
+          
+          if (signedUrl) {
+            console.log('Generated signed URL:', signedUrl);
+            alert(`Signed URL generated successfully!\n\nURL: ${signedUrl.substring(0, 100)}...`);
+          } else {
+            throw new Error('No signed URL in response');
+          }
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Signed URL generation test failed:', error);
+        alert('Signed URL generation FAILED! Check console for details.');
+      }
+    }
+
+    async function testMicrophone() {
+      console.log('Testing microphone access...');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('Microphone access granted ✓');
+        stream.getTracks().forEach(track => track.stop());
+        alert('Microphone access OK!');
+      } catch (error) {
+        console.error('Microphone access denied:', error);
+        alert('Microphone access DENIED! Please allow microphone in browser settings.');
+      }
+    }
+  </script>
+</body>
+</html>
