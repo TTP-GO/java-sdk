@@ -13,11 +13,25 @@
       background: #F9FAFB;
     }
     
+    @media (max-width: 768px) {
+      body {
+        margin: 0;
+        padding: 10px;
+      }
+    }
+    
     .container {
       background: white;
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+        border-radius: 8px;
+      }
     }
     
     h1 {
@@ -85,6 +99,15 @@
       overflow-x: auto;
       margin: 20px 0;
       white-space: pre;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    @media (max-width: 768px) {
+      .code-block {
+        font-size: 11px;
+        padding: 12px;
+        margin: 16px 0;
+      }
     }
     
     .code-block pre {
@@ -152,6 +175,29 @@
       background: #F9FAFB;
       border-radius: 6px;
     }
+    
+    @media (max-width: 768px) {
+      .control-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+      }
+      
+      .control-row > * {
+        width: 100%;
+      }
+      
+      .control-row > div:last-child {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      
+      .control-row button {
+        flex: 1;
+        padding: 10px;
+      }
+    }
 
     .control-row label {
       font-weight: 600;
@@ -195,6 +241,71 @@
 
     .control-row button.remove:hover {
       background: #DC2626;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 24px;
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+      
+      h2 {
+        font-size: 20px;
+        margin-top: 24px;
+        margin-bottom: 12px;
+      }
+      
+      .info, .config-info {
+        padding: 12px;
+        margin: 16px 0;
+        font-size: 14px;
+      }
+      
+      .info ul, .config-info ul {
+        margin: 8px 0 0 16px;
+        padding-left: 16px;
+      }
+      
+      .status {
+        padding: 10px;
+        font-size: 12px;
+        margin: 16px 0;
+      }
+      
+      button {
+        padding: 12px 20px;
+        font-size: 14px;
+        margin: 8px 8px 8px 0;
+        touch-action: manipulation;
+        min-height: 44px;
+      }
+      
+      .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .tab {
+        padding: 10px 16px;
+        font-size: 13px;
+      }
+      
+      .controls-panel {
+        padding: 16px;
+        margin: 16px 0;
+      }
+      
+      .controls-panel button {
+        width: 100%;
+        margin: 8px 0;
+      }
+      
+      #log {
+        font-size: 11px;
+        max-height: 200px;
+        padding: 12px;
+      }
     }
   </style>
 </head>

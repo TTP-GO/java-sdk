@@ -519,6 +519,9 @@ export class AgentWidget {
         ${positionStyles}
         z-index: 10000;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        will-change: transform;
       }
       
       #agent-button {
@@ -533,6 +536,19 @@ export class AgentWidget {
         justify-content: center;
         transition: all ${anim.duration}s ease;
         ${btn.shadow ? `box-shadow: 0 4px 12px ${btn.shadowColor};` : ''}
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        user-select: none;
+        min-width: 44px;
+        min-height: 44px;
+      }
+      
+      @media (max-width: 768px) {
+        #agent-button {
+          min-width: 56px;
+          min-height: 56px;
+        }
       }
       
       ${anim.enableHover ? `
