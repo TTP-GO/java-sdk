@@ -133,6 +133,69 @@
     .tab-content.active {
       display: block;
     }
+
+    .controls-panel {
+      background: white;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 150px 150px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #F9FAFB;
+      border-radius: 6px;
+    }
+
+    .control-row label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .control-row select,
+    .control-row input[type="text"],
+    .control-row input[type="color"] {
+      padding: 8px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .control-row input[type="color"] {
+      width: 60px;
+      height: 40px;
+      cursor: pointer;
+    }
+
+    .control-row button {
+      padding: 8px 16px;
+      background: #3B82F6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .control-row button:hover {
+      background: #2563EB;
+    }
+
+    .control-row button.remove {
+      background: #EF4444;
+    }
+
+    .control-row button.remove:hover {
+      background: #DC2626;
+    }
   </style>
 </head>
 <body>
@@ -153,7 +216,7 @@
       <ol style="margin: 10px 0 0 20px; line-height: 1.8;">
         <li>Look for the floating voice button in the bottom-right corner</li>
         <li>Click the button to open the widget</li>
-        <li>Click the microphone to start (will request mic permission)</li>
+        <li>Click the voice button to start (will request microphone permission)</li>
         <li>Widget will connect directly using agent ID + app ID</li>
         <li>Check the status updates below</li>
       </ol>
@@ -209,6 +272,33 @@
         micButtonActiveColor: '#EF4444' // Red when active
     }
 });</code></pre></div>
+    </div>
+    
+    <h2>🎨 Interactive Customization</h2>
+    <div class="controls-panel">
+      <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #E5E7EB;">
+        <strong style="color: #374151;">Customize widget colors and properties in real-time:</strong>
+      </div>
+      
+      <div id="control-rows">
+        <!-- Control rows will be added dynamically -->
+      </div>
+      
+      <button id="add-control-btn" style="margin-top: 12px; padding: 10px 20px; background: #10B981;">
+        + Add Customization
+      </button>
+      
+      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+        <button id="reset-defaults-btn" style="background: #6B7280;">
+          Reset to Defaults
+        </button>
+      </div>
+    </div>
+
+    <h2>Implementation Code:</h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('simple')">Simple</button>
+      <button class="tab" onclick="switchTab('advanced')">All Options</button>
     </div>
     
     <div id="advanced-tab" class="tab-content">
@@ -423,6 +513,358 @@
       statusDiv.className = 'status ' + type;
     }
 
+    // ============================================
+    // CUSTOMIZATION CONTROLS - Declare early
+    // ============================================
+    // Initialize variable first - MUST be declared before any functions that use it
+    let controlRowCount = 0;
+    
+    const componentOptions = {
+      'button': {
+        label: 'Floating Button',
+        properties: {
+          'backgroundColor': { type: 'color', label: 'Background Color' },
+          'hoverColor': { type: 'color', label: 'Hover Color' },
+          'size': { type: 'select', label: 'Size', options: ['small', 'medium', 'large', 'xl'] },
+          'shape': { type: 'select', label: 'Shape', options: ['circle', 'square', 'rounded'] }
+        }
+      },
+      'header': {
+        label: 'Header',
+        properties: {
+          'backgroundColor': { type: 'color', label: 'Background Color' },
+          'textColor': { type: 'color', label: 'Text Color' },
+          'title': { type: 'text', label: 'Title' }
+        }
+      },
+      'panel': {
+        label: 'Mic Button',
+        properties: {
+          'micButtonColor': { type: 'color', label: 'Background Color' },
+          'micButtonActiveColor': { type: 'color', label: 'Active Color (Recording)' }
+        }
+      },
+      'micButtonHint': {
+        label: 'Mic Button Hint',
+        properties: {
+          'micButtonHint.text': { type: 'text', label: 'Hint Text (empty to hide)' },
+          'micButtonHint.color': { type: 'color', label: 'Text Color' },
+          'micButtonHint.fontSize': { type: 'text', label: 'Font Size (e.g., 12px)' }
+        }
+      }
+    };
+
+    function initializeCustomizationControls() {
+      // Add one initial row
+      addControlRow();
+      
+      // Set up button event listeners
+      const addBtn = document.getElementById('add-control-btn');
+      const resetBtn = document.getElementById('reset-defaults-btn');
+      if (addBtn) {
+        addBtn.addEventListener('click', addControlRow);
+      }
+      if (resetBtn) {
+        resetBtn.addEventListener('click', resetToDefaults);
+      }
+    }
+
+    function addControlRow() {
+      controlRowCount++;
+      const controlRows = document.getElementById('control-rows');
+      const row = document.createElement('div');
+      row.className = 'control-row';
+      row.id = `control-row-${controlRowCount}`;
+      
+      // Component selector
+      const componentSelect = document.createElement('select');
+      componentSelect.id = `component-${controlRowCount}`;
+      componentSelect.innerHTML = '<option value="">Select Component</option>';
+      Object.keys(componentOptions).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = componentOptions[key].label;
+        componentSelect.appendChild(option);
+      });
+      componentSelect.onchange = () => updatePropertySelect(controlRowCount);
+      
+      // Property selector (will be populated based on component)
+      const propertySelect = document.createElement('select');
+      propertySelect.id = `property-${controlRowCount}`;
+      propertySelect.innerHTML = '<option value="">Select Property</option>';
+      
+      // Value input (dynamically changes based on property type)
+      const valueContainer = document.createElement('div');
+      valueContainer.id = `value-container-${controlRowCount}`;
+      valueContainer.style.display = 'none';
+      
+      // Action buttons
+      const actionContainer = document.createElement('div');
+      actionContainer.style.display = 'flex';
+      actionContainer.style.gap = '8px';
+      
+      const applyBtn = document.createElement('button');
+      applyBtn.textContent = 'Apply';
+      applyBtn.onclick = () => applyChange(controlRowCount);
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.className = 'remove';
+      removeBtn.onclick = () => removeControlRow(controlRowCount);
+      
+      actionContainer.appendChild(applyBtn);
+      actionContainer.appendChild(removeBtn);
+      
+      row.appendChild(componentSelect);
+      row.appendChild(propertySelect);
+      row.appendChild(valueContainer);
+      row.appendChild(actionContainer);
+      
+      controlRows.appendChild(row);
+    }
+
+    function updatePropertySelect(rowId) {
+      const componentSelect = document.getElementById(`component-${rowId}`);
+      const propertySelect = document.getElementById(`property-${rowId}`);
+      const valueContainer = document.getElementById(`value-container-${rowId}`);
+      
+      const component = componentSelect.value;
+      if (!component) {
+        propertySelect.innerHTML = '<option value="">Select Property</option>';
+        valueContainer.style.display = 'none';
+        valueContainer.innerHTML = '';
+        return;
+      }
+      
+      // Populate properties
+      propertySelect.innerHTML = '<option value="">Select Property</option>';
+      const properties = componentOptions[component].properties;
+      Object.keys(properties).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = properties[key].label;
+        propertySelect.appendChild(option);
+      });
+      
+      propertySelect.onchange = () => updateValueInput(rowId);
+      valueContainer.style.display = 'none';
+      valueContainer.innerHTML = '';
+    }
+
+    function updateValueInput(rowId) {
+      const componentSelect = document.getElementById(`component-${rowId}`);
+      const propertySelect = document.getElementById(`property-${rowId}`);
+      const valueContainer = document.getElementById(`value-container-${rowId}`);
+      
+      const component = componentSelect.value;
+      const property = propertySelect.value;
+      
+      if (!component || !property) {
+        valueContainer.style.display = 'none';
+        valueContainer.innerHTML = '';
+        return;
+      }
+      
+      const propConfig = componentOptions[component].properties[property];
+      valueContainer.innerHTML = '';
+      
+      if (propConfig.type === 'color') {
+        const input = document.createElement('input');
+        input.type = 'color';
+        input.id = `value-${rowId}`;
+        // Set current value from widget
+        const currentValue = getCurrentValue(component, property);
+        if (currentValue) input.value = rgbToHex(currentValue) || currentValue;
+        valueContainer.appendChild(input);
+      } else if (propConfig.type === 'select') {
+        const select = document.createElement('select');
+        select.id = `value-${rowId}`;
+        propConfig.options.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
+          select.appendChild(option);
+        });
+        // Set current value
+        const currentValue = getCurrentValue(component, property);
+        if (currentValue !== null && currentValue !== undefined) {
+          select.value = currentValue.toString();
+        }
+        valueContainer.appendChild(select);
+      } else if (propConfig.type === 'text') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = `value-${rowId}`;
+        input.placeholder = 'Enter value';
+        // Set current value
+        const currentValue = getCurrentValue(component, property);
+        if (currentValue !== null && currentValue !== undefined) {
+          input.value = currentValue;
+        }
+        valueContainer.appendChild(input);
+      }
+      
+      valueContainer.style.display = 'block';
+    }
+
+    function getCurrentValue(component, property) {
+      if (!window.testWidget) return null;
+      const config = window.testWidget.config;
+      
+      if (component === 'button' && config.button) {
+        return config.button[property];
+      } else if (component === 'header' && config.header) {
+        return config.header[property];
+      } else if (component === 'panel' && config.panel) {
+        return config.panel[property];
+      } else if (component === 'micButtonHint' && config.panel?.micButtonHint) {
+        // Handle nested micButtonHint properties
+        const hintKey = property.split('.')[1]; // e.g., 'text', 'color', 'fontSize'
+        const value = config.panel.micButtonHint[hintKey];
+        return value;
+      }
+      return null;
+    }
+
+    function applyChange(rowId) {
+      const componentSelect = document.getElementById(`component-${rowId}`);
+      const propertySelect = document.getElementById(`property-${rowId}`);
+      const valueInput = document.getElementById(`value-${rowId}`);
+      
+      const component = componentSelect.value;
+      const property = propertySelect.value;
+      let value = valueInput.value;
+      
+      if (!component || !property) {
+        alert('Please select component and property');
+        return;
+      }
+      
+      // Allow empty value for text fields (to hide hint)
+      if (value === undefined || value === null) {
+        value = '';
+      }
+      
+      if (!window.testWidget) {
+        alert('Widget not initialized');
+        return;
+      }
+      
+      // Handle boolean values (only for non-empty values)
+      if (value && value !== '') {
+        if (value === 'true') value = true;
+        if (value === 'false') value = false;
+      }
+      
+      // Prepare update config
+      const updateConfig = {};
+      if (component === 'button') {
+        updateConfig.button = { [property]: value };
+      } else if (component === 'header') {
+        updateConfig.header = { [property]: value };
+      } else if (component === 'panel') {
+        updateConfig.panel = { [property]: value };
+      } else if (component === 'micButtonHint') {
+        // Handle nested micButtonHint properties
+        const hintKey = property.split('.')[1]; // e.g., 'text', 'color', 'fontSize', 'show'
+        if (!updateConfig.panel) updateConfig.panel = {};
+        if (!updateConfig.panel.micButtonHint) updateConfig.panel.micButtonHint = {};
+        updateConfig.panel.micButtonHint[hintKey] = value;
+      }
+      
+      // Apply update
+      console.log(`Applying change: ${component}.${property} = ${value}`);
+      window.testWidget.updateConfig(updateConfig);
+      
+      // Update the displayed code blocks
+      updateCodeDisplay();
+    }
+
+    function removeControlRow(rowId) {
+      const row = document.getElementById(`control-row-${rowId}`);
+      if (row) row.remove();
+    }
+
+    function resetToDefaults() {
+      if (!window.testWidget || !window.defaultConfig) {
+        alert('Widget or defaults not available');
+        return;
+      }
+      
+      if (confirm('Reset widget to default configuration?')) {
+        window.testWidget.updateConfig(window.defaultConfig);
+        updateCodeDisplay();
+        
+        // Clear all control rows
+        const controlRows = document.getElementById('control-rows');
+        controlRows.innerHTML = '';
+        controlRowCount = 0;
+        addControlRow();
+      }
+    }
+
+    function updateCodeDisplay() {
+      if (!window.testWidget) return;
+      const config = window.testWidget.config;
+      
+      // Helper to safely get position value
+      function getPositionValue() {
+        if (!config.position) return 'bottom-right';
+        if (typeof config.position === 'string') return config.position;
+        // If it's an object, extract the string representation
+        return `${config.position.vertical || 'bottom'}-${config.position.horizontal || 'right'}`;
+      }
+      
+      // Update simple tab
+      const simpleCode = document.querySelector('#simple-tab code');
+      if (simpleCode) {
+        const position = getPositionValue();
+        simpleCode.textContent = `const widget = new TTPAgentSDK.AgentWidget({
+    agentId: 'agent_87c4a55a1',
+    appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+    
+    primaryColor: '${config.primaryColor || '#10B981'}',
+    position: '${position}',
+    
+    icon: {
+        type: '${config.icon?.type || 'custom'}',
+        customImage: '${config.icon?.customImage || 'https://talktopc.com/logo192.png'}',
+        size: '${config.icon?.size || 'medium'}'
+    },
+    
+    button: {
+        backgroundColor: '${config.button?.backgroundColor || '#FFFFFF'}',
+        hoverColor: '${config.button?.hoverColor || '#E5E7EB'}'
+    },
+    
+    header: {
+        title: '${(config.header?.title || 'TTP Support').replace(/'/g, "\\'")}',
+        backgroundColor: '${config.header?.backgroundColor || '#A78BFA'}',
+        textColor: '${config.header?.textColor || '#FFFFFF'}'
+    },
+    
+    panel: {
+        micButtonColor: '${config.panel?.micButtonColor || '#E5E7EB'}',
+        micButtonActiveColor: '${config.panel?.micButtonActiveColor || '#EF4444'}'
+    }
+});`;
+      }
+    }
+
+    function rgbToHex(rgb) {
+      if (!rgb) return null;
+      if (rgb.startsWith('#')) return rgb;
+      // Try to parse rgb/rgba format
+      const match = rgb.match(/\d+/g);
+      if (match && match.length >= 3) {
+        return '#' + match.slice(0, 3).map(x => {
+          const hex = parseInt(x).toString(16);
+          return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+      }
+      return null;
+    }
+
     // Initialize the widget
     try {
       console.log('Initializing widget with agent ID + app ID...');
@@ -496,6 +938,40 @@
       // Store widget reference for testing (like the working implementation)
       window.testWidget = widget;
       
+      // Store default config for reset functionality (matches initial widget config)
+      window.defaultConfig = JSON.parse(JSON.stringify({
+        primaryColor: '#10B981',
+        position: 'bottom-right',
+        icon: {
+          type: 'custom',
+          customImage: 'https://talktopc.com/logo192.png',
+          size: 'medium'
+        },
+        button: {
+          backgroundColor: '#FFFFFF',
+          hoverColor: '#E5E7EB',
+          size: 'medium',
+          shape: 'circle'
+        },
+        header: {
+          title: 'TTP Support',
+          backgroundColor: '#A78BFA',
+          textColor: '#FFFFFF'
+        },
+        panel: {
+          micButtonColor: '#E5E7EB',
+          micButtonActiveColor: '#EF4444',
+          micButtonHint: {
+            text: 'Click the button to start voice conversation',
+            color: '#6B7280',
+            fontSize: '12px'
+          }
+        }
+      }));
+      
+      // Initialize customization controls
+      initializeCustomizationControls();
+      
       console.log('Widget initialized successfully with agent ID + app ID!');
       console.log('Widget instance:', widget);
       console.log('Test methods available at window.testWidget');
@@ -547,6 +1023,7 @@
         alert('Microphone access DENIED! Please allow microphone in browser settings.');
       }
     }
+
   </script>
 </body>
 </html>

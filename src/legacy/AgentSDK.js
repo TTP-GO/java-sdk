@@ -249,12 +249,20 @@ export class AgentWidget {
         width: userConfig.panel?.width || 350,
         height: userConfig.panel?.height || 500,
         borderRadius: userConfig.panel?.borderRadius || 12,
-        backgroundColor: userConfig.panel?.backgroundColor || 'rgba(255,255,255,0.95)',
+        backgroundColor: userConfig.panel?.backgroundColor || '#FFFFFF',
         backdropFilter: userConfig.panel?.backdropFilter || null,
         border: userConfig.panel?.border || '1px solid rgba(0,0,0,0.1)',
         // Mic button colors (inside panel)
         micButtonColor: userConfig.panel?.micButtonColor || primaryColor,
         micButtonActiveColor: userConfig.panel?.micButtonActiveColor || '#EF4444',
+        // Mic button hint text (below button)
+        // If text is empty or not provided, hint will not be shown
+        micButtonHint: {
+          text: userConfig.panel?.micButtonHint?.text || 'Click the button to start voice conversation',
+          color: userConfig.panel?.micButtonHint?.color || '#6B7280',
+          fontSize: userConfig.panel?.micButtonHint?.fontSize || '12px',
+          ...userConfig.panel?.micButtonHint
+        },
         ...userConfig.panel
       },
       
@@ -421,10 +429,17 @@ export class AgentWidget {
         <div id="agent-messages"></div>
         
         <div id="agent-controls">
-          <button id="agent-mic-button" 
-                  aria-label="Start/Stop Voice Recording">
-            ${iconHTML}
-          </button>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <button id="agent-mic-button" 
+                    aria-label="Start/Stop Voice Recording">
+              ${iconHTML}
+            </button>
+            ${panel.micButtonHint.text && panel.micButtonHint.text.trim() ? `
+              <div id="agent-mic-hint" style="color: ${panel.micButtonHint.color}; font-size: ${panel.micButtonHint.fontSize}; text-align: center; max-width: 200px;">
+                ${panel.micButtonHint.text}
+              </div>
+            ` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -613,6 +628,19 @@ export class AgentWidget {
         border-top: 1px solid #E5E7EB;
         display: flex;
         justify-content: center;
+        align-items: center;
+      }
+      
+      #agent-controls > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      #agent-mic-hint {
+        text-align: center;
+        line-height: 1.4;
       }
       
       #agent-mic-button {
@@ -882,7 +910,43 @@ export class AgentWidget {
 
   // Public API methods
   updateConfig(newConfig) {
-    this.config = this.mergeWithDefaults({ ...this.config, ...newConfig });
+    // Deep merge nested objects
+    const mergedConfig = { ...this.config };
+    
+    // Deep merge panel config if it exists
+    if (newConfig.panel) {
+      mergedConfig.panel = { ...this.config.panel, ...newConfig.panel };
+      // Deep merge micButtonHint if it exists
+      if (newConfig.panel.micButtonHint) {
+        mergedConfig.panel.micButtonHint = {
+          ...this.config.panel?.micButtonHint,
+          ...newConfig.panel.micButtonHint
+        };
+      }
+    }
+    
+    // Merge other configs (shallow merge is fine for these)
+    if (newConfig.button) {
+      mergedConfig.button = { ...this.config.button, ...newConfig.button };
+    }
+    if (newConfig.header) {
+      mergedConfig.header = { ...this.config.header, ...newConfig.header };
+    }
+    if (newConfig.icon) {
+      mergedConfig.icon = { ...this.config.icon, ...newConfig.icon };
+    }
+    if (newConfig.messages) {
+      mergedConfig.messages = { ...this.config.messages, ...newConfig.messages };
+    }
+    
+    // Merge any other top-level properties
+    Object.keys(newConfig).forEach(key => {
+      if (!['panel', 'button', 'header', 'icon', 'messages'].includes(key)) {
+        mergedConfig[key] = newConfig[key];
+      }
+    });
+    
+    this.config = this.mergeWithDefaults(mergedConfig);
     // Recreate widget with new config
     const existingWidget = document.getElementById('agent-widget');
     if (existingWidget) {
