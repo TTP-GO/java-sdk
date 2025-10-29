@@ -1,0 +1,14 @@
+# Development files - not needed by end users
+test-server.js
+webpack.config.js
+deploy-cdn.sh
+upload-cdn.sh
+cdn-docs/
+src/
+.git/
+.gitignore
+*.log
+.DS_Store
+
+# Source maps are included but could be excluded for production
+# dist/*.map

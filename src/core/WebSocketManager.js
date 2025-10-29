@@ -20,7 +20,6 @@ export default class WebSocketManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         this.connectionId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        console.log(`🔌 WebSocketManager: Requesting connection ${this.connectionId} for ${this.config.websocketUrl}`);
         
         // Store resolve/reject for later use
         this.connectResolve = resolve;
@@ -30,7 +29,6 @@ export default class WebSocketManager extends EventEmitter {
         webSocketSingleton.getConnection(this.config.websocketUrl, this.config)
           .then((connection) => {
             this.ws = connection;
-            console.log(`🔌 WebSocketManager: Got connection ${this.connectionId}`);
             
             // Set up event listeners (this will set up handlers that can resolve the promise)
             this.setupEventListeners();
@@ -69,7 +67,6 @@ export default class WebSocketManager extends EventEmitter {
     // Use singleton's event forwarding
     const handleOpen = (event, url) => {
       if (url === this.config.websocketUrl) {
-        console.log(`🔌 WebSocketManager: Connection opened ${this.connectionId}`);
         this.isConnected = true;
         this.emit('connected');
         
@@ -84,7 +81,6 @@ export default class WebSocketManager extends EventEmitter {
     
     const handleClose = (event, url) => {
       if (url === this.config.websocketUrl) {
-        console.log(`🔌 WebSocketManager: Connection closed ${this.connectionId} (Code: ${event.code})`);
         this.isConnected = false;
         this.emit('disconnected', event);
       }
@@ -92,7 +88,6 @@ export default class WebSocketManager extends EventEmitter {
     
     const handleError = (event, url) => {
       if (url === this.config.websocketUrl) {
-        console.log(`🔌 WebSocketManager: Connection error ${this.connectionId}`, event);
         this.emit('error', event);
         
         // Reject the connect promise if it hasn't been resolved yet
@@ -129,8 +124,6 @@ export default class WebSocketManager extends EventEmitter {
    * Disconnect from WebSocket
    */
   disconnect() {
-    console.log(`🔌 WebSocketManager: Disconnecting ${this.connectionId}`);
-    
     // Remove event listeners
     if (this.eventHandlers) {
       webSocketSingleton.off('open', this.eventHandlers.open);
@@ -141,7 +134,6 @@ export default class WebSocketManager extends EventEmitter {
     
     // Release connection from singleton
     if (this.config.websocketUrl) {
-      console.log(`🔌 WebSocketManager: Releasing connection ${this.connectionId} from singleton`);
       webSocketSingleton.releaseConnection(this.config.websocketUrl);
     }
     
@@ -154,18 +146,12 @@ export default class WebSocketManager extends EventEmitter {
    */
   sendMessage(message) {
     if (!this.isConnected || !this.ws) {
-      // Log warning but don't throw - may happen during cleanup/disconnect or race conditions
-      console.warn('🔌 WebSocketManager: Cannot send message - not connected', {
-        isConnected: this.isConnected,
-        hasWs: !!this.ws,
-        messageType: message?.t
-      });
+      // Silently ignore if not connected (may happen during cleanup/disconnect)
       return;
     }
     
     try {
       this.ws.send(JSON.stringify(message));
-      console.log('🔌 WebSocketManager: Sent message:', message.t || 'unknown');
     } catch (error) {
       // Log but don't throw - connection may have closed between check and send
       console.warn('🔌 WebSocketManager: Failed to send message:', error.message);

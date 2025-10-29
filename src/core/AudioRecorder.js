@@ -18,7 +18,6 @@ export default class AudioRecorder extends EventEmitter {
    */
   async start() {
     try {
-      console.log('🎤 AudioRecorder: Requesting microphone access...');
       // Get user media
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -29,9 +28,7 @@ export default class AudioRecorder extends EventEmitter {
           autoGainControl: true
         }
       });
-      console.log('✅ AudioRecorder: Microphone access granted');
       
-      console.log('🎤 AudioRecorder: Creating AudioContext...');
       // Create AudioContext
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
         sampleRate: this.config.sampleRate
@@ -39,21 +36,15 @@ export default class AudioRecorder extends EventEmitter {
       
       // Resume AudioContext if suspended
       if (this.audioContext.state === 'suspended') {
-        console.log('🎤 AudioRecorder: Resuming suspended AudioContext...');
         await this.audioContext.resume();
       }
-      console.log('✅ AudioRecorder: AudioContext ready');
       
-      console.log('🎤 AudioRecorder: Loading AudioWorklet module...');
       // Load AudioWorklet module
       await this.audioContext.audioWorklet.addModule('/audio-processor.js');
-      console.log('✅ AudioRecorder: AudioWorklet module loaded');
       
-      console.log('🎤 AudioRecorder: Creating AudioWorklet node...');
       // Create AudioWorklet node
       this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
       
-      console.log('🎤 AudioRecorder: Connecting audio source...');
       // Create media stream source
       const source = this.audioContext.createMediaStreamSource(this.mediaStream);
       source.connect(this.audioWorkletNode);
@@ -63,12 +54,10 @@ export default class AudioRecorder extends EventEmitter {
         const { type, data } = event.data;
         
         if (type === 'pcm_audio_data') {
-          console.log('🎵 AudioRecorder: Received audio data, length:', data.length);
           this.emit('audioData', data);
         }
       };
       
-      console.log('🎤 AudioRecorder: Enabling continuous mode...');
       // Enable continuous mode
       this.audioWorkletNode.port.postMessage({
         type: 'setForceContinuous',
@@ -76,7 +65,6 @@ export default class AudioRecorder extends EventEmitter {
       });
       
       this.isRecording = true;
-      console.log('✅ AudioRecorder: Recording started successfully');
       this.emit('recordingStarted');
       
     } catch (error) {

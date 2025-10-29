@@ -41,20 +41,14 @@ class AudioProcessor extends AudioWorkletProcessor {
     this.sendBuffer = null;
     this.sendBufferBytes = 0;
     
-    console.log('🎤 AudioProcessor: Initialized with sample rate:', this.sampleRate);
-    console.log('🎤 AudioProcessor: Buffer size:', this.bufferSize);
-    console.log('🎤 AudioProcessor: Force continuous mode:', this.forceContinuous);
-    
     // Handle messages from main thread
     this.port.onmessage = (event) => {
       const { type, data } = event.data;
-      console.log('🎤 AudioProcessor: Received message:', type, data);
       
       switch (type) {
         case 'start':
           this.isProcessing = true;
           this.isCurrentlyStreaming = true;
-          console.log('🎤 AudioProcessor: Started processing');
           break;
           
         case 'stop':
@@ -64,24 +58,20 @@ class AudioProcessor extends AudioWorkletProcessor {
           this.forceContinuous = false;
           // Flush any remaining data
           this.flushBuffer();
-          console.log('🎤 AudioProcessor: Stopped processing and flushed buffer');
           break;
           
         case 'setForceContinuous':
           this.forceContinuous = data.enabled;
           this.isProcessing = true;
           this.isCurrentlyStreaming = true;
-          console.log('🎤 AudioProcessor: Enabled continuous mode');
           break;
           
         case 'flush':
           this.flushBuffer();
-          console.log('🎤 AudioProcessor: Flushing buffer');
           break;
           
         case 'config':
           Object.assign(this.config, data);
-          console.log('🎤 AudioProcessor: Updated config:', this.config);
           break;
       }
     };
@@ -147,14 +137,6 @@ class AudioProcessor extends AudioWorkletProcessor {
       
       // Simplified VAD - just use RMS threshold for maximum sensitivity
       let hasVoice = rms > this.silenceThreshold;
-      
-      // Debug logging - log every ~2 seconds
-      if (currentTime - this.lastLogTime > 2000) {
-        const voiceStatus = hasVoice ? "VOICE" : "SILENCE";
-        console.log(`🎤 AudioProcessor: RMS: ${rms.toFixed(4)}, Threshold: ${this.silenceThreshold}, Status: ${voiceStatus}, Streaming: ${this.isCurrentlyStreaming}, ForceContinuous: ${this.forceContinuous}, VoiceActive: ${this.isVoiceActive}`);
-        this.lastLogTime = currentTime;
-      }
-      
       // Calculate time since last voice detection
       const timeSinceLastVoice = currentTime - this.lastVoiceTime;
 
@@ -167,7 +149,6 @@ class AudioProcessor extends AudioWorkletProcessor {
           this.isVoiceActive = true;
           this.voiceStartTime = currentTime;
           this.isCurrentlyStreaming = true;
-          console.log(`🗣️ Voice detected (RMS: ${rms.toFixed(4)})`);
         }
 
         this.lastVoiceTime = currentTime;
@@ -183,7 +164,6 @@ class AudioProcessor extends AudioWorkletProcessor {
         if (!hasVoice && this.isVoiceActive && timeSinceLastVoice >= silenceThreshold) {
           this.isVoiceActive = false;
           this.isCurrentlyStreaming = false;
-          console.log(`⏸️ AudioProcessor: Silence detected, stopping streaming (${timeSinceLastVoice.toFixed(0)}ms silence, continuous: ${this.forceContinuous})`);
           this.voiceStartTime = 0;
           this.lastVoiceTime = 0;
           this.consecutiveSilenceFrames = 0;
@@ -247,10 +227,6 @@ class AudioProcessor extends AudioWorkletProcessor {
       }
       
       // Send batched PCM data to main thread
-      // Only log occasionally to avoid spam
-      if (Math.random() < 0.01) { // Log ~1% of the time
-        console.log(`🎤 AudioProcessor: Sending PCM batch - ${merged.byteLength} bytes (${chunksToSend} chunks)`);
-      }
       this.port.postMessage({
         type: 'pcm_audio_data',
         data: merged, // Send the Int16Array directly, not the buffer

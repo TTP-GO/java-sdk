@@ -58,7 +58,6 @@ export default class VoiceSDK extends EventEmitter {
       // IMPORTANT: Stop recording when WebSocket disconnects (e.g., no credits, max duration exceeded)
       // This ensures microphone is released and no more audio is streamed
       if (this.isRecording) {
-        console.log('🎤 VoiceSDK: Auto-stopping recording due to WebSocket disconnection');
         this.stopRecording().catch(err => {
           console.error('VoiceSDK: Error stopping recording on disconnect:', err);
         });
@@ -83,7 +82,6 @@ export default class VoiceSDK extends EventEmitter {
             audioData[i] = binaryString.charCodeAt(i);
           }
           
-          console.log('🎵 VoiceSDK: Received greeting audio, playing...');
           this.audioPlayer.playAudio(audioData);
           this.emit('greetingStarted');
         } catch (error) {
@@ -105,7 +103,6 @@ export default class VoiceSDK extends EventEmitter {
     this.webSocketManager.on('stopPlaying', (message) => {
       this.emit('stopPlaying', message);
       // Stop current playback and clear queue, but keep playing new audio
-      console.log('🛑 VoiceSDK: Received stop_playing command - stopping current audio and clearing queue');
       this.audioPlayer.stopImmediate();
       // Note: stopImmediate() clears the queue but AudioPlayer can still accept new audio via playAudio()
     });
@@ -115,19 +112,14 @@ export default class VoiceSDK extends EventEmitter {
       this.isRecording = true;
       
       // Detect barge-in: if audio is playing when recording starts
-      console.log('🎤 VoiceSDK: Recording started, isPlaying:', this.isPlaying, 'isConnected:', this.isConnected);
       if (this.isPlaying) {
-        console.log('🛑 VoiceSDK: Barge-in detected - user started speaking while audio was playing');
         // Stop audio playback immediately
         this.audioPlayer.stopImmediate();
         // Send barge-in message to server
         if (this.isConnected) {
-          console.log('🛑 VoiceSDK: Sending barge_in message to server');
           this.webSocketManager.sendMessage({
             t: 'barge_in'
           });
-        } else {
-          console.warn('🛑 VoiceSDK: Cannot send barge_in - not connected');
         }
       }
       
@@ -147,13 +139,11 @@ export default class VoiceSDK extends EventEmitter {
     
     // Audio player events
     this.audioPlayer.on('playbackStarted', () => {
-      console.log('🎵 VoiceSDK: Audio playback started');
       this.isPlaying = true;
       this.emit('playbackStarted');
       
       // Send audio_started_playing message to server
       if (this.isConnected) {
-        console.log('🎵 VoiceSDK: Sending audio_started_playing message');
         this.webSocketManager.sendMessage({
           t: 'audio_started_playing'
         });
@@ -161,13 +151,11 @@ export default class VoiceSDK extends EventEmitter {
     });
     
     this.audioPlayer.on('playbackStopped', () => {
-      console.log('🎵 VoiceSDK: Audio playback stopped');
       this.isPlaying = false;
       this.emit('playbackStopped');
       
       // Send audio_stopped_playing message to server
       if (this.isConnected) {
-        console.log('🎵 VoiceSDK: Sending audio_stopped_playing message');
         this.webSocketManager.sendMessage({
           t: 'audio_stopped_playing'
         });
@@ -191,19 +179,11 @@ export default class VoiceSDK extends EventEmitter {
     try {
       // Build WebSocket URL with query parameters if needed
       const wsUrl = this.buildWebSocketUrl();
-      console.log('🔌 VoiceSDK: Attempting connection to:', wsUrl);
-      console.log('🔌 VoiceSDK: Config:', {
-        agentId: this.config.agentId,
-        appId: this.config.appId,
-        language: this.config.language
-      });
       
       // Update the WebSocket manager with the URL that includes query parameters
       this.webSocketManager.config.websocketUrl = wsUrl;
       
-      console.log('🔌 VoiceSDK: Calling webSocketManager.connect()...');
       await this.webSocketManager.connect();
-      console.log('🔌 VoiceSDK: webSocketManager.connect() completed successfully');
       return true;
     } catch (error) {
       console.error('🔌 VoiceSDK: Connection failed with error:', error);
@@ -222,13 +202,11 @@ export default class VoiceSDK extends EventEmitter {
     // Add agentId as query parameter if provided
     if (this.config.agentId) {
       params.append('agentId', this.config.agentId);
-      console.log('VoiceSDK: Adding agentId to URL:', this.config.agentId);
     }
     
     // Add appId as query parameter if provided
     if (this.config.appId) {
       params.append('appId', this.config.appId);
-      console.log('VoiceSDK: Adding appId to URL:', this.config.appId);
     }
     
     // Add other parameters if needed
@@ -254,10 +232,8 @@ export default class VoiceSDK extends EventEmitter {
    */
   disconnect() {
     if (this.isDestroyed) {
-      console.log(`🎙️ VoiceSDK: Disconnect called but already destroyed`);
       return; // Prevent disconnect after destroy
     }
-    console.log(`🎙️ VoiceSDK: Disconnecting from voice server`);
     this.stopRecording();
     this.webSocketManager.disconnect();
   }
@@ -294,7 +270,6 @@ export default class VoiceSDK extends EventEmitter {
     }
     
     try {
-      console.log('🎤 VoiceSDK: Starting continuous mode...');
       // Send start continuous mode message
       this.webSocketManager.sendMessage({
         t: 'start_continuous_mode',
@@ -303,10 +278,8 @@ export default class VoiceSDK extends EventEmitter {
         language: this.config.language
       });
       
-      console.log('🎤 VoiceSDK: Starting audio recorder...');
       // Start audio recording
       await this.audioRecorder.start();
-      console.log('✅ VoiceSDK: Audio recording started successfully');
       return true;
     } catch (error) {
       console.error('❌ VoiceSDK: Failed to start recording:', error);
@@ -415,31 +388,18 @@ export default class VoiceSDK extends EventEmitter {
     // Use app ID for authentication (preferred method)
     if (this.config.appId) {
       helloMessage.appId = this.config.appId;
-      console.log('VoiceSDK: Sending hello message with appId (app-based authentication)');
     } else if (this.config.ttpId) {
       // Fallback to custom TTP ID if app ID not provided
       helloMessage.ttpId = this.config.ttpId;
-      console.log('VoiceSDK: Sending hello message with custom TTP ID (fallback method)');
     } else {
       // Generate TTP ID as last resort
       helloMessage.ttpId = this.generateTtpId();
-      console.log('VoiceSDK: Sending hello message with generated TTP ID (last resort)');
     }
 
     // Note: agentId is now sent as query parameter in WebSocket URL, not in hello message
 
-    // Log authentication method for debugging
-    if (this.config.appId) {
-      console.log('VoiceSDK: Using app ID for authentication:', this.config.appId);
-    } else if (this.config.ttpId) {
-      console.log('VoiceSDK: Using custom TTP ID:', this.config.ttpId);
-    } else {
-      console.log('VoiceSDK: Using generated TTP ID:', helloMessage.ttpId);
-    }
-
     try {
       this.webSocketManager.sendMessage(helloMessage);
-      console.log('VoiceSDK: Hello message sent:', helloMessage);
     } catch (error) {
       console.error('VoiceSDK: Failed to send hello message:', error);
       this.emit('error', error);
@@ -451,11 +411,8 @@ export default class VoiceSDK extends EventEmitter {
    */
   destroy() {
     if (this.isDestroyed) {
-      console.log(`🎙️ VoiceSDK: Destroy called but already destroyed`);
       return; // Prevent multiple destroy calls
     }
-    
-    console.log(`🎙️ VoiceSDK: Destroying VoiceSDK instance`);
     
     // Disconnect first, before setting isDestroyed
     this.disconnect();
@@ -464,7 +421,5 @@ export default class VoiceSDK extends EventEmitter {
     this.audioRecorder.destroy();
     this.audioPlayer.destroy();
     this.removeAllListeners();
-    
-    console.log(`🎙️ VoiceSDK: VoiceSDK instance destroyed`);
   }
 }

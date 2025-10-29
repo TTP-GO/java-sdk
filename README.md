@@ -267,7 +267,8 @@ const voiceSDK = new VoiceSDK({
 
 See the `examples/` directory for complete usage examples:
 
-- `test.html` - Basic widget integration
+- `test-agent-app.html` - Widget with agent ID + app ID (direct connection)
+- `test-signed-link.html` - Widget with signed link authentication
 - `react-example.jsx` - React component usage
 - `vanilla-example.html` - Vanilla JavaScript usage
 
