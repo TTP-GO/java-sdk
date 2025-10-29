@@ -209,6 +209,7 @@ export class AgentWidget {
       getSessionUrl: userConfig.getSessionUrl, // Optional - will auto-construct URL if omitted
       websocketUrl: userConfig.websocketUrl, // Optional - defaults to speech.talktopc.com
       demo: userConfig.demo !== false, // Optional - defaults to true
+      direction: userConfig.direction || 'ltr', // Optional - text direction: 'ltr' or 'rtl'
       
       // Icon/Image Configuration
       icon: {
@@ -420,9 +421,14 @@ export class AgentWidget {
       
       <div id="agent-panel">
         ${header.showTitle ? `
-          <div id="agent-header">
-            <h3 style="margin: 0; color: ${header.textColor};">${header.title}</h3>
-            ${header.showCloseButton ? '<button id="agent-close">&times;</button>' : ''}
+          <div id="agent-header" style="direction: ${this.config.direction};">
+            ${this.config.direction === 'rtl' ? `
+              ${header.showCloseButton ? '<button id="agent-close">&times;</button>' : ''}
+              <h3 style="margin: 0; color: ${header.textColor};">${header.title}</h3>
+            ` : `
+              <h3 style="margin: 0; color: ${header.textColor};">${header.title}</h3>
+              ${header.showCloseButton ? '<button id="agent-close">&times;</button>' : ''}
+            `}
           </div>
         ` : ''}
         
@@ -563,9 +569,17 @@ export class AgentWidget {
         color: ${header.textColor};
         padding: 16px;
         display: flex;
+        flex-direction: ${this.config.direction === 'rtl' ? 'row-reverse' : 'row'};
         justify-content: space-between;
         align-items: center;
         border-radius: ${panel.borderRadius}px ${panel.borderRadius}px 0 0;
+        direction: ${this.config.direction};
+      }
+      
+      #agent-header h3 {
+        margin: 0;
+        flex: 1;
+        text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'};
       }
       
       #agent-close {
@@ -580,6 +594,7 @@ export class AgentWidget {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
       }
       
       #agent-messages {
@@ -939,9 +954,14 @@ export class AgentWidget {
       mergedConfig.messages = { ...this.config.messages, ...newConfig.messages };
     }
     
+    // Merge direction property
+    if (newConfig.direction !== undefined) {
+      mergedConfig.direction = newConfig.direction;
+    }
+    
     // Merge any other top-level properties
     Object.keys(newConfig).forEach(key => {
-      if (!['panel', 'button', 'header', 'icon', 'messages'].includes(key)) {
+      if (!['panel', 'button', 'header', 'icon', 'messages', 'direction'].includes(key)) {
         mergedConfig[key] = newConfig[key];
       }
     });

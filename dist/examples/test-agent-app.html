@@ -551,6 +551,12 @@
           'micButtonHint.color': { type: 'color', label: 'Text Color' },
           'micButtonHint.fontSize': { type: 'text', label: 'Font Size (e.g., 12px)' }
         }
+      },
+      'direction': {
+        label: 'Text Direction',
+        properties: {
+          'direction': { type: 'select', label: 'Direction', options: ['ltr', 'rtl'] }
+        }
       }
     };
 
@@ -722,6 +728,8 @@
         const hintKey = property.split('.')[1]; // e.g., 'text', 'color', 'fontSize'
         const value = config.panel.micButtonHint[hintKey];
         return value;
+      } else if (component === 'direction') {
+        return config.direction;
       }
       return null;
     }
@@ -770,6 +778,8 @@
         if (!updateConfig.panel) updateConfig.panel = {};
         if (!updateConfig.panel.micButtonHint) updateConfig.panel.micButtonHint = {};
         updateConfig.panel.micButtonHint[hintKey] = value;
+      } else if (component === 'direction') {
+        updateConfig.direction = value;
       }
       
       // Apply update
@@ -942,6 +952,7 @@
       window.defaultConfig = JSON.parse(JSON.stringify({
         primaryColor: '#10B981',
         position: 'bottom-right',
+        direction: 'ltr',
         icon: {
           type: 'custom',
           customImage: 'https://talktopc.com/logo192.png',
