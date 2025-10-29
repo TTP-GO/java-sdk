@@ -179,6 +179,18 @@ export class AgentWidget {
   }
 
   mergeWithDefaults(userConfig) {
+    // Handle legacy position string format
+    let positionConfig = userConfig.position;
+    if (typeof positionConfig === 'string') {
+      // Convert legacy string format to new object format
+      const [vertical, horizontal] = positionConfig.split('-');
+      positionConfig = {
+        vertical: vertical || 'bottom',
+        horizontal: horizontal || 'right',
+        offset: { x: 20, y: 20 }
+      };
+    }
+
     return {
       // Required
       agentId: userConfig.agentId,
@@ -197,10 +209,10 @@ export class AgentWidget {
       
       // Positioning Configuration
       position: {
-        vertical: userConfig.position?.vertical || 'bottom', // 'top', 'bottom', 'center'
-        horizontal: userConfig.position?.horizontal || 'right', // 'left', 'right', 'center'
-        offset: userConfig.position?.offset || { x: 20, y: 20 }, // Custom offset in pixels
-        ...userConfig.position
+        vertical: positionConfig?.vertical || 'bottom', // 'top', 'bottom', 'center'
+        horizontal: positionConfig?.horizontal || 'right', // 'left', 'right', 'center'
+        offset: positionConfig?.offset || { x: 20, y: 20 }, // Custom offset in pixels
+        ...positionConfig
       },
       
       // Button Configuration
@@ -281,8 +293,7 @@ export class AgentWidget {
       variables: userConfig.variables || {},
       
       // Legacy support (for backward compatibility)
-      primaryColor: userConfig.primaryColor || '#4F46E5',
-      position: userConfig.position || 'bottom-right'
+      primaryColor: userConfig.primaryColor || '#4F46E5'
     };
   }
 
