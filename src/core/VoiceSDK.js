@@ -103,6 +103,8 @@ export default class VoiceSDK extends EventEmitter {
     this.webSocketManager.on('stopPlaying', (message) => {
       this.emit('stopPlaying', message);
       // Stop current playback and clear queue, but keep playing new audio
+      // Note: stopImmediate() will emit playbackStopped, which will send audio_stopped_playing to backend
+      // This ensures backend knows when browser actually stops playing
       this.audioPlayer.stopImmediate();
       // Note: stopImmediate() clears the queue but AudioPlayer can still accept new audio via playAudio()
     });

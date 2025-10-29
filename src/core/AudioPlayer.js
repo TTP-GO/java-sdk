@@ -23,7 +23,8 @@ export default class AudioPlayer extends EventEmitter {
       this.audioQueue.push(audioBlob);
       
       // Process queue if not already playing or processing
-      if (!this.isPlaying && !this.isProcessingQueue) {
+      // Also check if we have a current source - if not, we should start processing
+      if (!this.isPlaying && !this.isProcessingQueue && !this.currentSource) {
         setTimeout(() => this.processQueue(), 50);
       }
     } catch (error) {
@@ -80,13 +81,9 @@ export default class AudioPlayer extends EventEmitter {
     }
     
     try {
-      // Only emit playbackStarted if this is the first audio item (queue was empty before)
-      const wasNotPlaying = !this.isPlaying;
-      this.isPlaying = true;
-      
-      if (wasNotPlaying) {
-        this.emit('playbackStarted');
-      }
+      // Check if we were playing BEFORE async operations (decode, etc.)
+      // This ensures we detect the true state before any async delays
+      const wasNotPlayingBefore = !this.isPlaying && this.currentSource === null;
       
       // Create AudioContext if not exists
       if (!this.audioContext) {
@@ -104,11 +101,24 @@ export default class AudioPlayer extends EventEmitter {
       const arrayBuffer = await audioBlob.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       
+      // Double-check state AFTER async operations - audio might have been stopped
+      // If currentSource is still null and isPlaying is still false, we're truly starting
+      const isTrulyStarting = wasNotPlayingBefore && !this.isPlaying && this.currentSource === null;
+      
       const source = audioContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
       
+      // Set state BEFORE emitting event to prevent race conditions
       this.currentSource = source;
+      this.isPlaying = true;
+      
+      // Emit playbackStarted right before actually starting playback
+      // This ensures the event is sent when audio actually starts playing
+      // CRITICAL: This must be emitted when audio truly starts, not before
+      if (isTrulyStarting) {
+        this.emit('playbackStarted');
+      }
       
       // Handle audio end
       source.onended = () => {
@@ -119,11 +129,18 @@ export default class AudioPlayer extends EventEmitter {
         if (this.audioQueue.length > 0) {
           // More audio to play - continue processing without emitting playbackStopped
           // Keep isPlaying = true since we'll continue playing
-          setTimeout(() => this.processQueue(), 100);
+          // Use immediate processing to minimize gaps
+          setTimeout(() => this.processQueue(), 50);
         } else {
           // Queue is empty - playback has truly ended
-          this.isPlaying = false;
-          this.emit('playbackStopped');
+          // Small delay to ensure smooth transition if new audio arrives quickly
+          setTimeout(() => {
+            // Check again if new audio arrived during the delay
+            if (this.audioQueue.length === 0 && !this.currentSource) {
+              this.isPlaying = false;
+              this.emit('playbackStopped');
+            }
+          }, 100);
         }
       };
       
@@ -158,6 +175,8 @@ export default class AudioPlayer extends EventEmitter {
    * Stop current playback immediately and clear queue
    */
   stopImmediate() {
+    const wasPlaying = this.isPlaying || this.currentSource !== null;
+    
     if (this.currentSource) {
       try {
         this.currentSource.stop();
@@ -170,7 +189,11 @@ export default class AudioPlayer extends EventEmitter {
     this.isPlaying = false;
     this.isProcessingQueue = false;
     this.audioQueue = [];
-    this.emit('playbackStopped');
+    
+    // Only emit playbackStopped if audio was actually playing
+    if (wasPlaying) {
+      this.emit('playbackStopped');
+    }
   }
   
   /**
