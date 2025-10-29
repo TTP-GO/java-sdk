@@ -31,6 +31,9 @@ import VanillaVoiceButton from './vanilla/VoiceButton.js';
 // Legacy AgentSDK (for backward compatibility)
 import { AgentSDK, AgentWidget } from './legacy/AgentSDK.js';
 
+// Enhanced AgentWidget with extensive customization
+import { EnhancedAgentWidget } from './legacy/EnhancedAgentSDK.js';
+
 // Version
 export const VERSION = '2.0.0';
 
@@ -45,7 +48,8 @@ export {
   VoiceButton,
   VanillaVoiceButton,
   AgentSDK,
-  AgentWidget
+  AgentWidget,
+  EnhancedAgentWidget
 };
 
 // Default export for convenience
@@ -60,5 +64,6 @@ export default {
   VanillaVoiceButton,
   AgentSDK,
   AgentWidget,
+  EnhancedAgentWidget,
   VERSION
 };
