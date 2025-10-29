@@ -177,11 +177,37 @@
     
     <div id="simple-tab" class="tab-content active">
       <div class="code-block"><pre><code>const widget = new TTPAgentSDK.AgentWidget({
-  agentId: 'agent_87c4a55a1',
-  appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
-  
-  primaryColor: '#10B981',
-  position: 'bottom-right'
+    agentId: 'agent_87c4a55a1',
+    appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+    
+    primaryColor: '#10B981',
+    position: 'bottom-right',
+    
+    // Icon configuration
+    icon: {
+        type: 'custom',
+        customImage: 'https://talktopc.com/logo192.png',
+        size: 'medium'
+    },
+    
+    // Floating button (main button) colors - WHITE
+    button: {
+        backgroundColor: '#FFFFFF', // White floating button
+        hoverColor: '#E5E7EB' // Gray on hover
+    },
+    
+    // Header (top of panel) colors - LIGHT PURPLE
+    header: {
+        title: 'TTP Support',
+        backgroundColor: '#A78BFA', // Light purple header
+        textColor: '#FFFFFF'
+    },
+    
+    // Mic button (inside panel) colors - GRAY
+    panel: {
+        micButtonColor: '#E5E7EB', // Gray mic button
+        micButtonActiveColor: '#EF4444' // Red when active
+    }
 });</code></pre></div>
     </div>
     
@@ -206,13 +232,48 @@
   primaryColor: '#10B981',
   position: 'bottom-right', // or use advanced position object below
   
-  // Advanced Icon Configuration
+  // Icon Configuration
+  icon: {
+    type: 'custom', // 'microphone', 'custom', 'emoji', 'text'
+    customImage: 'https://talktopc.com/logo192.png', // For type: 'custom'
+    size: 'medium' // 'small', 'medium', 'large', 'xl'
+  },
+  
+  // Button Configuration - Floating Button (Main Button) - WHITE
+  button: {
+    size: 'medium', // 'small', 'medium', 'large', 'xl'
+    shape: 'circle', // 'circle', 'square', 'rounded'
+    backgroundColor: '#FFFFFF', // Floating button background color (WHITE)
+    hoverColor: '#E5E7EB', // Floating button hover color (gray)
+    shadow: true,
+    shadowColor: 'rgba(0,0,0,0.15)'
+  },
+  
+  // Header Configuration - Top of Panel - LIGHT PURPLE
+  header: {
+    title: 'TTP Support', // Custom title for the widget header
+    showTitle: true, // Show/hide title
+    backgroundColor: '#A78BFA', // Header background color (LIGHT PURPLE)
+    textColor: '#FFFFFF', // Header text color
+    showCloseButton: true
+  },
+  
+  // Panel Configuration - Includes Mic Button Colors - GRAY
+  panel: {
+    width: 350,
+    height: 500,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.95)', // Panel background
+    backdropFilter: null,
+    border: '1px solid rgba(0,0,0,0.1)',
+    micButtonColor: '#E5E7EB', // Mic button (inside panel) background color (GRAY)
+    micButtonActiveColor: '#EF4444' // Mic button color when active/recording (RED)
+  },
   // icon: {
-  //   type: 'microphone', // 'microphone', 'custom', 'emoji', 'text'
-  //   customImage: 'https://example.com/icon.png', // For type: 'custom'
+  //   type: 'microphone',
   //   emoji: '🎤', // For type: 'emoji'
   //   text: 'AI', // For type: 'text'
-  //   size: 'medium' // 'small', 'medium', 'large', 'xl'
+  //   size: 'medium'
   // },
   
   // Advanced Positioning
@@ -398,9 +459,34 @@
         primaryColor: '#10B981',
         position: 'bottom-right',
         
+        // Set TTP icon
+        icon: {
+          type: 'custom',
+          customImage: 'https://talktopc.com/logo192.png',
+          size: 'medium'
+        },
+        
+        // Button colors - Floating button (main button) - WHITE
+        button: {
+          backgroundColor: '#FFFFFF', // White background for floating button
+          hoverColor: '#E5E7EB' // Gray on hover
+        },
+        
+        // Header colors - Top of panel - LIGHT PURPLE
+        header: {
+          title: 'TTP Support',
+          backgroundColor: '#A78BFA', // Light purple header background
+          textColor: '#FFFFFF' // White text
+        },
+        
+        // Panel colors - Mic button inside panel - GRAY
+        panel: {
+          micButtonColor: '#E5E7EB', // Gray mic button
+          micButtonActiveColor: '#EF4444' // Red when active/recording
+        },
+        
         // Enhanced features are now available but using defaults
         // You can optionally add:
-        // icon: { type: 'emoji', emoji: '🎤', size: 'large' },
         // button: { size: 'large', shape: 'circle' },
         // panel: { width: 400, height: 600 },
         // header: { title: 'My Voice Assistant' },

@@ -217,6 +217,8 @@ export class AgentWidget {
         emoji: userConfig.icon?.emoji || '🎤',
         text: userConfig.icon?.text || 'AI',
         size: userConfig.icon?.size || 'medium', // 'small', 'medium', 'large', 'xl'
+        // backgroundColor is deprecated - use button.backgroundColor instead
+        backgroundColor: userConfig.icon?.backgroundColor || null,
         ...userConfig.icon
       },
       
@@ -232,11 +234,13 @@ export class AgentWidget {
       button: {
         size: userConfig.button?.size || 'medium',
         shape: userConfig.button?.shape || 'circle',
-        primaryColor: primaryColor,
+        // Floating button colors (main button)
+        backgroundColor: userConfig.button?.backgroundColor || userConfig.icon?.backgroundColor || primaryColor,
         hoverColor: userConfig.button?.hoverColor || '#7C3AED',
-        activeColor: userConfig.button?.activeColor || '#EF4444',
         shadow: userConfig.button?.shadow !== false,
         shadowColor: userConfig.button?.shadowColor || 'rgba(0,0,0,0.15)',
+        // Legacy support - map to backgroundColor
+        primaryColor: userConfig.button?.backgroundColor || userConfig.icon?.backgroundColor || primaryColor,
         ...userConfig.button
       },
       
@@ -248,14 +252,17 @@ export class AgentWidget {
         backgroundColor: userConfig.panel?.backgroundColor || 'rgba(255,255,255,0.95)',
         backdropFilter: userConfig.panel?.backdropFilter || null,
         border: userConfig.panel?.border || '1px solid rgba(0,0,0,0.1)',
+        // Mic button colors (inside panel)
+        micButtonColor: userConfig.panel?.micButtonColor || primaryColor,
+        micButtonActiveColor: userConfig.panel?.micButtonActiveColor || '#EF4444',
         ...userConfig.panel
       },
       
-      // Header Configuration
+      // Header Configuration (top of panel)
       header: {
         title: userConfig.header?.title || 'Voice Assistant',
         showTitle: userConfig.header?.showTitle !== false,
-        backgroundColor: userConfig.header?.backgroundColor || null, // Uses button primaryColor if null
+        backgroundColor: userConfig.header?.backgroundColor || userConfig.button?.backgroundColor || primaryColor, // Header/top background color
         textColor: userConfig.header?.textColor || '#FFFFFF',
         showCloseButton: userConfig.header?.showCloseButton !== false,
         ...userConfig.header
@@ -478,6 +485,12 @@ export class AgentWidget {
     const header = this.config.header;
     const messages = this.config.messages;
     const anim = this.config.animation;
+    
+    // Color references for clarity
+    const floatingButtonColor = btn.backgroundColor || btn.primaryColor; // Floating button (main)
+    const headerColor = header.backgroundColor; // Header/top of panel
+    const micButtonColor = panel.micButtonColor || btn.primaryColor; // Mic button in panel
+    const micButtonActiveColor = panel.micButtonActiveColor || '#EF4444'; // Mic button active state
 
     return `
       #agent-widget {
@@ -491,7 +504,7 @@ export class AgentWidget {
         width: ${buttonSize}px;
         height: ${buttonSize}px;
         border-radius: ${btn.shape === 'circle' ? '50%' : btn.shape === 'square' ? '0' : '12px'};
-        background: ${btn.primaryColor};
+        background: ${floatingButtonColor};
         border: none;
         cursor: pointer;
         display: flex;
@@ -531,7 +544,7 @@ export class AgentWidget {
       }
       
       #agent-header {
-        background: ${header.backgroundColor || btn.primaryColor};
+        background: ${headerColor};
         color: ${header.textColor};
         padding: 16px;
         display: flex;
@@ -607,7 +620,7 @@ export class AgentWidget {
         height: ${buttonSize}px;
         border-radius: ${btn.shape === 'circle' ? '50%' : btn.shape === 'square' ? '0' : '12px'};
         border: none;
-        background: ${btn.primaryColor};
+        background: ${micButtonColor};
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -616,7 +629,7 @@ export class AgentWidget {
       }
       
       #agent-mic-button.active {
-        background: ${btn.activeColor};
+        background: ${micButtonActiveColor};
         ${anim.enablePulse ? `
           animation: pulse 1.5s infinite;
         ` : ''}
