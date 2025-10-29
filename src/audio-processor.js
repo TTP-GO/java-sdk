@@ -17,7 +17,7 @@ class AudioProcessor extends AudioWorkletProcessor {
     this.bufferIndex = 0;
     
     // VAD (Voice Activity Detection) parameters
-    this.silenceThreshold = 0.005; // Very low RMS threshold for maximum sensitivity
+    this.silenceThreshold = 0.01; // RMS threshold for voice detection (increased from 0.005)
     this.minVoiceDuration = 100; // ms - minimum speech duration
     this.pauseThreshold = 3000; // ms - longer pause before processing
     
@@ -158,8 +158,8 @@ class AudioProcessor extends AudioWorkletProcessor {
       // Calculate time since last voice detection
       const timeSinceLastVoice = currentTime - this.lastVoiceTime;
 
-      // Voice detection logic - start voice if needed
-      if (this.forceContinuous || hasVoice) {
+      // Voice detection logic - always use VAD to filter silence
+      if (hasVoice) {
         this.consecutiveSilenceFrames = 0;
 
         // Start voice if needed
@@ -174,20 +174,24 @@ class AudioProcessor extends AudioWorkletProcessor {
       } else {
         // Silence detected
         this.consecutiveSilenceFrames++;
-      }
-
-      // Stop condition - detect silence and stop streaming
-      // Only stop if not in force continuous mode and silence is detected
-      if (!this.forceContinuous && !hasVoice && this.isVoiceActive && timeSinceLastVoice >= 200) {
-        this.isVoiceActive = false;
-        this.isCurrentlyStreaming = false;
-        console.log(`⏸️ AudioProcessor: Silence detected, stopping streaming (${timeSinceLastVoice.toFixed(0)}ms silence)`);
-        this.voiceStartTime = 0;
-        this.lastVoiceTime = 0;
-        this.consecutiveSilenceFrames = 0;
+        
+        // In continuous mode, we still use VAD but require longer silence before stopping
+        // In non-continuous mode, stop quickly
+        const silenceThreshold = this.forceContinuous ? 1500 : 200; // 1.5s for continuous, 200ms otherwise
+        
+        // Stop condition - detect silence and stop streaming
+        if (!hasVoice && this.isVoiceActive && timeSinceLastVoice >= silenceThreshold) {
+          this.isVoiceActive = false;
+          this.isCurrentlyStreaming = false;
+          console.log(`⏸️ AudioProcessor: Silence detected, stopping streaming (${timeSinceLastVoice.toFixed(0)}ms silence, continuous: ${this.forceContinuous})`);
+          this.voiceStartTime = 0;
+          this.lastVoiceTime = 0;
+          this.consecutiveSilenceFrames = 0;
+        }
       }
 
       // Send PCM **only if streaming and processing** - hard gate
+      // This ensures we only send audio when voice is detected, even in continuous mode
       if (this.isCurrentlyStreaming && this.isProcessing) {
         this.sendPCMAudioData(this.buffer);
       }

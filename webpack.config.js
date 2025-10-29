@@ -15,7 +15,7 @@ module.exports = {
       name: 'TTPAgentSDK',
       type: 'umd',
     },
-    globalObject: 'this',
+    globalObject: 'window',
     clean: true,
   },
   mode: 'development',
@@ -112,18 +112,9 @@ module.exports = {
     })
   ],
 
-  // Optimization
+  // Optimization - disabled splitChunks to ensure UMD wrapper works correctly
   optimization: {
-    splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
-          filename: 'vendor.js',
-        },
-      },
-    },
+    minimize: true,
+    splitChunks: false,
   },
 };

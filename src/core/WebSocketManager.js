@@ -1,8 +1,8 @@
 /**
- * WebSocketManager - Handles WebSocket connection and message routing
+ * WebSocketManager - Uses singleton pattern to prevent multiple connections
  */
 import EventEmitter from './EventEmitter.js';
-import connectionManager from './ConnectionManager.js';
+import webSocketSingleton from './WebSocketSingleton.js';
 
 export default class WebSocketManager extends EventEmitter {
   constructor(config) {
@@ -10,141 +10,143 @@ export default class WebSocketManager extends EventEmitter {
     this.config = config;
     this.ws = null;
     this.isConnected = false;
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = config.autoReconnect !== false ? 3 : 0; // Disable auto-reconnect if explicitly set to false
-    this.isReconnecting = false;
-    this.isConnecting = false; // Track if we're currently trying to connect
-    this.connectionId = null; // Unique ID for this connection attempt
+    this.connectionId = null;
   }
   
   /**
-   * Connect to WebSocket
+   * Connect to WebSocket using singleton
    */
   async connect() {
     return new Promise((resolve, reject) => {
       try {
-        // Prevent multiple connections
-        if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
-          resolve();
-          return;
-        }
-        
-        // Prevent connection if already reconnecting
-        if (this.isReconnecting) {
-          resolve();
-          return;
-        }
-        
-        // Prevent connection if already connecting
-        if (this.isConnecting) {
-          resolve();
-          return;
-        }
-        
-        // Check if connection is allowed by global manager
-        if (!connectionManager.isConnectionAllowed(this.config.websocketUrl)) {
-          console.log(`🔌 WebSocketManager: Connection blocked by global manager for ${this.config.websocketUrl}`);
-          resolve();
-          return;
-        }
-        
-        this.isConnecting = true;
         this.connectionId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        console.log(`🔌 WebSocketManager: Requesting connection ${this.connectionId} for ${this.config.websocketUrl}`);
         
-        // Register with global connection manager
-        if (!connectionManager.registerConnection(this.config.websocketUrl, this.connectionId)) {
-          console.log(`🔌 WebSocketManager: Connection registration failed for ${this.connectionId}`);
-          this.isConnecting = false;
-          resolve();
-          return;
-        }
+        // Store resolve/reject for later use
+        this.connectResolve = resolve;
+        this.connectReject = reject;
         
-        console.log(`🔌 WebSocketManager: Starting connection attempt ${this.connectionId}`);
-        this.ws = new WebSocket(this.config.websocketUrl);
-        
-        this.ws.onopen = () => {
-          console.log(`🔌 WebSocketManager: Connection successful ${this.connectionId}`);
-          this.isConnected = true;
-          this.reconnectAttempts = 0;
-          this.isReconnecting = false;
-          this.isConnecting = false;
-          this.emit('connected');
-          resolve();
-        };
-        
-        this.ws.onmessage = (event) => {
-          this.handleMessage(event);
-        };
-        
-        this.ws.onclose = (event) => {
-          console.log(`🔌 WebSocketManager: Connection closed ${this.connectionId} (Code: ${event.code})`);
-          this.isConnected = false;
-          this.isConnecting = false;
-          this.emit('disconnected', event);
-          
-          // Attempt reconnection if not intentional and not already reconnecting
-          if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts && !this.isReconnecting) {
-            this.isReconnecting = true;
-            this.reconnectAttempts++;
-            console.log(`🔌 WebSocketManager: Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-            setTimeout(() => {
-              this.isReconnecting = false;
-              this.connect().catch(() => {
-                // Ignore reconnection errors to prevent infinite loops
-              });
-            }, 1000 * this.reconnectAttempts);
-          }
-        };
-        
-        this.ws.onerror = (error) => {
-          console.log(`🔌 WebSocketManager: Connection error ${this.connectionId}`, error);
-          this.isConnecting = false;
-          this.emit('error', error);
-          reject(error);
-        };
+        // Get connection from singleton
+        webSocketSingleton.getConnection(this.config.websocketUrl, this.config)
+          .then((connection) => {
+            this.ws = connection;
+            console.log(`🔌 WebSocketManager: Got connection ${this.connectionId}`);
+            
+            // Set up event listeners (this will set up handlers that can resolve the promise)
+            this.setupEventListeners();
+            
+            // If already connected, resolve immediately
+            if (connection.readyState === WebSocket.OPEN) {
+              this.isConnected = true;
+              this.emit('connected');
+              resolve();
+              this.connectResolve = null;
+              this.connectReject = null;
+            }
+          })
+          .catch((error) => {
+            console.error(`🔌 WebSocketManager: Connection failed ${this.connectionId}`, error);
+            reject(error);
+            this.connectResolve = null;
+            this.connectReject = null;
+          });
         
       } catch (error) {
-        console.log(`🔌 WebSocketManager: Connection failed ${this.connectionId}`, error);
-        this.isConnecting = false;
+        console.error(`🔌 WebSocketManager: Connection error ${this.connectionId}`, error);
         reject(error);
+        this.connectResolve = null;
+        this.connectReject = null;
       }
     });
+  }
+  
+  /**
+   * Set up event listeners
+   */
+  setupEventListeners() {
+    if (!this.ws) return;
+    
+    // Use singleton's event forwarding
+    const handleOpen = (event, url) => {
+      if (url === this.config.websocketUrl) {
+        console.log(`🔌 WebSocketManager: Connection opened ${this.connectionId}`);
+        this.isConnected = true;
+        this.emit('connected');
+        
+        // Resolve the connect promise if it hasn't been resolved yet
+        if (this.connectResolve) {
+          this.connectResolve();
+          this.connectResolve = null;
+          this.connectReject = null;
+        }
+      }
+    };
+    
+    const handleClose = (event, url) => {
+      if (url === this.config.websocketUrl) {
+        console.log(`🔌 WebSocketManager: Connection closed ${this.connectionId} (Code: ${event.code})`);
+        this.isConnected = false;
+        this.emit('disconnected', event);
+      }
+    };
+    
+    const handleError = (event, url) => {
+      if (url === this.config.websocketUrl) {
+        console.log(`🔌 WebSocketManager: Connection error ${this.connectionId}`, event);
+        this.emit('error', event);
+        
+        // Reject the connect promise if it hasn't been resolved yet
+        if (this.connectReject) {
+          this.connectReject(event);
+          this.connectResolve = null;
+          this.connectReject = null;
+        }
+      }
+    };
+    
+    const handleMessage = (event, url) => {
+      if (url === this.config.websocketUrl) {
+        this.handleMessage(event);
+      }
+    };
+    
+    // Add event listeners
+    webSocketSingleton.on('open', handleOpen);
+    webSocketSingleton.on('close', handleClose);
+    webSocketSingleton.on('error', handleError);
+    webSocketSingleton.on('message', handleMessage);
+    
+    // Store handlers for cleanup
+    this.eventHandlers = {
+      open: handleOpen,
+      close: handleClose,
+      error: handleError,
+      message: handleMessage
+    };
   }
   
   /**
    * Disconnect from WebSocket
    */
   disconnect() {
-    // Stop any reconnection attempts
-    this.isReconnecting = false;
-    this.reconnectAttempts = this.maxReconnectAttempts; // Prevent reconnection
+    console.log(`🔌 WebSocketManager: Disconnecting ${this.connectionId}`);
     
-    // Unregister from global connection manager
-    if (this.connectionId) {
-      connectionManager.unregisterConnection(this.config.websocketUrl, this.connectionId);
+    // Remove event listeners
+    if (this.eventHandlers) {
+      webSocketSingleton.off('open', this.eventHandlers.open);
+      webSocketSingleton.off('close', this.eventHandlers.close);
+      webSocketSingleton.off('error', this.eventHandlers.error);
+      webSocketSingleton.off('message', this.eventHandlers.message);
     }
     
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.close(1000, 'Intentional disconnect');
+    // Release connection from singleton
+    if (this.config.websocketUrl) {
+      console.log(`🔌 WebSocketManager: Releasing connection ${this.connectionId} from singleton`);
+      webSocketSingleton.releaseConnection(this.config.websocketUrl);
     }
+    
     this.ws = null;
     this.isConnected = false;
-    this.isConnecting = false;
-  }
-  
-  /**
-   * Reset reconnection attempts (useful for manual reconnection)
-   */
-  resetReconnectionAttempts() {
-    this.reconnectAttempts = 0;
-    this.isReconnecting = false;
-  }
-  
-  /**
-   * Clear all global connections (useful for testing)
-   */
-  static clearAllConnections() {
-    connectionManager.clearAll();
   }
   
   /**
@@ -152,10 +154,22 @@ export default class WebSocketManager extends EventEmitter {
    */
   sendMessage(message) {
     if (!this.isConnected || !this.ws) {
-      throw new Error('WebSocket not connected');
+      // Log warning but don't throw - may happen during cleanup/disconnect or race conditions
+      console.warn('🔌 WebSocketManager: Cannot send message - not connected', {
+        isConnected: this.isConnected,
+        hasWs: !!this.ws,
+        messageType: message?.t
+      });
+      return;
     }
     
-    this.ws.send(JSON.stringify(message));
+    try {
+      this.ws.send(JSON.stringify(message));
+      console.log('🔌 WebSocketManager: Sent message:', message.t || 'unknown');
+    } catch (error) {
+      // Log but don't throw - connection may have closed between check and send
+      console.warn('🔌 WebSocketManager: Failed to send message:', error.message);
+    }
   }
   
   /**
@@ -163,17 +177,23 @@ export default class WebSocketManager extends EventEmitter {
    */
   sendBinary(data) {
     if (!this.isConnected || !this.ws) {
-      throw new Error('WebSocket not connected');
+      // Silently ignore if not connected (may happen during cleanup/disconnect)
+      return;
     }
     
-    this.ws.send(data);
+    try {
+      this.ws.send(data);
+    } catch (error) {
+      // Log but don't throw - connection may have closed between check and send
+      console.warn('🔌 WebSocketManager: Failed to send binary data:', error.message);
+    }
   }
   
   /**
-   * Handle incoming WebSocket messages
+   * Handle incoming messages
    */
   handleMessage(event) {
-    // Check if it's binary data first
+    // Check if it's binary data
     if (event.data instanceof ArrayBuffer) {
       this.emit('binaryAudio', event.data);
       return;
@@ -181,7 +201,7 @@ export default class WebSocketManager extends EventEmitter {
       event.data.arrayBuffer().then(arrayBuffer => {
         this.emit('binaryAudio', arrayBuffer);
       }).catch(err => {
-        this.emit('error', err);
+        console.error('🔌 WebSocketManager: Error converting Blob to ArrayBuffer:', err);
       });
       return;
     }
@@ -212,7 +232,22 @@ export default class WebSocketManager extends EventEmitter {
   getStatus() {
     return {
       isConnected: this.isConnected,
-      readyState: this.ws ? this.ws.readyState : WebSocket.CLOSED
+      readyState: this.ws ? this.ws.readyState : null,
+      connectionId: this.connectionId
     };
+  }
+  
+  /**
+   * Get singleton status (for debugging)
+   */
+  static getSingletonStatus() {
+    return webSocketSingleton.getAllConnections();
+  }
+  
+  /**
+   * Clear all singleton connections (for testing)
+   */
+  static clearAllConnections() {
+    webSocketSingleton.clearAll();
   }
 }

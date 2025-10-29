@@ -3,7 +3,7 @@
  * Handles WebSocket connection, audio recording, and audio playback
  */
 import EventEmitter from './EventEmitter.js';
-import WebSocketManagerV2 from './WebSocketManagerV2.js';
+import WebSocketManager from './WebSocketManager.js';
 import AudioRecorder from './AudioRecorder.js';
 import AudioPlayer from './AudioPlayer.js';
 
@@ -30,7 +30,7 @@ export default class VoiceSDK extends EventEmitter {
     this.isDestroyed = false;
     
     // Components
-    this.webSocketManager = new WebSocketManagerV2({
+    this.webSocketManager = new WebSocketManager({
       ...this.config,
       autoReconnect: this.config.autoReconnect !== false // Default to true unless explicitly disabled
     });
@@ -104,13 +104,33 @@ export default class VoiceSDK extends EventEmitter {
     
     this.webSocketManager.on('stopPlaying', (message) => {
       this.emit('stopPlaying', message);
-      // Immediately stop all audio playback
+      // Stop current playback and clear queue, but keep playing new audio
+      console.log('🛑 VoiceSDK: Received stop_playing command - stopping current audio and clearing queue');
       this.audioPlayer.stopImmediate();
+      // Note: stopImmediate() clears the queue but AudioPlayer can still accept new audio via playAudio()
     });
     
     // Audio recorder events
     this.audioRecorder.on('recordingStarted', () => {
       this.isRecording = true;
+      
+      // Detect barge-in: if audio is playing when recording starts
+      console.log('🎤 VoiceSDK: Recording started, isPlaying:', this.isPlaying, 'isConnected:', this.isConnected);
+      if (this.isPlaying) {
+        console.log('🛑 VoiceSDK: Barge-in detected - user started speaking while audio was playing');
+        // Stop audio playback immediately
+        this.audioPlayer.stopImmediate();
+        // Send barge-in message to server
+        if (this.isConnected) {
+          console.log('🛑 VoiceSDK: Sending barge_in message to server');
+          this.webSocketManager.sendMessage({
+            t: 'barge_in'
+          });
+        } else {
+          console.warn('🛑 VoiceSDK: Cannot send barge_in - not connected');
+        }
+      }
+      
       this.emit('recordingStarted');
     });
     
@@ -127,13 +147,31 @@ export default class VoiceSDK extends EventEmitter {
     
     // Audio player events
     this.audioPlayer.on('playbackStarted', () => {
+      console.log('🎵 VoiceSDK: Audio playback started');
       this.isPlaying = true;
       this.emit('playbackStarted');
+      
+      // Send audio_started_playing message to server
+      if (this.isConnected) {
+        console.log('🎵 VoiceSDK: Sending audio_started_playing message');
+        this.webSocketManager.sendMessage({
+          t: 'audio_started_playing'
+        });
+      }
     });
     
     this.audioPlayer.on('playbackStopped', () => {
+      console.log('🎵 VoiceSDK: Audio playback stopped');
       this.isPlaying = false;
       this.emit('playbackStopped');
+      
+      // Send audio_stopped_playing message to server
+      if (this.isConnected) {
+        console.log('🎵 VoiceSDK: Sending audio_stopped_playing message');
+        this.webSocketManager.sendMessage({
+          t: 'audio_stopped_playing'
+        });
+      }
     });
     
     this.audioPlayer.on('playbackError', (error) => {

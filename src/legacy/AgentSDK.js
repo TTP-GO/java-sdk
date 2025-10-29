@@ -403,33 +403,39 @@ export class AgentWidget {
   }
 
   async toggleVoice() {
-    console.log('🎤 NODE_MODULES SDK: toggleVoice called - isActive:', this.isActive);
-    
     if (!this.isActive) {
       try {
         console.log('🎤 Starting voice session...');
         const signedUrl = await this.getSignedUrl();
         console.log('🔗 Got signed URL:', signedUrl);
         
-        await this.sdk.connect(signedUrl);
-        console.log('✅ Connected to WebSocket');
+        const connected = await this.sdk.connect(signedUrl);
+        console.log('✅ Connected to WebSocket, connected:', connected);
         
-        // Wait for the connection to be fully established
-        await new Promise((resolve) => {
-          if (this.sdk.isConnected) {
-            resolve();
-          } else {
-            this.sdk.once('connected', resolve);
-          }
-        });
-        console.log('✅ WebSocket fully ready');
+        // Wait for connection to be fully ready (for hello message exchange)
+        let attempts = 0;
+        while (!this.sdk.isConnected && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
         
-        await this.sdk.startListening();
-        console.log('🎤 Started listening');
-        
-        this.isActive = true;
-        this.updateMicButtonState(true);
-        this.addMessage('system', '🎤 Listening... Click mic to stop');
+        if (this.sdk.isConnected) {
+          console.log('✅ WebSocket ready, starting listening...');
+          await this.sdk.startListening();
+          console.log('🎤 Started listening');
+          
+          this.isActive = true;
+          this.updateMicButtonState(true);
+          this.addMessage('system', '🎤 Listening... Click mic to stop');
+        } else {
+          console.warn('⚠️ Connection not fully ready, but trying to start listening anyway...');
+          await this.sdk.startListening();
+          console.log('🎤 Started listening');
+          
+          this.isActive = true;
+          this.updateMicButtonState(true);
+          this.addMessage('system', '🎤 Listening... Click mic to stop');
+        }
       } catch (error) {
         console.error('❌ Failed to start:', error);
         this.showError(error.message);

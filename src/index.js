@@ -17,7 +17,6 @@
 // Core SDK
 import VoiceSDK from './core/VoiceSDK.js';
 import WebSocketManager from './core/WebSocketManager.js';
-import WebSocketManagerV2 from './core/WebSocketManagerV2.js';
 import AudioRecorder from './core/AudioRecorder.js';
 import AudioPlayer from './core/AudioPlayer.js';
 import EventEmitter from './core/EventEmitter.js';
@@ -41,7 +40,6 @@ export const VERSION = '2.0.0';
 export {
   VoiceSDK,
   WebSocketManager,
-  WebSocketManagerV2,
   AudioRecorder,
   AudioPlayer,
   EventEmitter,
@@ -56,7 +54,6 @@ export {
 export default {
   VoiceSDK,
   WebSocketManager,
-  WebSocketManagerV2,
   AudioRecorder,
   AudioPlayer,
   EventEmitter,

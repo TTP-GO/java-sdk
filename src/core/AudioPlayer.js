@@ -66,7 +66,8 @@ export default class AudioPlayer extends EventEmitter {
    */
   async processQueue() {
     // Prevent multiple simultaneous queue processing
-    if (this.isProcessingQueue || this.isPlaying || this.audioQueue.length === 0) {
+    // Note: isPlaying check removed to allow seamless queue processing
+    if (this.isProcessingQueue || this.audioQueue.length === 0) {
       return;
     }
     
@@ -79,8 +80,13 @@ export default class AudioPlayer extends EventEmitter {
     }
     
     try {
+      // Only emit playbackStarted if this is the first audio item (queue was empty before)
+      const wasNotPlaying = !this.isPlaying;
       this.isPlaying = true;
-      this.emit('playbackStarted');
+      
+      if (wasNotPlaying) {
+        this.emit('playbackStarted');
+      }
       
       // Create AudioContext if not exists
       if (!this.audioContext) {
@@ -106,14 +112,18 @@ export default class AudioPlayer extends EventEmitter {
       
       // Handle audio end
       source.onended = () => {
-        this.isPlaying = false;
-        this.isProcessingQueue = false;
         this.currentSource = null;
-        this.emit('playbackStopped');
+        this.isProcessingQueue = false;
         
         // Process next audio in queue if there are more items
         if (this.audioQueue.length > 0) {
+          // More audio to play - continue processing without emitting playbackStopped
+          // Keep isPlaying = true since we'll continue playing
           setTimeout(() => this.processQueue(), 100);
+        } else {
+          // Queue is empty - playback has truly ended
+          this.isPlaying = false;
+          this.emit('playbackStopped');
         }
       };
       
@@ -121,14 +131,18 @@ export default class AudioPlayer extends EventEmitter {
       source.start();
       
     } catch (error) {
-      this.isPlaying = false;
-      this.isProcessingQueue = false;
       this.currentSource = null;
       this.emit('playbackError', error);
       
       // Try to process next audio in queue if there are more items
       if (this.audioQueue.length > 0) {
+        this.isProcessingQueue = false;
         setTimeout(() => this.processQueue(), 100);
+      } else {
+        // Queue is empty - playback has ended
+        this.isPlaying = false;
+        this.isProcessingQueue = false;
+        this.emit('playbackStopped');
       }
     }
   }

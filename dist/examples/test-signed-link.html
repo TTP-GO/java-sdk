@@ -188,7 +188,9 @@ const widget = new TTPAgentSDK.AgentWidget({
   </div>
 
   <!-- Load the widget -->
-  <script src="../dist/agent-widget.js" onload="console.log('SDK script loaded successfully')" onerror="console.error('Failed to load SDK script')"></script>
+  <script src="../agent-widget.js" 
+          onload="console.log('Script loaded, checking TTPAgentSDK:', typeof window.TTPAgentSDK);" 
+          onerror="console.error('Failed to load SDK script'); window.sdkLoadError = true;"></script>
   
   <script>
     // Override console.log to show in page
@@ -220,22 +222,52 @@ const widget = new TTPAgentSDK.AgentWidget({
       statusDiv.className = 'status ' + type;
     }
 
-    // Initialize the widget
-    try {
-      console.log('Initializing widget with signed link...');
-      console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
-      console.log('TTPAgentSDK.AgentWidget available:', typeof TTPAgentSDK?.AgentWidget);
-      
-      if (typeof TTPAgentSDK === 'undefined') {
-        throw new Error('TTPAgentSDK is not defined. Check if the script loaded correctly.');
+    // Wait for TTPAgentSDK to be available
+    function waitForSDK(callback, maxAttempts = 50) {
+      // Check if there was a load error
+      if (window.sdkLoadError) {
+        console.error('SDK script failed to load (check network tab)');
+        updateStatus('SDK script failed to load - check console for errors', 'error');
+        return;
       }
       
-      if (typeof TTPAgentSDK.AgentWidget === 'undefined') {
-        throw new Error('TTPAgentSDK.AgentWidget is not defined. Check the SDK build.');
+      // Check if TTPAgentSDK is available
+      if (typeof window.TTPAgentSDK !== 'undefined' && window.TTPAgentSDK !== null) {
+        console.log('SDK script loaded successfully');
+        console.log('TTPAgentSDK type:', typeof window.TTPAgentSDK);
+        console.log('TTPAgentSDK keys:', Object.keys(window.TTPAgentSDK || {}).slice(0, 5));
+        callback();
+        return;
       }
       
-      // Create a new AgentWidget instance with signed link
-      const widget = new TTPAgentSDK.AgentWidget({
+      if (maxAttempts <= 0) {
+        console.error('SDK failed to load after timeout');
+        console.error('window.TTPAgentSDK:', window.TTPAgentSDK);
+        console.error('Check browser console and network tab for errors');
+        updateStatus('SDK failed to load after timeout - check console', 'error');
+        return;
+      }
+      
+      setTimeout(() => waitForSDK(callback, maxAttempts - 1), 100);
+    }
+
+    // Initialize the widget once SDK is loaded
+    waitForSDK(() => {
+      try {
+        console.log('Initializing widget with signed link...');
+        console.log('TTPAgentSDK available:', typeof window.TTPAgentSDK);
+        console.log('TTPAgentSDK.AgentWidget available:', typeof window.TTPAgentSDK?.AgentWidget);
+      
+        if (typeof window.TTPAgentSDK === 'undefined') {
+          throw new Error('TTPAgentSDK is not defined. Check if the script loaded correctly.');
+        }
+        
+        if (typeof window.TTPAgentSDK.AgentWidget === 'undefined') {
+          throw new Error('TTPAgentSDK.AgentWidget is not defined. Check the SDK build.');
+        }
+        
+        // Create a new AgentWidget instance with signed link
+        const widget = new window.TTPAgentSDK.AgentWidget({
         agentId: 'agent_87c4a55a1',
         appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
         
@@ -317,10 +349,11 @@ const widget = new TTPAgentSDK.AgentWidget({
       console.log('Test methods available at window.testWidget');
       updateStatus('Widget loaded and ready ✓', 'success');
       
-    } catch (error) {
-      console.error('Failed to initialize widget:', error);
-      updateStatus('Widget failed to load ✗', 'error');
-    }
+      } catch (error) {
+        console.error('Failed to initialize widget:', error);
+        updateStatus('Failed to initialize widget: ' + error.message, 'error');
+      }
+    });
 
     // Test functions (matching the working implementation)
     function testMicButton() {
