@@ -13,6 +13,8 @@ export class TextChatWidget {
     this.isOpen = false;
     this.isActive = false;
     this.streamingEl = null;
+    this.hasStartedStreaming = false;
+    this.streamingTimer = null;
     
     this.setupEventHandlers();
     this.createWidget();
@@ -606,6 +608,13 @@ export class TextChatWidget {
         font-style: italic;
         color: #6B7280;
       }
+
+      /* Typing indicator */
+      .typing-indicator { display: inline-flex; gap: 4px; align-items: center; padding: 4px 2px; }
+      .typing-dot { width: 6px; height: 6px; background: #9CA3AF; border-radius: 50%; opacity: 0.6; animation: typingBlink 1.2s infinite ease-in-out; }
+      .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+      .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes typingBlink { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-3px); opacity: 1; } }
     `;
   }
 
@@ -903,16 +912,24 @@ export class TextChatWidget {
     avatar.textContent = '🤖';
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
+    // show typing dots until first chunk
+    bubble.innerHTML = '<span class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span>';
 
     el.appendChild(avatar);
     el.appendChild(bubble);
     messages.appendChild(el);
     this.streamingEl = bubble;
+    this.hasStartedStreaming = false;
     messages.scrollTop = messages.scrollHeight;
   }
 
   appendStreamingChunk(chunk) {
     if (!this.streamingEl) return;
+    if (!this.hasStartedStreaming) {
+      // remove typing indicator on first content
+      this.streamingEl.textContent = '';
+      this.hasStartedStreaming = true;
+    }
     this.streamingEl.textContent += chunk;
     const messages = document.getElementById('messagesContainer');
     messages.scrollTop = messages.scrollHeight;
@@ -920,6 +937,30 @@ export class TextChatWidget {
 
   finalizeStreaming(fullText) {
     if (this.streamingEl) {
+      // If no chunks arrived, simulate typing char-by-char
+      if (!this.hasStartedStreaming && fullText && fullText.length > 0) {
+        this.streamingEl.textContent = '';
+        this.hasStartedStreaming = true;
+        const text = fullText;
+        let i = 0;
+        const messages = document.getElementById('messagesContainer');
+        clearInterval(this.streamingTimer);
+        this.streamingTimer = setInterval(() => {
+          if (!this.streamingEl) { clearInterval(this.streamingTimer); return; }
+          this.streamingEl.textContent += text.charAt(i);
+          if (messages) messages.scrollTop = messages.scrollHeight;
+          i++;
+          if (i >= text.length) {
+            clearInterval(this.streamingTimer);
+            const container = document.getElementById('agent-streaming');
+            if (container) container.id = '';
+            this.streamingEl = null;
+            this.updateSendButtonState();
+          }
+        }, 20);
+        return;
+      }
+      // Normal path: chunks already appended; just ensure final text and cleanup
       this.streamingEl.textContent = fullText || this.streamingEl.textContent;
       const container = document.getElementById('agent-streaming');
       if (container) container.id = '';
@@ -932,6 +973,8 @@ export class TextChatWidget {
     const existing = document.getElementById('agent-streaming');
     if (existing) existing.remove();
     this.streamingEl = null;
+    this.hasStartedStreaming = false;
+    clearInterval(this.streamingTimer);
   }
 
   showError(message) {
