@@ -181,6 +181,8 @@ export class TextChatWidget {
       
       // Variables for the agent
       variables: userConfig.variables || {},
+      // TEST: allow forcing a conversationId for debugging
+      forceConversationId: userConfig.forceConversationId,
       
       // Legacy support (for backward compatibility)
       primaryColor: primaryColor,
@@ -281,6 +283,11 @@ export class TextChatWidget {
               </div>
             </div>
             <div style="display: flex; gap: 12px; align-items: center;">
+              <button class="new-chat-btn header-icon" id="newChatBtn" title="Start new chat">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
               ${voiceEnabled ? '<button class="back-btn header-icon" id="backBtn">'+
                 '<svg width="16" height="16" viewBox="0 0 16 16" fill="none">'+
                 '<path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
@@ -526,6 +533,7 @@ export class TextChatWidget {
         border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
       }
+      #text-chat-panel .new-chat-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
       /* Landing and mode selection (shown only if voice enabled) */
       .landing-screen { display: none; flex: 1; padding: 20px; background: linear-gradient(180deg, #f8fafc 0%, #e0e7ff 100%); align-items: center; justify-content: flex-start; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
@@ -631,8 +639,10 @@ export class TextChatWidget {
     
     const sendButton = document.getElementById('sendButton');
     const inputField = document.getElementById('messageInput');
+    const newChatBtn = document.getElementById('newChatBtn');
     
     if (sendButton) sendButton.onclick = () => this.sendMessage();
+    if (newChatBtn) newChatBtn.onclick = () => this.startNewChat();
     
     // Send on Enter key
     if (inputField) {
@@ -648,6 +658,34 @@ export class TextChatWidget {
     if (this.config.accessibility.keyboardNavigation) {
       this.setupKeyboardNavigation();
     }
+  }
+
+  startNewChat() {
+    try { localStorage.removeItem('ttp_text_chat_conversation_id'); } catch (_) {}
+    if (this.sdk) {
+      this.sdk.config.conversationId = null;
+    }
+    // Reset UI messages to empty state
+    const container = document.getElementById('messagesContainer');
+    if (container) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">💬</div>
+          <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
+          <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה כדי להתחיל' : 'Send a message to get started'}</div>
+        </div>
+        <div class="message assistant">
+          <div class="message-avatar">🤖</div>
+          <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>`;
+    }
+    // Focus message input
+    const input = document.getElementById('messageInput');
+    if (input) input.focus();
   }
 
   showLanding() {

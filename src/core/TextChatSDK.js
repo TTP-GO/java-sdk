@@ -12,11 +12,13 @@ export default class TextChatSDK extends EventEmitter {
     const scriptConfig = this.readScriptTagConfig();
 
     this.config = {
-      // Prefer native WebSocket endpoint; server is registered at /chat with SockJS fallback
-      baseWsUrl: 'wss://backend.talktopc.com/chat',
+      // Prefer SockJS native upgrade endpoint directly to avoid an initial failed attempt on /chat
+      baseWsUrl: 'wss://backend.talktopc.com/chat/websocket',
       appId: config.appId || scriptConfig.appId,
       agentId: config.agentId || scriptConfig.agentId,
-      conversationId: config.conversationId || this.getPersistedConversationId(),
+      conversationId: config.conversationId !== undefined ? config.conversationId : this.getPersistedConversationId(),
+      // Optional testing override: force a specific conversationId for all sends
+      forceConversationId: config.forceConversationId,
       // queueing behavior
       queue: [],
       inFlight: false,
@@ -75,92 +77,134 @@ export default class TextChatSDK extends EventEmitter {
     this.config.inFlight = true;
     this.fullResponseBuffer = '';
 
+    // If conversationId is missing in memory, try to hydrate from localStorage before sending
+    if (!this.config.conversationId) {
+      const persisted = this.getPersistedConversationId();
+      if (persisted) {
+        this.config.conversationId = persisted;
+        console.log('🔍 TextChatSDK hydrated conversationId from storage:', persisted);
+      }
+    }
+
     const primaryUrl = this.buildWebSocketUrl(this.config.baseWsUrl);
     const fallbackBase = this.config.baseWsUrl.endsWith('/websocket')
       ? this.config.baseWsUrl.replace(/\/websocket$/, '')
       : `${this.config.baseWsUrl}/websocket`;
     const fallbackUrl = this.buildWebSocketUrl(fallbackBase);
     let triedFallback = false;
-    let ws = new WebSocket(primaryUrl);
 
-    ws.onopen = () => {
+    let messageSent = false;
+    let helloWaitTimer = null;
+
+    const sendPayload = (socket) => {
+      if (messageSent) return;
       try {
-        const payload = {
-          conversationId: this.config.conversationId || undefined,
-          message: task.text
-        };
-        ws.send(JSON.stringify(payload));
+        const payload = { message: task.text };
+        const effectiveConvId = this.config.forceConversationId || this.config.conversationId;
+        if (effectiveConvId) {
+          payload.conversationId = effectiveConvId;
+          // Persist and keep in-memory if coming from a forced value (test mode)
+          if (this.config.forceConversationId && !this.config.conversationId) {
+            this.config.conversationId = effectiveConvId;
+            this.persistConversationId(effectiveConvId);
+          }
+        }
+        console.log('🔍 TextChatSDK sending payload:', payload, 'conversationId in config:', this.config.conversationId);
+        socket.send(JSON.stringify(payload));
+        messageSent = true;
       } catch (e) {
         task.reject(e);
         this.emit('error', e);
-        try { ws.close(); } catch (_) {}
+        try { socket.close(); } catch (_) {}
       }
     };
 
-    ws.onmessage = (evt) => {
+    const handleOpen = (socket) => () => {
+      // Wait briefly for server 'hello' to capture conversationId before first send
+      // If no hello within 200ms, send anyway
+      if (!this.config.conversationId) {
+        helloWaitTimer = setTimeout(() => sendPayload(socket), 200);
+      } else {
+        sendPayload(socket);
+      }
+    };
+
+    const handleMessage = (socket) => (evt) => {
       try {
         const data = JSON.parse(evt.data);
         // Capture conversationId handshake from server
         if (data.type === 'hello' && data.conversationId) {
           // Persist the conversation id for subsequent messages
+          console.log('🔍 TextChatSDK received conversationId:', data.conversationId);
           this.config.conversationId = data.conversationId;
           this.persistConversationId(data.conversationId);
           this.emit && this.emit('conversationIdChanged', data.conversationId);
+          // If we were waiting to send the first message, send it now
+          if (!messageSent && socket && socket.readyState === 1) {
+            if (helloWaitTimer) { try { clearTimeout(helloWaitTimer); } catch (_) {} }
+            sendPayload(socket);
+          }
           return; // nothing else to do for handshake
+        }
+        // Fallback: capture conversationId if present on any message shape
+        if (!this.config.conversationId && data.conversationId) {
+          console.log('🔍 TextChatSDK captured conversationId from message:', data.conversationId);
+          this.config.conversationId = data.conversationId;
+          this.persistConversationId(data.conversationId);
         }
         if (data.type === 'chunk' && typeof data.content === 'string') {
           this.fullResponseBuffer += data.content;
           this.emit('chunk', data.content);
         } else if (data.type === 'done') {
-          // persist conversationId if server assigned it earlier in the session attributes (handled server-side)
-          if (!this.config.conversationId) {
-            // best-effort: keep existing if set on connect via query; server stores in session
+          // Persist conversationId if provided on completion (fallback when hello was missed)
+          if (!this.config.conversationId && data.conversationId) {
+            console.log('🔍 TextChatSDK captured conversationId from done:', data.conversationId);
+            this.config.conversationId = data.conversationId;
           }
           this.persistConversationId(this.config.conversationId);
           this.emit('done', { text: this.fullResponseBuffer });
           task.resolve({ conversationId: this.config.conversationId, fullText: this.fullResponseBuffer });
-          try { ws.close(); } catch (_) {}
+          try { socket.close(); } catch (_) {}
         } else if (data.type === 'error') {
           const err = new Error(data.message || 'Server error');
           this.emit('error', err);
           task.reject(err);
-          try { ws.close(); } catch (_) {}
+          try { socket.close(); } catch (_) {}
         }
       } catch (e) {
         // Non-JSON or parse error; ignore or surface
       }
     };
 
-    ws.onerror = (e) => {
+    const handleError = (socket) => (e) => {
       // Try alternate path once: toggle /websocket suffix
       if (!triedFallback) {
         triedFallback = true;
-        try { ws.close(); } catch (_) {}
-        try {
-          ws = new WebSocket(fallbackUrl);
-          // rebind handlers
-          ws.onopen = ws.onopen;
-          ws.onmessage = ws.onmessage;
-          ws.onerror = (err) => {
-            this.emit('error', err);
-            task.reject(err);
-          };
-          ws.onclose = ws.onclose;
-          return;
-        } catch (err) {
+        try { socket.close(); } catch (_) {}
+        const fb = new WebSocket(fallbackUrl);
+        fb.onopen = handleOpen(fb);
+        fb.onmessage = handleMessage(fb);
+        fb.onerror = (err) => {
           this.emit('error', err);
           task.reject(err);
-          return;
-        }
+        };
+        fb.onclose = handleClose;
+        return;
       }
       this.emit('error', e);
       task.reject(e);
     };
 
-    ws.onclose = () => {
+    const handleClose = () => {
       this.config.inFlight = false;
       this.drainQueue();
     };
+
+    const ws = new WebSocket(primaryUrl);
+    ws.onopen = handleOpen(ws);
+    ws.onmessage = handleMessage(ws);
+    ws.onerror = handleError(ws);
+    ws.onclose = handleClose;
   }
 
   drainQueue() {
