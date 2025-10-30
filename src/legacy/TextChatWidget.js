@@ -14,7 +14,6 @@ export class TextChatWidget {
     this.isActive = false;
     this.streamingEl = null;
     this.hasStartedStreaming = false;
-    this.streamingTimer = null;
     
     this.setupEventHandlers();
     this.createWidget();
@@ -675,14 +674,6 @@ export class TextChatWidget {
           <div class="empty-state-icon">💬</div>
           <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
           <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה כדי להתחיל' : 'Send a message to get started'}</div>
-        </div>
-        <div class="message assistant">
-          <div class="message-avatar">🤖</div>
-          <div class="typing-indicator" id="typingIndicator">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-          </div>
         </div>`;
     }
     // Focus message input
@@ -930,30 +921,6 @@ export class TextChatWidget {
 
   finalizeStreaming(fullText) {
     if (this.streamingEl) {
-      // If no chunks arrived, simulate typing char-by-char
-      if (!this.hasStartedStreaming && fullText && fullText.length > 0) {
-        this.streamingEl.textContent = '';
-        this.hasStartedStreaming = true;
-        const text = fullText;
-        let i = 0;
-        const messages = document.getElementById('messagesContainer');
-        clearInterval(this.streamingTimer);
-        this.streamingTimer = setInterval(() => {
-          if (!this.streamingEl) { clearInterval(this.streamingTimer); return; }
-          this.streamingEl.textContent += text.charAt(i);
-          if (messages) messages.scrollTop = messages.scrollHeight;
-          i++;
-          if (i >= text.length) {
-            clearInterval(this.streamingTimer);
-            const container = document.getElementById('agent-streaming');
-            if (container) container.id = '';
-            this.streamingEl = null;
-            this.updateSendButtonState();
-          }
-        }, 20);
-        return;
-      }
-      // Normal path: chunks already appended; just ensure final text and cleanup
       this.streamingEl.textContent = fullText || this.streamingEl.textContent;
       const container = document.getElementById('agent-streaming');
       if (container) container.id = '';
@@ -967,7 +934,6 @@ export class TextChatWidget {
     if (existing) existing.remove();
     this.streamingEl = null;
     this.hasStartedStreaming = false;
-    clearInterval(this.streamingTimer);
   }
 
   showError(message) {
