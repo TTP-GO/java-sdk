@@ -176,9 +176,13 @@ export class AgentWidget {
     this.setupEventHandlers();
     this.createWidget();
     
-    // Auto-open if configured
-    if (this.config.behavior.autoOpen) {
-      setTimeout(() => this.togglePanel(), 1000);
+    // Start open if configured (immediately)
+    if (this.config.behavior.startOpen || this.config.behavior.autoOpen) {
+      const panel = document.getElementById('agent-panel');
+      if (panel) {
+        this.isOpen = true;
+        panel.classList.add('open');
+      }
     }
   }
 
@@ -301,6 +305,8 @@ export class AgentWidget {
       // Behavior Configuration
       behavior: {
         autoOpen: userConfig.behavior?.autoOpen || false,
+        startOpen: userConfig.behavior?.startOpen || false,
+        hidden: userConfig.behavior?.hidden || false,
         autoConnect: userConfig.behavior?.autoConnect || false,
         showWelcomeMessage: userConfig.behavior?.showWelcomeMessage !== false,
         welcomeMessage: userConfig.behavior?.welcomeMessage || 'Hello! How can I help you today?',
@@ -369,9 +375,13 @@ export class AgentWidget {
     
     this.setupWidgetEvents();
     
-    // Auto-open if configured
-    if (this.config.behavior.autoOpen) {
-      setTimeout(() => this.togglePanel(), 1000);
+    // Ensure initial open state if configured
+    if (this.config.behavior.startOpen || this.config.behavior.autoOpen) {
+      const panel = document.getElementById('agent-panel');
+      if (panel) {
+        this.isOpen = true;
+        panel.classList.add('open');
+      }
     }
   }
 
@@ -413,11 +423,13 @@ export class AgentWidget {
         ${this.config.customStyles}
       </style>
       
+      ${this.config.behavior.hidden ? '' : `
       <button id="agent-button" 
               aria-label="${this.config.accessibility.ariaLabel}"
               aria-description="${this.config.accessibility.ariaDescription}">
         ${iconHTML}
       </button>
+      `}
       
       <div id="agent-panel">
         ${header.showTitle ? `
@@ -562,7 +574,7 @@ export class AgentWidget {
       #agent-panel {
         display: none;
         position: absolute;
-        bottom: ${buttonSize + 20}px;
+        bottom: ${this.config.behavior.hidden ? 20 : (buttonSize + 20)}px;
         ${this.config.position.horizontal === 'right' ? 'right: 0;' : 'left: 0;'}
         width: ${panel.width}px;
         height: ${panel.height}px;
@@ -709,7 +721,10 @@ export class AgentWidget {
   }
 
   setupWidgetEvents() {
-    document.getElementById('agent-button').onclick = () => this.togglePanel();
+    const openBtn = document.getElementById('agent-button');
+    if (openBtn) {
+      openBtn.onclick = () => this.togglePanel();
+    }
     
     const closeBtn = document.getElementById('agent-close');
     if (closeBtn) {

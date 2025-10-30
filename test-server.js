@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const PORT = 3000;
+const PORT = 3001;
 const ROOT_DIR = path.join(__dirname, 'dist');
 
 // MIME types
@@ -86,9 +86,10 @@ server.listen(PORT, () => {
   console.log(`🚀 TTP Agent SDK Test Server running on http://localhost:${PORT}`);
   console.log(`📁 Serving files from: ${ROOT_DIR}`);
   console.log(`🎤 Test pages available at:`);
+  console.log(`   - http://localhost:${PORT}/examples/test-text-chat.html`);
   console.log(`   - http://localhost:${PORT}/examples/test-agent-app.html`);
   console.log(`   - http://localhost:${PORT}/examples/test-signed-link.html`);
-  console.log(`   - http://localhost:${PORT}/examples/test-simplified.html`);
+  console.log(`   - http://localhost:${PORT}/examples/test.html`);
   console.log(`\n💡 Press Ctrl+C to stop the server`);
 });
 

@@ -536,7 +536,9 @@
   
   // Behavior Configuration
   // behavior: {
-  //   autoOpen: false, // Automatically open panel on load
+  //   startOpen: false, // Start with panel open on page load
+  //   hidden: false,    // Hide the floating button when true
+  //   autoOpen: false,  // Legacy: kept for backward-compatibility
   //   autoConnect: false, // Automatically connect on load
   //   showWelcomeMessage: true,
   //   welcomeMessage: 'Hello! How can I help you today?'
@@ -1047,6 +1049,15 @@
         panel: {
           micButtonColor: '#E5E7EB', // Gray mic button
           micButtonActiveColor: '#EF4444' // Red when active/recording
+        },
+        
+        // Behavior: new options
+        behavior: {
+          startOpen: true, // Start with panel open on page load
+          hidden: false,   // If true, hides the floating button
+          autoConnect: false,
+          showWelcomeMessage: true,
+          welcomeMessage: 'Hello! How can I help you today?'
         },
         
         // Enhanced features are now available but using defaults

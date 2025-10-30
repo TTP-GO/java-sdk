@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Chat Widget - Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #F9FAFB;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        margin: 0;
+        padding: 10px;
+      }
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #111827;
+      margin-top: 0;
+    }
+    
+    .info {
+      background: #EFF6FF;
+      border-left: 4px solid #3B82F6;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .status {
+      margin: 20px 0;
+      padding: 12px;
+      background: #F3F4F6;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    
+    .status.success {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+    
+    .status.error {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 10px 10px 0;
+    }
+
+    button:hover {
+      background: #4338CA;
+    }
+
+    .code-block {
+      background: #1F2937;
+      color: #F9FAFB;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💬 Text Chat Widget Test</h1>
+    
+    <div class="info">
+      <strong>📝 Instructions:</strong>
+      <ul>
+        <li>Click the chat button (bottom-right) to open the chat panel</li>
+        <li>Type a message and press Enter or click Send</li>
+        <li>The widget will automatically connect when you send your first message</li>
+        <li>Check the browser console for detailed logs</li>
+      </ul>
+    </div>
+    
+    <div id="status" class="status">Loading SDK...</div>
+    
+    <h2>Configuration</h2>
+    <div class="code-block">
+      <pre>const widget = new TTPAgentSDK.TextChatWidget({
+  agentId: 'agent_87c4a55a1',
+  appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+  primaryColor: '#10B981',
+  position: 'bottom-right',
+  icon: {
+    type: 'chat',
+    size: 'medium'
+  }
+});</pre>
+    </div>
+
+    <h2>Live customization</h2>
+    <div class="info" style="background:#F8FAFF;border-left-color:#667eea;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:center;">
+        <label>Direction
+          <select id="dirSelect">
+            <option value="ltr">LTR</option>
+            <option value="rtl" selected>RTL</option>
+          </select>
+        </label>
+        <label>Position
+          <select id="posSelect">
+            <option value="bottom-right" selected>bottom-right</option>
+            <option value="bottom-left">bottom-left</option>
+          </select>
+        </label>
+        <label>Header title
+          <input id="hdrTitle" type="text" value="עוזר וירטואלי חכם" />
+        </label>
+        <label>Header color
+          <input id="hdrColor" type="color" value="#667eea" />
+        </label>
+        <label>Header text
+          <input id="hdrTextColor" type="color" value="#ffffff" />
+        </label>
+        <label>Send btn color
+          <input id="sendBtnColor" type="color" value="#667eea" />
+        </label>
+        <label>Placeholder
+          <input id="placeholderInput" type="text" value="הקלד הודעה..." />
+        </label>
+        <label>Panel width
+          <input id="panelWidth" type="number" value="350" min="260" max="520" />
+        </label>
+        <label>Panel height
+          <input id="panelHeight" type="number" value="500" min="360" max="900" />
+        </label>
+        <label>Font size
+          <input id="msgFont" type="text" value="14px" />
+        </label>
+        <label>Agent bubble
+          <input id="agentBg" type="color" value="#F3F4F6" />
+        </label>
+        <label>User bubble
+          <input id="userBg" type="color" value="#E5E7EB" />
+        </label>
+        <label>Hover anim
+          <select id="hoverAnim">
+            <option value="true" selected>On</option>
+            <option value="false">Off</option>
+          </select>
+        </label>
+        <div style="display:flex;gap:8px;align-items:end;">
+          <button id="applyBtn">Apply</button>
+          <button id="resetBtn" style="background:#6B7280;">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <h2>Features</h2>
+    <ul>
+      <li>✅ Text-based chat interface</li>
+      <li>✅ Similar customization options to voice widget</li>
+      <li>✅ Auto-connect on first message</li>
+      <li>✅ Enter key to send</li>
+      <li>✅ Real-time message display</li>
+      <li>✅ Error handling</li>
+    </ul>
+  </div>
+
+  <!-- Load the SDK from dist folder -->
+  <script src="../agent-widget.js" data-agent-id="agent_87c4a55a1" data-app-id="app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC" onload="console.log('SDK script loaded successfully')" onerror="console.error('Failed to load SDK script')"></script>
+  
+  <script>
+    // Status update function
+    function updateStatus(message, type = '') {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = 'status ' + (type || '');
+    }
+
+    // Initialize the widget
+    try {
+      console.log('Initializing text chat widget...');
+      console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
+      console.log('TTPAgentSDK.TextChatWidget available:', typeof TTPAgentSDK?.TextChatWidget);
+      
+      if (typeof TTPAgentSDK === 'undefined') {
+        throw new Error('TTPAgentSDK is not defined. Check if the script loaded correctly.');
+      }
+      
+      if (typeof TTPAgentSDK.TextChatWidget === 'undefined') {
+        throw new Error('TTPAgentSDK.TextChatWidget is not defined. Check the SDK build.');
+      }
+      
+      // Create a new TextChatWidget instance
+      const widget = new TTPAgentSDK.TextChatWidget({
+        agentId: 'agent_87c4a55a1',
+        appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+        direction: 'rtl',
+        
+        // Optional: Pass variables for your agent/backend
+        variables: {
+          testMode: true,
+          userName: 'Test User',
+          page: 'test-text-chat.html',
+          connectionType: 'text_chat'
+        },
+        
+        // Customize appearance
+        primaryColor: '#10B981',
+        position: 'bottom-right',
+        
+        // Icon configuration
+        icon: {
+          type: 'chat', // 'chat', 'emoji', 'custom', 'text'
+          size: 'medium'
+        },
+        
+        // Button colors
+        button: {
+          backgroundColor: '#10B981',
+          hoverColor: '#059669'
+        },
+        
+        // Header configuration
+        header: {
+          title: 'עוזר וירטואלי חכם',
+          backgroundColor: '#10B981',
+          textColor: '#FFFFFF'
+        },
+        
+        // Panel configuration
+        panel: {
+          sendButtonColor: '#10B981',
+          sendButtonHoverColor: '#059669',
+          inputPlaceholder: 'הקלד הודעה...'
+        },
+        
+        // Behavior
+        behavior: {
+          startOpen: true, // Start with panel open on page load so design is visible
+          hidden: false, // If true, hides the floating button
+          autoConnect: false, // Single-shot per message, no need to pre-connect
+          showWelcomeMessage: true,
+          welcomeMessage: 'שלום! איך אפשר לעזור?'
+        }
+      });
+      
+      // Store widget reference for testing
+      window.testWidget = widget;
+      
+      console.log('Text chat widget initialized successfully!');
+      console.log('Widget instance:', widget);
+      updateStatus('Widget loaded and ready ✓', 'success');
+
+      // Live customization handlers
+      const dirSelect = document.getElementById('dirSelect');
+      const posSelect = document.getElementById('posSelect');
+      const hdrTitle = document.getElementById('hdrTitle');
+      const hdrColor = document.getElementById('hdrColor');
+      const hdrTextColor = document.getElementById('hdrTextColor');
+      const sendBtnColor = document.getElementById('sendBtnColor');
+      const placeholderInput = document.getElementById('placeholderInput');
+      const panelWidth = document.getElementById('panelWidth');
+      const panelHeight = document.getElementById('panelHeight');
+      const msgFont = document.getElementById('msgFont');
+      const agentBg = document.getElementById('agentBg');
+      const userBg = document.getElementById('userBg');
+      const hoverAnim = document.getElementById('hoverAnim');
+
+      const apply = () => {
+        const dir = dirSelect.value;
+        const pos = posSelect.value;
+        const cfg = {
+          direction: dir,
+          position: pos,
+          header: {
+            title: hdrTitle.value,
+            backgroundColor: hdrColor.value,
+            textColor: hdrTextColor.value
+          },
+          panel: {
+            width: Number(panelWidth.value) || 350,
+            height: Number(panelHeight.value) || 500,
+            inputPlaceholder: placeholderInput.value,
+            sendButtonColor: sendBtnColor.value
+          },
+          messages: {
+            fontSize: msgFont.value,
+            agentBackgroundColor: agentBg.value,
+            userBackgroundColor: userBg.value
+          },
+          animation: {
+            enableHover: hoverAnim.value === 'true'
+          }
+        };
+        window.testWidget.updateConfig(cfg);
+        updateStatus('Customization applied', 'success');
+      };
+      document.getElementById('applyBtn').onclick = apply;
+      document.getElementById('resetBtn').onclick = () => window.location.reload();
+      
+    } catch (error) {
+      console.error('Failed to initialize widget:', error);
+      updateStatus('Widget failed to load: ' + error.message, 'error');
+    }
+
+    // Test functions
+    function testSendMessage() {
+      console.log('💬 Testing send message...');
+      if (window.testWidget) {
+        // Get input field
+        const input = document.getElementById('text-chat-input');
+        if (input) {
+          input.value = 'Hello, this is a test message!';
+          window.testWidget.sendMessage();
+        } else {
+          console.log('💬 Input field not found (panel may be closed)');
+        }
+      }
+    }
+
+    function checkWidgetState() {
+      console.log('💬 Widget state:', {
+        isActive: window.testWidget?.isActive,
+        isOpen: window.testWidget?.isOpen,
+        sdk: window.testWidget?.sdk,
+        isConnected: window.testWidget?.sdk?.isConnected
+      });
+    }
+
+    // Expose test functions globally
+    window.testSendMessage = testSendMessage;
+    window.checkWidgetState = checkWidgetState;
+  </script>
+</body>
+</html>
+

@@ -1,11 +1,12 @@
 /**
  * TTP Agent SDK - Main Entry Point
  * 
- * A comprehensive SDK for voice interaction with AI agents.
+ * A comprehensive SDK for voice and text interaction with AI agents.
  * Provides real-time audio recording, WebSocket communication, and audio playback.
  * 
  * Features:
  * - 🎤 Real-time Audio Recording with AudioWorklet
+ * - 💬 Text Chat Support
  * - 🔄 WebSocket Communication with authentication
  * - 🔊 Audio Playback with queue management
  * - ⚛️ React Components
@@ -16,6 +17,7 @@
 
 // Core SDK
 import VoiceSDK from './core/VoiceSDK.js';
+import TextChatSDK from './core/TextChatSDK.js';
 import WebSocketManager from './core/WebSocketManager.js';
 import AudioRecorder from './core/AudioRecorder.js';
 import AudioPlayer from './core/AudioPlayer.js';
@@ -29,6 +31,7 @@ import VanillaVoiceButton from './vanilla/VoiceButton.js';
 
 // Legacy AgentSDK (for backward compatibility)
 import { AgentSDK, AgentWidget } from './legacy/AgentSDK.js';
+import { TextChatWidget } from './legacy/TextChatWidget.js';
 
 // Version
 export const VERSION = '2.0.0';
@@ -36,19 +39,7 @@ export const VERSION = '2.0.0';
 // Named exports
 export {
   VoiceSDK,
-  WebSocketManager,
-  AudioRecorder,
-  AudioPlayer,
-  EventEmitter,
-  VoiceButton,
-  VanillaVoiceButton,
-  AgentSDK,
-  AgentWidget
-};
-
-// Default export for convenience
-export default {
-  VoiceSDK,
+  TextChatSDK,
   WebSocketManager,
   AudioRecorder,
   AudioPlayer,
@@ -57,5 +48,21 @@ export default {
   VanillaVoiceButton,
   AgentSDK,
   AgentWidget,
+  TextChatWidget
+};
+
+// Default export for convenience
+export default {
+  VoiceSDK,
+  TextChatSDK,
+  WebSocketManager,
+  AudioRecorder,
+  AudioPlayer,
+  EventEmitter,
+  VoiceButton,
+  VanillaVoiceButton,
+  AgentSDK,
+  AgentWidget,
+  TextChatWidget,
   VERSION
 };
