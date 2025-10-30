@@ -12,8 +12,8 @@ export default class TextChatSDK extends EventEmitter {
     const scriptConfig = this.readScriptTagConfig();
 
     this.config = {
-      // Spring SockJS endpoint expects native websocket at /chat/websocket
-      baseWsUrl: 'wss://backend.talktopc.com/chat/websocket',
+      // Prefer native WebSocket endpoint; server is registered at /chat with SockJS fallback
+      baseWsUrl: 'wss://backend.talktopc.com/chat',
       appId: config.appId || scriptConfig.appId,
       agentId: config.agentId || scriptConfig.agentId,
       conversationId: config.conversationId || this.getPersistedConversationId(),
@@ -42,12 +42,12 @@ export default class TextChatSDK extends EventEmitter {
   }
 
   // Build WS URL with query params
-  buildWebSocketUrl() {
+  buildWebSocketUrl(base = this.config.baseWsUrl) {
     const params = new URLSearchParams();
     if (this.config.appId) params.append('appId', this.config.appId);
     if (this.config.agentId) params.append('agentId', this.config.agentId);
     if (this.config.conversationId) params.append('conversationId', this.config.conversationId);
-    return `${this.config.baseWsUrl}?${params.toString()}`;
+    return `${base}?${params.toString()}`;
   }
 
   // Public API: sendMessage opens a fresh WS, streams, then closes
@@ -75,8 +75,13 @@ export default class TextChatSDK extends EventEmitter {
     this.config.inFlight = true;
     this.fullResponseBuffer = '';
 
-    const wsUrl = this.buildWebSocketUrl();
-    const ws = new WebSocket(wsUrl);
+    const primaryUrl = this.buildWebSocketUrl(this.config.baseWsUrl);
+    const fallbackBase = this.config.baseWsUrl.endsWith('/websocket')
+      ? this.config.baseWsUrl.replace(/\/websocket$/, '')
+      : `${this.config.baseWsUrl}/websocket`;
+    const fallbackUrl = this.buildWebSocketUrl(fallbackBase);
+    let triedFallback = false;
+    let ws = new WebSocket(primaryUrl);
 
     ws.onopen = () => {
       try {
@@ -127,6 +132,27 @@ export default class TextChatSDK extends EventEmitter {
     };
 
     ws.onerror = (e) => {
+      // Try alternate path once: toggle /websocket suffix
+      if (!triedFallback) {
+        triedFallback = true;
+        try { ws.close(); } catch (_) {}
+        try {
+          ws = new WebSocket(fallbackUrl);
+          // rebind handlers
+          ws.onopen = ws.onopen;
+          ws.onmessage = ws.onmessage;
+          ws.onerror = (err) => {
+            this.emit('error', err);
+            task.reject(err);
+          };
+          ws.onclose = ws.onclose;
+          return;
+        } catch (err) {
+          this.emit('error', err);
+          task.reject(err);
+          return;
+        }
+      }
       this.emit('error', e);
       task.reject(e);
     };
