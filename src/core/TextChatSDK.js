@@ -131,7 +131,9 @@ export default class TextChatSDK extends EventEmitter {
 
     const handleMessage = (socket) => (evt) => {
       try {
+        try { console.log('🔎 [TextChatSDK] WS <= raw:', evt.data); } catch (_) {}
         const data = JSON.parse(evt.data);
+        try { console.log('🔎 [TextChatSDK] WS <= parsed:', data); } catch (_) {}
         // Capture conversationId handshake from server
         if (data.type === 'hello' && data.conversationId) {
           // Persist the conversation id for subsequent messages
