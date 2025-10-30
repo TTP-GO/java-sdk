@@ -328,14 +328,7 @@ export class TextChatWidget {
                 <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
                 <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה או עבור למצב קולי לשיחה בזמן אמת' : 'Send a message to get started'}</div>
               </div>
-              <div class="message assistant">
-                <div class="message-avatar">🤖</div>
-                <div class="typing-indicator" id="typingIndicator">
-                  <div class="typing-dot"></div>
-                  <div class="typing-dot"></div>
-                  <div class="typing-dot"></div>
-                </div>
-              </div>
+              
             </div>
             <div class="input-container">
               ${this.config.direction === 'rtl' ? `

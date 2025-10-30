@@ -156,6 +156,13 @@ export default class TextChatSDK extends EventEmitter {
           this.fullResponseBuffer += data.content;
           this.emit('chunk', data.content);
         } else if (data.type === 'done') {
+          // If server sent a final text in the done payload, capture it for non-streaming backends
+          try {
+            const finalText = data.text || data.content || data.answer || data.message || '';
+            if (finalText && !this.fullResponseBuffer) {
+              this.fullResponseBuffer = finalText;
+            }
+          } catch (_) {}
           // Persist conversationId if provided on completion (fallback when hello was missed)
           if (!this.config.conversationId && data.conversationId) {
             console.log('🔍 TextChatSDK captured conversationId from done:', data.conversationId);
