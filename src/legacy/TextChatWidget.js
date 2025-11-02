@@ -83,12 +83,12 @@ export class TextChatWidget {
       
       // Icon/Image Configuration
       icon: {
-        type: userConfig.icon?.type || 'chat', // 'chat', 'custom', 'emoji', 'text'
-        customImage: userConfig.icon?.customImage || null,
-        emoji: userConfig.icon?.emoji || '💬',
+        type: userConfig.icon?.type || 'custom', // 'microphone', 'custom', 'emoji', 'text'
+        customImage: userConfig.icon?.customImage || 'https://talktopc.com/logo192.png',
+        emoji: userConfig.icon?.emoji || '🎤',
         text: userConfig.icon?.text || 'AI',
         size: userConfig.icon?.size || 'medium', // 'small', 'medium', 'large', 'xl'
-        backgroundColor: userConfig.icon?.backgroundColor || null,
+        backgroundColor: userConfig.icon?.backgroundColor || '#FFFFFF',
         ...userConfig.icon
       },
       
@@ -485,8 +485,14 @@ export class TextChatWidget {
       case 'text':
         return `<span style="font-size: ${Math.floor(size * 0.6)}px; font-weight: bold; color: white;">${icon.text}</span>`;
       
-      case 'chat':
+      case 'microphone':
       default:
+        return `<svg viewBox="0 0 24 24" style="width: ${size}px; height: ${size}px; fill: white;">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>`;
+      
+      case 'chat':
         return `<svg viewBox="0 0 24 24" style="width: ${size}px; height: ${size}px; fill: white;">
           <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
         </svg>`;
@@ -495,6 +501,7 @@ export class TextChatWidget {
 
   generateCSS(positionStyles, buttonSize, iconSize) {
     const btn = this.config.button;
+    const icon = this.config.icon;
     const panel = this.config.panel;
     const header = this.config.header;
     const messages = this.config.messages;
@@ -556,7 +563,7 @@ export class TextChatWidget {
         width: ${buttonSize}px;
         height: ${buttonSize}px;
         border-radius: ${btn.shape === 'circle' ? '50%' : btn.shape === 'square' ? '0' : '12px'};
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: ${btn.backgroundColor || icon.backgroundColor || '#7C3AED'};
         border: none;
         cursor: pointer;
         display: flex;

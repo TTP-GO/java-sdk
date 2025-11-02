@@ -886,14 +886,16 @@
         primaryColor: document.getElementById('buttonBgColor').value || '#7C3AED',
         
         icon: {
-          type: 'chat',
-          size: document.getElementById('buttonSize').value
+          type: 'custom',
+          customImage: 'https://talktopc.com/logo192.png',
+          size: document.getElementById('buttonSize').value,
+          backgroundColor: '#FFFFFF'
         },
         
         button: {
           size: document.getElementById('buttonSize').value,
           shape: document.getElementById('buttonShape').value,
-          backgroundColor: document.getElementById('buttonBgColor').value,
+          backgroundColor: '#FFFFFF', // Use white to match icon background
           hoverColor: document.getElementById('buttonHoverColor').value
         },
         
