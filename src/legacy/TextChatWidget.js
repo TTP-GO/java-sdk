@@ -4,6 +4,8 @@
  */
 
 import TextChatSDK from '../core/TextChatSDK.js';
+import { VoiceInterface } from './VoiceInterface.js';
+import { TextInterface } from './TextInterface.js';
 
 export class TextChatWidget {
   constructor(config = {}) {
@@ -12,8 +14,22 @@ export class TextChatWidget {
     this.sdk = new TextChatSDK(this.config);
     this.isOpen = false;
     this.isActive = false;
-    this.streamingEl = null;
-    this.hasStartedStreaming = false;
+    
+    // Initialize interfaces with proper config
+    // Voice interface needs voice config merged with main config
+    const voiceConfig = {
+      ...this.config,
+      ...this.config.voice,
+      language: this.config.voice?.language || this.config.language || 'en',
+      websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv'
+    };
+    this.voiceInterface = new VoiceInterface(voiceConfig);
+    // Text interface needs text config merged with main config
+    const textConfig = {
+      ...this.config,
+      ...this.config.text
+    };
+    this.textInterface = new TextInterface(textConfig, this.sdk);
     
     this.setupEventHandlers();
     this.createWidget();
@@ -47,15 +63,19 @@ export class TextChatWidget {
 
     // Handle legacy primaryColor
     const primaryColor = userConfig.primaryColor || userConfig.button?.primaryColor || '#4F46E5';
+    
+    // Calculate headerColor for use in landing config (needed before landing config is defined)
+    const headerColor = userConfig.header?.backgroundColor || userConfig.button?.backgroundColor || primaryColor;
 
     return {
       // Required (agentId is required, appId is optional)
       agentId: userConfig.agentId,
       appId: userConfig.appId,
-      getSessionUrl: userConfig.getSessionUrl, // Optional - will auto-construct URL if omitted
-      websocketUrl: userConfig.websocketUrl, // Optional - defaults to backend.talktopc.com/ws/conv (path may need adjustment)
+      getSessionUrl: userConfig.getSessionUrl, // Optional - will auto-construct URL if omitted (for voice)
+      websocketUrl: userConfig.websocketUrl, // Optional - defaults to backend.talktopc.com/ws/conv (for text), speech.talktopc.com/ws/conv (for voice)
       demo: userConfig.demo !== false, // Optional - defaults to true
       direction: userConfig.direction || 'ltr', // Optional - text direction: 'ltr' or 'rtl'
+      language: userConfig.language || 'en', // Optional - language for voice (defaults to 'en')
       
       // Icon/Image Configuration
       icon: {
@@ -90,7 +110,7 @@ export class TextChatWidget {
         ...userConfig.button
       },
       
-      // Panel Configuration
+      // Panel Configuration (common to both voice and text)
       panel: {
         width: userConfig.panel?.width || 350,
         height: userConfig.panel?.height || 500,
@@ -98,31 +118,86 @@ export class TextChatWidget {
         backgroundColor: userConfig.panel?.backgroundColor || '#FFFFFF',
         backdropFilter: userConfig.panel?.backdropFilter || null,
         border: userConfig.panel?.border || '1px solid rgba(0,0,0,0.1)',
-        // Send button colors (inside panel) - similar to micButtonColor in voice widget
-        sendButtonColor: userConfig.panel?.sendButtonColor || primaryColor,
-        sendButtonHoverColor: userConfig.panel?.sendButtonHoverColor || '#7C3AED',
-        sendButtonActiveColor: userConfig.panel?.sendButtonActiveColor || '#059669',
-        sendButtonText: userConfig.panel?.sendButtonText || 'Send',
-        sendButtonTextColor: userConfig.panel?.sendButtonTextColor || '#FFFFFF',
-        sendButtonFontSize: userConfig.panel?.sendButtonFontSize || '14px',
-        sendButtonFontWeight: userConfig.panel?.sendButtonFontWeight || '500',
-        // Send button hint text (below button or near it, similar to micButtonHint)
+        ...userConfig.panel
+      },
+      
+      // Voice-specific Configuration
+      voice: {
+        // Voice button colors (inside panel)
+        micButtonColor: userConfig.voice?.micButtonColor || userConfig.panel?.micButtonColor || primaryColor,
+        micButtonActiveColor: userConfig.voice?.micButtonActiveColor || userConfig.panel?.micButtonActiveColor || '#EF4444',
+        // Voice button hint text (below button)
+        micButtonHint: {
+          text: userConfig.voice?.micButtonHint?.text || userConfig.panel?.micButtonHint?.text || 'Click the button to start voice conversation',
+          color: userConfig.voice?.micButtonHint?.color || userConfig.panel?.micButtonHint?.color || '#6B7280',
+          fontSize: userConfig.voice?.micButtonHint?.fontSize || userConfig.panel?.micButtonHint?.fontSize || '12px',
+          ...userConfig.voice?.micButtonHint,
+          ...userConfig.panel?.micButtonHint
+        },
+        // Voice interface colors
+        avatarBackgroundColor: userConfig.voice?.avatarBackgroundColor || '#667eea',
+        avatarActiveBackgroundColor: userConfig.voice?.avatarActiveBackgroundColor || '#667eea',
+        statusTitleColor: userConfig.voice?.statusTitleColor || '#1e293b',
+        statusSubtitleColor: userConfig.voice?.statusSubtitleColor || '#64748b',
+        startCallButtonColor: userConfig.voice?.startCallButtonColor || '#667eea',
+        startCallButtonTextColor: userConfig.voice?.startCallButtonTextColor || '#FFFFFF',
+        transcriptBackgroundColor: userConfig.voice?.transcriptBackgroundColor || '#FFFFFF',
+        transcriptTextColor: userConfig.voice?.transcriptTextColor || '#1e293b',
+        transcriptLabelColor: userConfig.voice?.transcriptLabelColor || '#94a3b8',
+        controlButtonColor: userConfig.voice?.controlButtonColor || '#FFFFFF',
+        controlButtonSecondaryColor: userConfig.voice?.controlButtonSecondaryColor || '#64748b',
+        endCallButtonColor: userConfig.voice?.endCallButtonColor || '#ef4444',
+        // Voice language setting
+        language: userConfig.voice?.language || userConfig.language || 'en',
+        // Voice websocket URL (can override global websocketUrl)
+        websocketUrl: userConfig.voice?.websocketUrl || userConfig.websocketUrl,
+        ...userConfig.voice
+      },
+      
+      // Text-specific Configuration
+      text: {
+        // Send button colors (inside panel)
+        sendButtonColor: userConfig.text?.sendButtonColor || userConfig.panel?.sendButtonColor || primaryColor,
+        sendButtonHoverColor: userConfig.text?.sendButtonHoverColor || userConfig.panel?.sendButtonHoverColor || '#7C3AED',
+        sendButtonActiveColor: userConfig.text?.sendButtonActiveColor || userConfig.panel?.sendButtonActiveColor || '#059669',
+        sendButtonText: userConfig.text?.sendButtonText || userConfig.panel?.sendButtonText || '➤',
+        sendButtonTextColor: userConfig.text?.sendButtonTextColor || userConfig.panel?.sendButtonTextColor || '#FFFFFF',
+        sendButtonFontSize: userConfig.text?.sendButtonFontSize || userConfig.panel?.sendButtonFontSize || '18px',
+        sendButtonFontWeight: userConfig.text?.sendButtonFontWeight || userConfig.panel?.sendButtonFontWeight || '500',
+        // Send button hint text (below button or near it)
         sendButtonHint: {
-          text: userConfig.panel?.sendButtonHint?.text || '',
-          color: userConfig.panel?.sendButtonHint?.color || '#6B7280',
-          fontSize: userConfig.panel?.sendButtonHint?.fontSize || '12px',
+          text: userConfig.text?.sendButtonHint?.text || userConfig.panel?.sendButtonHint?.text || '',
+          color: userConfig.text?.sendButtonHint?.color || userConfig.panel?.sendButtonHint?.color || '#6B7280',
+          fontSize: userConfig.text?.sendButtonHint?.fontSize || userConfig.panel?.sendButtonHint?.fontSize || '12px',
+          ...userConfig.text?.sendButtonHint,
           ...userConfig.panel?.sendButtonHint
         },
-        // Input field configuration - comprehensive customization
-        inputPlaceholder: userConfig.panel?.inputPlaceholder || 'Type your message...',
-        inputBorderColor: userConfig.panel?.inputBorderColor || '#E5E7EB',
-        inputFocusColor: userConfig.panel?.inputFocusColor || primaryColor,
-        inputBackgroundColor: userConfig.panel?.inputBackgroundColor || '#FFFFFF',
-        inputTextColor: userConfig.panel?.inputTextColor || '#1F2937',
-        inputFontSize: userConfig.panel?.inputFontSize || '14px',
-        inputBorderRadius: userConfig.panel?.inputBorderRadius || 8,
-        inputPadding: userConfig.panel?.inputPadding || '12px',
-        ...userConfig.panel
+        // Input field configuration
+        inputPlaceholder: userConfig.text?.inputPlaceholder || userConfig.panel?.inputPlaceholder || 'Type your message...',
+        inputBorderColor: userConfig.text?.inputBorderColor || userConfig.panel?.inputBorderColor || '#E5E7EB',
+        inputFocusColor: userConfig.text?.inputFocusColor || userConfig.panel?.inputFocusColor || primaryColor,
+        inputBackgroundColor: userConfig.text?.inputBackgroundColor || userConfig.panel?.inputBackgroundColor || '#FFFFFF',
+        inputTextColor: userConfig.text?.inputTextColor || userConfig.panel?.inputTextColor || '#1F2937',
+        inputFontSize: userConfig.text?.inputFontSize || userConfig.panel?.inputFontSize || '14px',
+        inputBorderRadius: userConfig.text?.inputBorderRadius || userConfig.panel?.inputBorderRadius || 20,
+        inputPadding: userConfig.text?.inputPadding || userConfig.panel?.inputPadding || '6px 14px',
+        ...userConfig.text
+      },
+      
+      // Landing Screen Configuration (only for unified mode)
+      landing: {
+        backgroundColor: userConfig.landing?.backgroundColor || 'linear-gradient(180deg, #f8fafc 0%, #e0e7ff 100%)',
+        logo: userConfig.landing?.logo || '🤖',
+        title: userConfig.landing?.title || null, // null means use default translated text
+        titleColor: userConfig.landing?.titleColor || '#1e293b',
+        modeCardBackgroundColor: userConfig.landing?.modeCardBackgroundColor || '#FFFFFF',
+        modeCardBorderColor: userConfig.landing?.modeCardBorderColor || '#E2E8F0',
+        modeCardHoverBorderColor: userConfig.landing?.modeCardHoverBorderColor || headerColor,
+        modeCardIconBackgroundColor: userConfig.landing?.modeCardIconBackgroundColor || headerColor,
+        modeCardTitleColor: userConfig.landing?.modeCardTitleColor || '#111827',
+        voiceCardIcon: userConfig.landing?.voiceCardIcon || '🎤',
+        textCardIcon: userConfig.landing?.textCardIcon || '💬',
+        ...userConfig.landing
       },
       
       // Header Configuration (top of panel)
@@ -164,8 +239,10 @@ export class TextChatWidget {
         autoConnect: userConfig.behavior?.autoConnect || false,
         showWelcomeMessage: userConfig.behavior?.showWelcomeMessage !== false,
         welcomeMessage: userConfig.behavior?.welcomeMessage || 'Hello! How can I help you today?',
-        // Voice selection landing (hidden by default)
-        enableVoiceMode: userConfig.behavior?.enableVoiceMode || false,
+        // Voice selection landing (enabled by default)
+        enableVoiceMode: userConfig.behavior?.enableVoiceMode !== undefined ? userConfig.behavior.enableVoiceMode : true,
+        // Widget mode: 'unified' (both voice and text with landing screen), 'voice-only' (only voice), 'text-only' (only text)
+        mode: userConfig.behavior?.mode || 'unified',
         ...userConfig.behavior
       },
       
@@ -194,16 +271,16 @@ export class TextChatWidget {
 
   setupEventHandlers() {
     this.sdk.on('error', (error) => {
-      this.showError(error.message || error);
-      this.stopStreamingState();
+      this.textInterface.showError(error.message || error);
+      this.textInterface.stopStreamingState();
     });
 
     this.sdk.on('chunk', (chunk) => {
-      this.appendStreamingChunk(chunk);
+      this.textInterface.appendStreamingChunk(chunk);
     });
 
     this.sdk.on('done', ({ text }) => {
-      this.finalizeStreaming(text);
+      this.textInterface.finalizeStreaming(text);
     });
   }
 
@@ -258,7 +335,11 @@ export class TextChatWidget {
     // Generate icon HTML
     const iconHTML = this.generateIconHTML(iconSize);
 
-    const voiceEnabled = !!this.config.behavior.enableVoiceMode;
+    const widgetMode = this.config.behavior.mode || 'unified';
+    const showLanding = widgetMode === 'unified';
+    const showVoice = widgetMode === 'unified' || widgetMode === 'voice-only';
+    const showText = widgetMode === 'unified' || widgetMode === 'text-only';
+    const voiceEnabled = showVoice;
 
     return `
       <style>
@@ -289,7 +370,7 @@ export class TextChatWidget {
                   <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
               </button>
-              ${voiceEnabled ? '<button class="back-btn header-icon" id="backBtn">'+
+              ${showLanding ? '<button class="back-btn header-icon" id="backBtn">'+
                 '<svg width="16" height="16" viewBox="0 0 16 16" fill="none">'+
                 '<path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
                 '</svg></button>' : ''}
@@ -300,49 +381,24 @@ export class TextChatWidget {
             </div>
           </div>
 
-          ${voiceEnabled ? `
+          ${showLanding ? `
           <div class="landing-screen" id="landingScreen">
             <div class="landing-logo">🤖</div>
             <div class="landing-title">${this.config.direction === 'rtl' ? 'איך תרצה לתקשר?' : 'How would you like to communicate?'}</div>
             <div class="mode-selection">
-              <div class="mode-card voice" id="mode-card-voice">
+              ${showVoice ? `<div class="mode-card voice" id="mode-card-voice">
                 <div class="mode-card-icon">🎤</div>
                 <div class="mode-card-title">${this.config.direction === 'rtl' ? 'שיחה קולית' : 'Voice Call'}</div>
-              </div>
-              <div class="mode-card text" id="mode-card-text">
+              </div>` : ''}
+              ${showText ? `<div class="mode-card text" id="mode-card-text">
                 <div class="mode-card-icon">💬</div>
                 <div class="mode-card-title">${this.config.direction === 'rtl' ? "צ'אט טקסט" : 'Text Chat'}</div>
-              </div>
+              </div>` : ''}
             </div>
           </div>` : ''}
 
-          <div class="voice-interface" id="voiceInterface">
-            <div class="empty-voice">${this.config.direction === 'rtl' ? 'מצב קול placeholder' : 'Voice mode placeholder'}</div>
-          </div>
-
-          <div class="text-interface ${voiceEnabled ? '' : 'active'}" id="textInterface">
-            <div class="messages-container" id="messagesContainer">
-              <div class="empty-state">
-                <div class="empty-state-icon">💬</div>
-                <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
-                <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה או עבור למצב קולי לשיחה בזמן אמת' : 'Send a message to get started'}</div>
-              </div>
-              
-            </div>
-            <div class="input-container">
-              ${this.config.direction === 'rtl' ? `
-                <button class="send-button" id="sendButton" aria-label="Send message">➤</button>
-                <div class="input-wrapper" style="flex:1;">
-                  <textarea class="message-input" id="messageInput" placeholder="${panel.inputPlaceholder}" rows="1"></textarea>
-                </div>
-              ` : `
-                <div class="input-wrapper" style="flex:1;">
-                  <textarea class="message-input" id="messageInput" placeholder="${panel.inputPlaceholder}" rows="1"></textarea>
-                </div>
-                <button class="send-button" id="sendButton" aria-label="Send message">➤</button>
-              `}
-            </div>
-          </div>
+          ${showVoice ? this.voiceInterface.generateHTML() : ''}
+          ${showText ? this.textInterface.generateHTML() : ''}
           </div>
         </div>
       </div>
@@ -410,6 +466,11 @@ export class TextChatWidget {
     const sendButtonColor = panel.sendButtonColor || btn.primaryColor; // Send button (similar to micButtonColor in voice widget)
     const sendButtonHoverColor = panel.sendButtonHoverColor || '#7C3AED'; // Send button hover
     const sendButtonActiveColor = panel.sendButtonActiveColor || '#059669'; // Send button active state
+    
+    // Determine which interfaces to show
+    const widgetMode = this.config.behavior.mode || 'unified';
+    const showVoice = widgetMode === 'unified' || widgetMode === 'voice-only';
+    const showText = widgetMode === 'unified' || widgetMode === 'text-only';
 
     return `
       #text-chat-widget {
@@ -530,66 +591,65 @@ export class TextChatWidget {
       #text-chat-panel .new-chat-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
       /* Landing and mode selection (shown only if voice enabled) */
-      .landing-screen { display: none; flex: 1; padding: 20px; background: linear-gradient(180deg, #f8fafc 0%, #e0e7ff 100%); align-items: center; justify-content: flex-start; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
+      .landing-screen { 
+        display: none; 
+        flex: 1; 
+        padding: 20px; 
+        background: ${this.config.landing?.backgroundColor || 'linear-gradient(180deg, #f8fafc 0%, #e0e7ff 100%)'}; 
+        align-items: center; 
+        justify-content: flex-start; 
+        flex-direction: column; 
+        gap: 16px; 
+        overflow-y: auto; 
+        min-height: 0; 
+      }
       .landing-screen.active { display: flex; }
       .landing-logo { font-size: 48px; }
-      .landing-title { font-size: 20px; color: #1e293b; font-weight: 700; margin-bottom: 20px; }
+      .landing-title { 
+        font-size: 20px; 
+        color: ${this.config.landing?.titleColor || '#1e293b'}; 
+        font-weight: 700; 
+        margin-bottom: 20px; 
+      }
       .mode-selection { display: flex; gap: 16px; width: 100%; justify-content: center; }
-      .mode-card { flex: 1; max-width: 180px; background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 20px; padding: 20px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform ${anim.duration}s ease, box-shadow ${anim.duration}s ease, border-color ${anim.duration}s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-      .mode-card:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2); border-color: ${headerColor}; }
-      .mode-card-icon { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: ${headerColor}; color: #fff; font-size: 32px; }
-      .mode-card-title { color: #111827; font-weight: 600; }
-
-      .voice-interface { display: none; flex: 1; align-items: center; justify-content: center; padding: 20px; background: #F8FAFC; }
-      .voice-interface.active { display: flex; }
-      .empty-voice { color: #6B7280; font-size: 14px; }
-      
-      /* Messages container using new classes */
-      #messagesContainer { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; background: #f8fafc; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
-      .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #64748b; text-align: center; padding: 20px; }
-      .empty-state-icon { font-size: 48px; opacity: 0.3; }
-      .empty-state-title { font-size: 20px; font-weight: 700; color: #334155; }
-      .empty-state-text { font-size: 13px; max-width: 280px; }
-
-      .text-interface { display: none; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
-      .text-interface.active { display: flex; }
-      
-      .message { display: flex; gap: 8px; padding: 4px 0; max-width: 100%; align-items: center; }
-      .message.edge-left { flex-direction: row; }
-      .message.edge-right { flex-direction: row-reverse; }
-      .message-bubble { padding: 12px; border-radius: ${messages.borderRadius}px; max-width: 80%; font-size: ${messages.fontSize}; color: ${messages.textColor}; word-wrap: break-word; text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'}; }
-      .message.user { background: ${messages.userBackgroundColor}; align-self: ${this.config.direction === 'rtl' ? 'flex-start' : 'flex-end'}; }
-      .message.agent { background: ${messages.agentBackgroundColor}; align-self: ${this.config.direction === 'rtl' ? 'flex-end' : 'flex-start'}; }
-      .message .message-bubble { text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'}; }
-      .message-avatar { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: inherit; font-size: 18px; line-height: 1; background: transparent; border: none; }
-      .message-avatar.user { background: transparent; }
-      .message-avatar.agent { background: transparent; }
-      
-      .message.system {
-        background: ${messages.systemBackgroundColor};
-        align-self: flex-start;
-        font-style: italic;
+      .mode-card { 
+        flex: 1; 
+        max-width: 180px; 
+        background: ${this.config.landing?.modeCardBackgroundColor || '#FFFFFF'}; 
+        border: 2px solid ${this.config.landing?.modeCardBorderColor || '#E2E8F0'}; 
+        border-radius: 20px; 
+        padding: 20px 12px; 
+        cursor: pointer; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 8px; 
+        transition: transform ${anim.duration}s ease, box-shadow ${anim.duration}s ease, border-color ${anim.duration}s ease; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
       }
-      
-      .error-message {
-        background: ${messages.errorBackgroundColor};
-        color: #991B1B;
-        padding: 12px;
-        border-radius: ${messages.borderRadius}px;
-        margin: 8px;
+      .mode-card:hover { 
+        transform: translateY(-6px); 
+        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2); 
+        border-color: ${this.config.landing?.modeCardHoverBorderColor || headerColor}; 
       }
-      
-      .input-container { padding: 10px 16px; background: white; border-top: 1px solid #E2E8F0; display: flex; gap: 10px; align-items: center; border-bottom-left-radius: ${panel.borderRadius}px; border-bottom-right-radius: ${panel.borderRadius}px; flex-shrink: 0; box-sizing: border-box; }
-      .input-wrapper { flex: 1; display: flex; align-items: center; order: initial; }
-      .message-input { width: 100%; padding: 0 14px; border: 2px solid #E5E7EB; border-radius: 20px; font-size: 14px; font-family: inherit; resize: none; height: 32px; transition: border-color ${anim.duration}s, box-shadow ${anim.duration}s; outline: none; background: #F9FAFB; color: ${panel.inputTextColor}; line-height: 32px; overflow-y: auto; }
-      .message-input::placeholder { line-height: 32px; }
-      .message-input:focus { border-color: #667eea; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-      .message-input::placeholder { color: #9CA3AF; }
-      .send-button { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; flex-shrink: 0; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); order: initial; }
-      .send-button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5); background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
-      .send-button:active { transform: translateY(0px); box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4); }
-      .send-button svg { width: 18px; height: 18px; display: block; pointer-events: none; }
-      .send-button svg * { stroke: white !important; fill: none !important; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .mode-card-icon { 
+        width: 60px; 
+        height: 60px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border-radius: 50%; 
+        background: ${this.config.landing?.modeCardIconBackgroundColor || headerColor}; 
+        color: #fff; 
+        font-size: 32px; 
+      }
+      .mode-card-title { 
+        color: ${this.config.landing?.modeCardTitleColor || '#111827'}; 
+        font-weight: 600; 
+      }
+
+      ${showVoice ? this.voiceInterface.generateCSS() : ''}
+      ${showText ? this.textInterface.generateCSS() : ''}
       
       #text-chat-send-hint {
         text-align: center;
@@ -600,13 +660,6 @@ export class TextChatWidget {
         font-style: italic;
         color: #6B7280;
       }
-
-      /* Typing indicator */
-      .typing-indicator { display: inline-flex; gap: 4px; align-items: center; padding: 4px 2px; }
-      .typing-dot { width: 6px; height: 6px; background: #9CA3AF; border-radius: 50%; opacity: 0.6; animation: typingBlink 1.2s infinite ease-in-out; }
-      .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-      .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-      @keyframes typingBlink { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-3px); opacity: 1; } }
     `;
   }
 
@@ -621,38 +674,45 @@ export class TextChatWidget {
       closeBtn.onclick = () => this.togglePanel();
     }
     
-    // Voice selection events (if enabled)
+    // Voice selection events (based on widget mode)
+    const widgetMode = this.config.behavior.mode || 'unified';
+    const showLanding = widgetMode === 'unified';
+    const showVoice = widgetMode === 'unified' || widgetMode === 'voice-only';
+    const showText = widgetMode === 'unified' || widgetMode === 'text-only';
+    
     const backBtn = document.getElementById('backBtn');
     const landing = document.getElementById('landingScreen');
     const voiceCard = document.getElementById('mode-card-voice');
     const textCard = document.getElementById('mode-card-text');
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
-    if (this.config.behavior.enableVoiceMode) {
+    
+    if (showLanding) {
       if (backBtn) backBtn.onclick = () => this.showLanding();
       if (voiceCard) voiceCard.onclick = () => this.showVoice();
       if (textCard) textCard.onclick = () => this.showText();
-      // Initial state: landing visible when voice enabled
+      // Initial state: landing visible in unified mode
       if (landing) landing.classList.add('active');
       if (textInterface) textInterface.classList.remove('active');
       if (voiceInterface) voiceInterface.classList.remove('active');
+    } else if (widgetMode === 'voice-only') {
+      // Voice-only mode: show voice interface directly
+      if (voiceInterface) voiceInterface.classList.add('active');
+      if (textInterface) textInterface.classList.remove('active');
+      if (landing) landing.classList.remove('active');
+    } else if (widgetMode === 'text-only') {
+      // Text-only mode: show text interface directly
+      if (textInterface) textInterface.classList.add('active');
+      if (voiceInterface) voiceInterface.classList.remove('active');
+      if (landing) landing.classList.remove('active');
     }
     
-    const sendButton = document.getElementById('sendButton');
-    const inputField = document.getElementById('messageInput');
-    const newChatBtn = document.getElementById('newChatBtn');
-    
-    if (sendButton) sendButton.onclick = () => this.sendMessage();
-    if (newChatBtn) newChatBtn.onclick = () => this.startNewChat();
-    
-    // Send on Enter key
-    if (inputField) {
-      inputField.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          this.sendMessage();
-        }
-      });
+    // Setup interface event handlers
+    if (showVoice) {
+      this.voiceInterface.setupEventHandlers();
+    }
+    if (showText) {
+      this.textInterface.setupEventHandlers();
     }
     
     // Keyboard navigation
@@ -662,27 +722,12 @@ export class TextChatWidget {
   }
 
   startNewChat() {
-    try { localStorage.removeItem('ttp_text_chat_conversation_id'); } catch (_) {}
-    if (this.sdk) {
-      this.sdk.config.conversationId = null;
-    }
-    // Reset UI messages to empty state
-    const container = document.getElementById('messagesContainer');
-    if (container) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">💬</div>
-          <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
-          <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה כדי להתחיל' : 'Send a message to get started'}</div>
-        </div>`;
-    }
-    // Focus message input
-    const input = document.getElementById('messageInput');
-    if (input) input.focus();
+    this.textInterface.startNewChat();
   }
 
   showLanding() {
-    if (!this.config.behavior.enableVoiceMode) return;
+    const widgetMode = this.config.behavior.mode || 'unified';
+    if (widgetMode !== 'unified') return; // Only show landing in unified mode
     const landing = document.getElementById('landingScreen');
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
@@ -693,16 +738,10 @@ export class TextChatWidget {
 
   showText() {
     const landing = document.getElementById('landingScreen');
-    const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
     if (landing) landing.classList.remove('active');
-    if (textInterface) textInterface.classList.add('active');
     if (voiceInterface) voiceInterface.classList.remove('active');
-    // Focus input soon after render
-    setTimeout(() => {
-      const input = document.getElementById('messageInput');
-      if (input) input.focus();
-    }, 50);
+    this.textInterface.show();
   }
 
   showVoice() {
@@ -744,44 +783,15 @@ export class TextChatWidget {
   async startChat() {
     // No-op with single-shot design; connection happens per message
     this.isActive = true;
-    this.updateSendButtonState();
+    this.textInterface.setActive(true);
   }
 
   async sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
-    
-    if (!text) {
-      return;
-    }
-    
-    // Ensure active state
-    if (!this.isActive) {
-      await this.startChat();
-    }
-    
-    // Add user message to UI
-    this.addMessage('user', text);
-    
-    // Clear input
-    input.value = '';
-    
-    // Prepare streaming bubble and send via SDK
-    try {
-      this.beginStreaming();
-      await this.sdk.sendMessage(text);
-    } catch (error) {
-      console.error('❌ Failed to send message:', error);
-      this.showError(error.message);
-      this.stopStreamingState();
-    }
+    await this.textInterface.sendMessage();
   }
 
   updateSendButtonState() {
-    const sendButton = document.getElementById('sendButton');
-    if (!sendButton) return;
-    
-    sendButton.disabled = !this.isActive; // single-shot; enable when ready for input
+    this.textInterface.updateSendButtonState();
   }
 
   async getSignedUrl() {
@@ -859,90 +869,29 @@ export class TextChatWidget {
     }
   }
 
+  // Delegated to TextInterface
   addMessage(type, text) {
-    const messages = document.getElementById('messagesContainer');
-    const message = document.createElement('div');
-    const edgeClass = (this.config.direction === 'rtl')
-      ? (type === 'user' ? 'edge-left' : 'edge-right')
-      : (type === 'user' ? 'edge-right' : 'edge-left');
-    message.className = `message ${type} ${edgeClass}`;
-
-    const avatar = document.createElement('div');
-    avatar.className = `message-avatar ${type}`;
-    avatar.textContent = type === 'user' ? '👤' : '🤖';
-
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.textContent = text;
-
-    // Order is controlled by edgeClass via flex-direction
-    message.appendChild(avatar);
-    message.appendChild(bubble);
-    messages.appendChild(message);
-    messages.scrollTop = messages.scrollHeight;
+    this.textInterface.addMessage(type, text);
   }
 
   beginStreaming() {
-    const messages = document.getElementById('messagesContainer');
-    // Clean any previous indicator
-    this.stopStreamingState();
-    const el = document.createElement('div');
-    const edgeClass = (this.config.direction === 'rtl') ? 'edge-right' : 'edge-left';
-    el.className = `message agent ${edgeClass}`;
-    el.id = 'agent-streaming';
-
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar agent';
-    avatar.textContent = '🤖';
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    // show typing dots until first chunk
-    bubble.innerHTML = '<span class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span>';
-
-    el.appendChild(avatar);
-    el.appendChild(bubble);
-    messages.appendChild(el);
-    this.streamingEl = bubble;
-    this.hasStartedStreaming = false;
-    messages.scrollTop = messages.scrollHeight;
+    this.textInterface.beginStreaming();
   }
 
   appendStreamingChunk(chunk) {
-    if (!this.streamingEl) return;
-    if (!this.hasStartedStreaming) {
-      // remove typing indicator on first content
-      this.streamingEl.textContent = '';
-      this.hasStartedStreaming = true;
-    }
-    this.streamingEl.textContent += chunk;
-    const messages = document.getElementById('messagesContainer');
-    messages.scrollTop = messages.scrollHeight;
+    this.textInterface.appendStreamingChunk(chunk);
   }
 
   finalizeStreaming(fullText) {
-    if (this.streamingEl) {
-      this.streamingEl.textContent = fullText || this.streamingEl.textContent;
-      const container = document.getElementById('agent-streaming');
-      if (container) container.id = '';
-      this.streamingEl = null;
-    }
-    this.updateSendButtonState();
+    this.textInterface.finalizeStreaming(fullText);
   }
 
   stopStreamingState() {
-    const existing = document.getElementById('agent-streaming');
-    if (existing) existing.remove();
-    this.streamingEl = null;
-    this.hasStartedStreaming = false;
+    this.textInterface.stopStreamingState();
   }
 
   showError(message) {
-    const messages = document.getElementById('messagesContainer');
-    const error = document.createElement('div');
-    error.className = 'error-message';
-    error.textContent = message;
-    messages.appendChild(error);
-    messages.scrollTop = messages.scrollHeight;
+    this.textInterface.showError(message);
   }
 
   updateStatus(status) {
@@ -954,21 +903,31 @@ export class TextChatWidget {
     // Deep merge nested objects
     const mergedConfig = { ...this.config };
     
-    // Deep merge panel config if it exists
+    // Deep merge panel config if it exists (common config)
     if (newConfig.panel) {
       mergedConfig.panel = { ...this.config.panel, ...newConfig.panel };
-      // Deep merge sendButtonHint if it exists (similar to micButtonHint in voice widget)
-      if (newConfig.panel.sendButtonHint) {
-        mergedConfig.panel.sendButtonHint = {
-          ...this.config.panel?.sendButtonHint,
-          ...newConfig.panel.sendButtonHint
+    }
+    
+    // Deep merge voice config if it exists
+    if (newConfig.voice) {
+      mergedConfig.voice = { ...this.config.voice, ...newConfig.voice };
+      // Deep merge micButtonHint if it exists
+      if (newConfig.voice.micButtonHint) {
+        mergedConfig.voice.micButtonHint = {
+          ...this.config.voice?.micButtonHint,
+          ...newConfig.voice.micButtonHint
         };
       }
-      // Deep merge inputConfig if it exists (for future extensibility)
-      if (newConfig.panel.inputConfig) {
-        mergedConfig.panel.inputConfig = {
-          ...this.config.panel?.inputConfig,
-          ...newConfig.panel.inputConfig
+    }
+    
+    // Deep merge text config if it exists
+    if (newConfig.text) {
+      mergedConfig.text = { ...this.config.text, ...newConfig.text };
+      // Deep merge sendButtonHint if it exists
+      if (newConfig.text.sendButtonHint) {
+        mergedConfig.text.sendButtonHint = {
+          ...this.config.text?.sendButtonHint,
+          ...newConfig.text.sendButtonHint
         };
       }
     }
@@ -986,20 +945,49 @@ export class TextChatWidget {
     if (newConfig.messages) {
       mergedConfig.messages = { ...this.config.messages, ...newConfig.messages };
     }
+    if (newConfig.animation) {
+      mergedConfig.animation = { ...this.config.animation, ...newConfig.animation };
+    }
+    if (newConfig.behavior) {
+      mergedConfig.behavior = { ...this.config.behavior, ...newConfig.behavior };
+    }
+    if (newConfig.accessibility) {
+      mergedConfig.accessibility = { ...this.config.accessibility, ...newConfig.accessibility };
+    }
     
     // Merge direction property
     if (newConfig.direction !== undefined) {
       mergedConfig.direction = newConfig.direction;
     }
     
+    // Merge language property
+    if (newConfig.language !== undefined) {
+      mergedConfig.language = newConfig.language;
+    }
+    
     // Merge any other top-level properties
     Object.keys(newConfig).forEach(key => {
-      if (!['panel', 'button', 'header', 'icon', 'messages', 'direction'].includes(key)) {
+      if (!['panel', 'button', 'header', 'icon', 'messages', 'direction', 'voice', 'text', 'animation', 'behavior', 'accessibility', 'language'].includes(key)) {
         mergedConfig[key] = newConfig[key];
       }
     });
     
     this.config = this.mergeWithDefaults(mergedConfig);
+    
+    // Recreate interfaces with new config
+    const voiceConfig = {
+      ...this.config,
+      ...this.config.voice,
+      language: this.config.voice?.language || this.config.language || 'en',
+      websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv'
+    };
+    this.voiceInterface = new VoiceInterface(voiceConfig);
+    const textConfig = {
+      ...this.config,
+      ...this.config.text
+    };
+    this.textInterface = new TextInterface(textConfig, this.sdk);
+    
     // Recreate widget with new config
     const existingWidget = document.getElementById('text-chat-widget');
     if (existingWidget) {
@@ -1016,6 +1004,27 @@ export class TextChatWidget {
     if (this.sdk) {
       this.sdk.destroy();
     }
+    // Clean up interface resources
+    if (this.voiceInterface) {
+      this.voiceInterface.destroy();
+    }
+  }
+
+  // Delegated to VoiceInterface
+  async startVoiceCall() {
+    await this.voiceInterface.startVoiceCall();
+  }
+
+  endVoiceCall() {
+    this.voiceInterface.endVoiceCall();
+  }
+
+  toggleMute() {
+    this.voiceInterface.toggleMute();
+  }
+
+  toggleSpeaker() {
+    this.voiceInterface.toggleSpeaker();
   }
 }
 

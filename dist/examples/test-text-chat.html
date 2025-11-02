@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 800px;
+      max-width: 1400px;
       margin: 40px auto;
       padding: 20px;
       background: #F9FAFB;
@@ -30,6 +30,13 @@
     h1 {
       color: #111827;
       margin-top: 0;
+    }
+    
+    h2 {
+      color: #374151;
+      border-bottom: 2px solid #E5E7EB;
+      padding-bottom: 8px;
+      margin-top: 30px;
     }
     
     .info {
@@ -73,6 +80,38 @@
     button:hover {
       background: #4338CA;
     }
+    
+    button.secondary {
+      background: #6B7280;
+    }
+    
+    button.secondary:hover {
+      background: #4B5563;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    select, input[type="text"], input[type="number"], input[type="color"] {
+      padding: 8px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      color: #111827;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
 
     .code-block {
       background: #1F2937;
@@ -83,6 +122,65 @@
       font-size: 12px;
       overflow-x: auto;
       margin: 20px 0;
+    }
+    
+    /* Customization sections */
+    .customization-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .customization-section {
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 20px;
+      background: #F9FAFB;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
+    
+    .section-toggle {
+      font-size: 20px;
+      color: #6B7280;
+      transition: transform 0.2s;
+    }
+    
+    .section-toggle.collapsed {
+      transform: rotate(-90deg);
+    }
+    
+    .section-content {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .section-content.hidden {
+      display: none;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #E5E7EB;
     }
   </style>
 </head>
@@ -95,100 +193,382 @@
       <ul>
         <li>Click the chat button (bottom-right) to open the chat panel</li>
         <li>Type a message and press Enter or click Send</li>
-        <li>The widget will automatically connect when you send your first message</li>
-        <li>Check the browser console for detailed logs</li>
+        <li>Customize the widget using the sections below</li>
+        <li>Click "Apply" to update the widget with your changes</li>
       </ul>
     </div>
     
     <div id="status" class="status">Loading SDK...</div>
-    
-    <h2>Configuration</h2>
-    <div class="code-block">
-      <pre>const widget = new TTPAgentSDK.TextChatWidget({
-  agentId: 'agent_87c4a55a1',
-  appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
-  primaryColor: '#10B981',
-  position: 'bottom-right',
-  icon: {
-    type: 'chat',
-    size: 'medium'
-  }
-});</pre>
-    </div>
 
-    <h2>Live customization</h2>
-    <div class="info" style="background:#F8FAFF;border-left-color:#667eea;">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:center;">
-        <label>Direction
-          <select id="dirSelect">
-            <option value="ltr">LTR</option>
-            <option value="rtl" selected>RTL</option>
-          </select>
-        </label>
-        <label>Position
-          <select id="posSelect">
-            <option value="bottom-right" selected>bottom-right</option>
-            <option value="bottom-left">bottom-left</option>
-          </select>
-        </label>
-        <label>Header title
-          <input id="hdrTitle" type="text" value="עוזר וירטואלי חכם" />
-        </label>
-        <label>Header color
-          <input id="hdrColor" type="color" value="#667eea" />
-        </label>
-        <label>Header text
-          <input id="hdrTextColor" type="color" value="#ffffff" />
-        </label>
-        <label>Send btn color
-          <input id="sendBtnColor" type="color" value="#667eea" />
-        </label>
-        <label>Placeholder
-          <input id="placeholderInput" type="text" value="הקלד הודעה..." />
-        </label>
-        <label>Panel width
-          <input id="panelWidth" type="number" value="350" min="260" max="520" />
-        </label>
-        <label>Panel height
-          <input id="panelHeight" type="number" value="500" min="360" max="900" />
-        </label>
-        <label>Font size
-          <input id="msgFont" type="text" value="14px" />
-        </label>
-        <label>Agent bubble
-          <input id="agentBg" type="color" value="#F3F4F6" />
-        </label>
-        <label>User bubble
-          <input id="userBg" type="color" value="#E5E7EB" />
-        </label>
-        <label>Hover anim
-          <select id="hoverAnim">
-            <option value="true" selected>On</option>
-            <option value="false">Off</option>
-          </select>
-        </label>
-        <div style="display:flex;gap:8px;align-items:end;">
-          <button id="applyBtn">Apply</button>
-          <button id="resetBtn" style="background:#6B7280;">Reset</button>
+    <h2>Live Customization</h2>
+    <div class="customization-container">
+      
+      <!-- Common Section -->
+      <div class="customization-section">
+        <div class="section-header" onclick="toggleSection('common')">
+          <h3 class="section-title">🔧 Common Settings</h3>
+          <span class="section-toggle" id="common-toggle">▼</span>
+        </div>
+        <div class="section-content" id="common-content">
+          <label>Widget Mode
+            <select id="modeSelect">
+              <option value="unified" selected>Unified (Both)</option>
+              <option value="voice-only">Voice Only</option>
+              <option value="text-only">Text Only</option>
+            </select>
+          </label>
+          <label>Direction
+            <select id="dirSelect">
+              <option value="ltr">LTR</option>
+              <option value="rtl" selected>RTL</option>
+            </select>
+          </label>
+          <label>Position
+            <select id="posSelect">
+              <option value="bottom-right" selected>bottom-right</option>
+              <option value="bottom-left">bottom-left</option>
+              <option value="top-right">top-right</option>
+              <option value="top-left">top-left</option>
+            </select>
+          </label>
+          <label>Language
+            <select id="languageSelect">
+              <option value="en">English</option>
+              <option value="he" selected>Hebrew</option>
+              <option value="ar">Arabic</option>
+            </select>
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Panel</h4>
+          <label>Panel Width
+            <input id="panelWidth" type="number" value="350" min="260" max="520" />
+          </label>
+          <label>Panel Height
+            <input id="panelHeight" type="number" value="500" min="360" max="900" />
+          </label>
+          <label>Border Radius
+            <input id="panelBorderRadius" type="number" value="12" min="0" max="30" />
+          </label>
+          <label>Background Color
+            <input id="panelBgColor" type="color" value="#FFFFFF" />
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Button</h4>
+          <label>Button Size
+            <select id="buttonSize">
+              <option value="small">Small</option>
+              <option value="medium" selected>Medium</option>
+              <option value="large">Large</option>
+              <option value="xl">XL</option>
+            </select>
+          </label>
+          <label>Button Shape
+            <select id="buttonShape">
+              <option value="circle" selected>Circle</option>
+              <option value="square">Square</option>
+              <option value="rounded">Rounded</option>
+            </select>
+          </label>
+          <label>Button Color
+            <input id="buttonBgColor" type="color" value="#10B981" />
+          </label>
+          <label>Button Hover Color
+            <input id="buttonHoverColor" type="color" value="#059669" />
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Header</h4>
+          <label>Title
+            <input id="headerTitle" type="text" value="עוזר וירטואלי חכם" />
+          </label>
+          <label>Show Title
+            <select id="headerShowTitle">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>Background Color
+            <input id="headerBgColor" type="color" value="#10B981" />
+          </label>
+          <label>Text Color
+            <input id="headerTextColor" type="color" value="#FFFFFF" />
+          </label>
+          <label>Show Close Button
+            <select id="headerShowClose">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Messages</h4>
+          <label>Font Size
+            <input id="msgFontSize" type="text" value="14px" />
+          </label>
+          <label>Border Radius
+            <input id="msgBorderRadius" type="number" value="8" min="0" max="30" />
+          </label>
+          <label>Text Color
+            <input id="msgTextColor" type="color" value="#1F2937" />
+          </label>
+          <label>User Bubble Color
+            <input id="userBgColor" type="color" value="#E5E7EB" />
+          </label>
+          <label>Agent Bubble Color
+            <input id="agentBgColor" type="color" value="#F3F4F6" />
+          </label>
+          <label>System Bubble Color
+            <input id="systemBgColor" type="color" value="#DCFCE7" />
+          </label>
+          <label>Error Bubble Color
+            <input id="errorBgColor" type="color" value="#FEE2E2" />
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Animation</h4>
+          <label>Enable Hover
+            <select id="animHover">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>Enable Pulse
+            <select id="animPulse">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>Enable Slide
+            <select id="animSlide">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>Duration (seconds)
+            <input id="animDuration" type="number" value="0.3" min="0.1" max="2" step="0.1" />
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Behavior</h4>
+          <label>Start Open
+            <select id="behaviorStartOpen">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>Hidden Button
+            <select id="behaviorHidden">
+              <option value="false" selected>No</option>
+              <option value="true">Yes</option>
+            </select>
+          </label>
+          <label>Show Welcome Message
+            <select id="behaviorWelcome">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>Welcome Message
+            <input id="behaviorWelcomeMsg" type="text" value="שלום! איך אפשר לעזור?" />
+          </label>
         </div>
       </div>
+      
+      <!-- Voice Section -->
+      <div class="customization-section">
+        <div class="section-header" onclick="toggleSection('voice')">
+          <h3 class="section-title">🎤 Voice Settings</h3>
+          <span class="section-toggle collapsed" id="voice-toggle">▶</span>
+        </div>
+        <div class="section-content hidden" id="voice-content">
+          <h4 style="grid-column: 1/-1; margin: 0 0 8px 0; color: #6B7280; font-size: 14px;">Voice Interface</h4>
+          <label>Avatar Background Color
+            <input id="voiceAvatarBg" type="color" value="#667eea" />
+          </label>
+          <label>Avatar Active Background
+            <input id="voiceAvatarActiveBg" type="color" value="#667eea" />
+          </label>
+          <label>Status Title Color
+            <input id="voiceStatusTitleColor" type="color" value="#1e293b" />
+          </label>
+          <label>Status Subtitle Color
+            <input id="voiceStatusSubtitleColor" type="color" value="#64748b" />
+          </label>
+          <label>Start Call Button Color
+            <input id="voiceStartCallBtnColor" type="color" value="#667eea" />
+          </label>
+          <label>Start Call Button Text Color
+            <input id="voiceStartCallBtnTextColor" type="color" value="#FFFFFF" />
+          </label>
+          <label>Transcript Background
+            <input id="voiceTranscriptBg" type="color" value="#FFFFFF" />
+          </label>
+          <label>Transcript Text Color
+            <input id="voiceTranscriptTextColor" type="color" value="#1e293b" />
+          </label>
+          <label>Transcript Label Color
+            <input id="voiceTranscriptLabelColor" type="color" value="#94a3b8" />
+          </label>
+          <label>Control Button Color
+            <input id="voiceControlBtnColor" type="color" value="#FFFFFF" />
+          </label>
+          <label>Control Button Secondary Color
+            <input id="voiceControlBtnSecondaryColor" type="color" value="#64748b" />
+          </label>
+          <label>End Call Button Color
+            <input id="voiceEndCallBtnColor" type="color" value="#ef4444" />
+          </label>
+          <label>Mic Button Color
+            <input id="voiceMicBtnColor" type="color" value="#10B981" />
+          </label>
+          <label>Mic Button Active Color
+            <input id="voiceMicBtnActiveColor" type="color" value="#EF4444" />
+          </label>
+          <label>Mic Button Hint Text
+            <input id="voiceMicHintText" type="text" value="Click the button to start voice conversation" />
+          </label>
+          <label>Mic Button Hint Color
+            <input id="voiceMicHintColor" type="color" value="#6B7280" />
+          </label>
+          <label>Mic Button Hint Font Size
+            <input id="voiceMicHintFontSize" type="text" value="12px" />
+          </label>
+        </div>
+      </div>
+      
+      <!-- Text Section -->
+      <div class="customization-section">
+        <div class="section-header" onclick="toggleSection('text')">
+          <h3 class="section-title">💬 Text Settings</h3>
+          <span class="section-toggle collapsed" id="text-toggle">▶</span>
+        </div>
+        <div class="section-content hidden" id="text-content">
+          <h4 style="grid-column: 1/-1; margin: 0 0 8px 0; color: #6B7280; font-size: 14px;">Send Button</h4>
+          <label>Send Button Color
+            <input id="textSendBtnColor" type="color" value="#10B981" />
+          </label>
+          <label>Send Button Hover Color
+            <input id="textSendBtnHoverColor" type="color" value="#7C3AED" />
+          </label>
+          <label>Send Button Active Color
+            <input id="textSendBtnActiveColor" type="color" value="#059669" />
+          </label>
+          <label>Send Button Text
+            <input id="textSendBtnText" type="text" value="➤" />
+          </label>
+          <label>Send Button Text Color
+            <input id="textSendBtnTextColor" type="color" value="#FFFFFF" />
+          </label>
+          <label>Send Button Font Size
+            <input id="textSendBtnFontSize" type="text" value="18px" />
+          </label>
+          <label>Send Button Font Weight
+            <input id="textSendBtnFontWeight" type="text" value="500" />
+          </label>
+          <label>Send Button Hint Text
+            <input id="textSendHintText" type="text" value="" />
+          </label>
+          <label>Send Button Hint Color
+            <input id="textSendHintColor" type="color" value="#6B7280" />
+          </label>
+          <label>Send Button Hint Font Size
+            <input id="textSendHintFontSize" type="text" value="12px" />
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Input Field</h4>
+          <label>Placeholder
+            <input id="textInputPlaceholder" type="text" value="הקלד הודעה..." />
+          </label>
+          <label>Border Color
+            <input id="textInputBorderColor" type="color" value="#E5E7EB" />
+          </label>
+          <label>Focus Color
+            <input id="textInputFocusColor" type="color" value="#10B981" />
+          </label>
+          <label>Background Color
+            <input id="textInputBgColor" type="color" value="#FFFFFF" />
+          </label>
+          <label>Text Color
+            <input id="textInputTextColor" type="color" value="#1F2937" />
+          </label>
+          <label>Font Size
+            <input id="textInputFontSize" type="text" value="14px" />
+          </label>
+          <label>Border Radius
+            <input id="textInputBorderRadius" type="number" value="20" min="0" max="30" />
+          </label>
+          <label>Padding
+            <input id="textInputPadding" type="text" value="6px 14px" />
+          </label>
+        </div>
+      </div>
+      
+      <!-- Landing Section -->
+      <div class="customization-section">
+        <div class="section-header" onclick="toggleSection('landing')">
+          <h3 class="section-title">🎯 Landing Screen Settings</h3>
+          <span class="section-toggle collapsed" id="landing-toggle">▶</span>
+        </div>
+        <div class="section-content hidden" id="landing-content">
+          <label>Background Color
+            <input id="landingBgColor" type="color" value="#f8fafc" />
+          </label>
+          <label>Logo (Emoji/Text)
+            <input id="landingLogo" type="text" value="🤖" />
+          </label>
+          <label>Title
+            <input id="landingTitle" type="text" value="" placeholder="Leave empty for default" />
+          </label>
+          <label>Title Color
+            <input id="landingTitleColor" type="color" value="#1e293b" />
+          </label>
+          <label>Mode Card Background
+            <input id="landingCardBg" type="color" value="#FFFFFF" />
+          </label>
+          <label>Mode Card Border Color
+            <input id="landingCardBorder" type="color" value="#E2E8F0" />
+          </label>
+          <label>Mode Card Hover Border
+            <input id="landingCardHoverBorder" type="color" value="#10B981" />
+          </label>
+          <label>Mode Card Icon Background
+            <input id="landingCardIconBg" type="color" value="#10B981" />
+          </label>
+          <label>Mode Card Title Color
+            <input id="landingCardTitleColor" type="color" value="#111827" />
+          </label>
+          <label>Voice Card Icon
+            <input id="landingVoiceIcon" type="text" value="🎤" />
+          </label>
+          <label>Text Card Icon
+            <input id="landingTextIcon" type="text" value="💬" />
+          </label>
+        </div>
+      </div>
+      
     </div>
-
-    <h2>Features</h2>
-    <ul>
-      <li>✅ Text-based chat interface</li>
-      <li>✅ Similar customization options to voice widget</li>
-      <li>✅ Auto-connect on first message</li>
-      <li>✅ Enter key to send</li>
-      <li>✅ Real-time message display</li>
-      <li>✅ Error handling</li>
-    </ul>
+    
+    <div class="action-buttons">
+      <button id="applyBtn">✅ Apply Changes</button>
+      <button id="resetBtn" class="secondary">🔄 Reset</button>
+    </div>
   </div>
 
   <!-- Load the SDK from dist folder -->
   <script src="../agent-widget.js" data-agent-id="agent_87c4a55a1" data-app-id="app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC" onload="console.log('SDK script loaded successfully')" onerror="console.error('Failed to load SDK script')"></script>
   
   <script>
+    // Toggle section collapse
+    function toggleSection(sectionId) {
+      const content = document.getElementById(sectionId + '-content');
+      const toggle = document.getElementById(sectionId + '-toggle');
+      const isHidden = content.classList.contains('hidden');
+      
+      if (isHidden) {
+        content.classList.remove('hidden');
+        toggle.classList.remove('collapsed');
+      } else {
+        content.classList.add('hidden');
+        toggle.classList.add('collapsed');
+      }
+    }
+    
     // Status update function
     function updateStatus(message, type = '') {
       const statusEl = document.getElementById('status');
@@ -197,6 +577,166 @@
     }
 
     // Initialize the widget
+    let widget;
+    
+    function createWidget(config) {
+      if (window.testWidget) {
+        window.testWidget.destroy();
+      }
+      
+      window.testWidget = new TTPAgentSDK.TextChatWidget(config);
+      widget = window.testWidget;
+      
+      console.log('Widget initialized:', widget);
+      updateStatus('Widget loaded and ready ✓', 'success');
+    }
+    
+    function getConfigFromForm() {
+      return {
+        agentId: 'agent_87c4a55a1',
+        appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
+        direction: document.getElementById('dirSelect').value,
+        language: document.getElementById('languageSelect').value,
+        position: document.getElementById('posSelect').value,
+        
+        variables: {
+          testMode: true,
+          userName: 'Test User',
+          page: 'test-text-chat.html',
+          connectionType: 'text_chat'
+        },
+        
+        primaryColor: document.getElementById('buttonBgColor').value,
+        
+        icon: {
+          type: 'chat',
+          size: document.getElementById('buttonSize').value
+        },
+        
+        button: {
+          size: document.getElementById('buttonSize').value,
+          shape: document.getElementById('buttonShape').value,
+          backgroundColor: document.getElementById('buttonBgColor').value,
+          hoverColor: document.getElementById('buttonHoverColor').value
+        },
+        
+        panel: {
+          width: Number(document.getElementById('panelWidth').value) || 350,
+          height: Number(document.getElementById('panelHeight').value) || 500,
+          borderRadius: Number(document.getElementById('panelBorderRadius').value) || 12,
+          backgroundColor: document.getElementById('panelBgColor').value
+        },
+        
+        header: {
+          title: document.getElementById('headerTitle').value,
+          showTitle: document.getElementById('headerShowTitle').value === 'true',
+          backgroundColor: document.getElementById('headerBgColor').value,
+          textColor: document.getElementById('headerTextColor').value,
+          showCloseButton: document.getElementById('headerShowClose').value === 'true'
+        },
+        
+        messages: {
+          fontSize: document.getElementById('msgFontSize').value,
+          borderRadius: Number(document.getElementById('msgBorderRadius').value) || 8,
+          textColor: document.getElementById('msgTextColor').value,
+          userBackgroundColor: document.getElementById('userBgColor').value,
+          agentBackgroundColor: document.getElementById('agentBgColor').value,
+          systemBackgroundColor: document.getElementById('systemBgColor').value,
+          errorBackgroundColor: document.getElementById('errorBgColor').value
+        },
+        
+        animation: {
+          enableHover: document.getElementById('animHover').value === 'true',
+          enablePulse: document.getElementById('animPulse').value === 'true',
+          enableSlide: document.getElementById('animSlide').value === 'true',
+          duration: Number(document.getElementById('animDuration').value) || 0.3
+        },
+        
+        behavior: {
+          mode: document.getElementById('modeSelect').value,
+          startOpen: document.getElementById('behaviorStartOpen').value === 'true',
+          hidden: document.getElementById('behaviorHidden').value === 'true',
+          showWelcomeMessage: document.getElementById('behaviorWelcome').value === 'true',
+          welcomeMessage: document.getElementById('behaviorWelcomeMsg').value
+        },
+        
+        voice: {
+          avatarBackgroundColor: document.getElementById('voiceAvatarBg').value,
+          avatarActiveBackgroundColor: document.getElementById('voiceAvatarActiveBg').value,
+          statusTitleColor: document.getElementById('voiceStatusTitleColor').value,
+          statusSubtitleColor: document.getElementById('voiceStatusSubtitleColor').value,
+          startCallButtonColor: document.getElementById('voiceStartCallBtnColor').value,
+          startCallButtonTextColor: document.getElementById('voiceStartCallBtnTextColor').value,
+          transcriptBackgroundColor: document.getElementById('voiceTranscriptBg').value,
+          transcriptTextColor: document.getElementById('voiceTranscriptTextColor').value,
+          transcriptLabelColor: document.getElementById('voiceTranscriptLabelColor').value,
+          controlButtonColor: document.getElementById('voiceControlBtnColor').value,
+          controlButtonSecondaryColor: document.getElementById('voiceControlBtnSecondaryColor').value,
+          endCallButtonColor: document.getElementById('voiceEndCallBtnColor').value,
+          micButtonColor: document.getElementById('voiceMicBtnColor').value,
+          micButtonActiveColor: document.getElementById('voiceMicBtnActiveColor').value,
+          micButtonHint: {
+            text: document.getElementById('voiceMicHintText').value,
+            color: document.getElementById('voiceMicHintColor').value,
+            fontSize: document.getElementById('voiceMicHintFontSize').value
+          }
+        },
+        
+        text: {
+          sendButtonColor: document.getElementById('textSendBtnColor').value,
+          sendButtonHoverColor: document.getElementById('textSendBtnHoverColor').value,
+          sendButtonActiveColor: document.getElementById('textSendBtnActiveColor').value,
+          sendButtonText: document.getElementById('textSendBtnText').value,
+          sendButtonTextColor: document.getElementById('textSendBtnTextColor').value,
+          sendButtonFontSize: document.getElementById('textSendBtnFontSize').value,
+          sendButtonFontWeight: document.getElementById('textSendBtnFontWeight').value,
+          sendButtonHint: {
+            text: document.getElementById('textSendHintText').value,
+            color: document.getElementById('textSendHintColor').value,
+            fontSize: document.getElementById('textSendHintFontSize').value
+          },
+          inputPlaceholder: document.getElementById('textInputPlaceholder').value,
+          inputBorderColor: document.getElementById('textInputBorderColor').value,
+          inputFocusColor: document.getElementById('textInputFocusColor').value,
+          inputBackgroundColor: document.getElementById('textInputBgColor').value,
+          inputTextColor: document.getElementById('textInputTextColor').value,
+          inputFontSize: document.getElementById('textInputFontSize').value,
+          inputBorderRadius: Number(document.getElementById('textInputBorderRadius').value) || 20,
+          inputPadding: document.getElementById('textInputPadding').value
+        },
+        
+        landing: {
+          backgroundColor: document.getElementById('landingBgColor').value,
+          logo: document.getElementById('landingLogo').value,
+          title: document.getElementById('landingTitle').value || null,
+          titleColor: document.getElementById('landingTitleColor').value,
+          modeCardBackgroundColor: document.getElementById('landingCardBg').value,
+          modeCardBorderColor: document.getElementById('landingCardBorder').value,
+          modeCardHoverBorderColor: document.getElementById('landingCardHoverBorder').value,
+          modeCardIconBackgroundColor: document.getElementById('landingCardIconBg').value,
+          modeCardTitleColor: document.getElementById('landingCardTitleColor').value,
+          voiceCardIcon: document.getElementById('landingVoiceIcon').value,
+          textCardIcon: document.getElementById('landingTextIcon').value
+        }
+      };
+    }
+    
+    function applyChanges() {
+      const config = getConfigFromForm();
+      const currentMode = widget?.config?.behavior?.mode || 'unified';
+      const newMode = config.behavior.mode;
+      
+      if (currentMode !== newMode) {
+        // Mode changed - recreate widget
+        createWidget(config);
+        updateStatus(`Widget recreated with ${newMode} mode ✓`, 'success');
+      } else {
+        // Mode same - just update config
+        widget.updateConfig(config);
+        updateStatus('Customization applied ✓', 'success');
+      }
+    }
+    
     try {
       console.log('Initializing text chat widget...');
       console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
@@ -210,147 +750,17 @@
         throw new Error('TTPAgentSDK.TextChatWidget is not defined. Check the SDK build.');
       }
       
-      // Create a new TextChatWidget instance
-      const widget = new TTPAgentSDK.TextChatWidget({
-        agentId: 'agent_87c4a55a1',
-        appId: 'app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC',
-        direction: 'rtl',
-        
-        // Optional: Pass variables for your agent/backend
-        variables: {
-          testMode: true,
-          userName: 'Test User',
-          page: 'test-text-chat.html',
-          connectionType: 'text_chat'
-        },
-        
-        // Customize appearance
-        primaryColor: '#10B981',
-        position: 'bottom-right',
-        
-        // Icon configuration
-        icon: {
-          type: 'chat', // 'chat', 'emoji', 'custom', 'text'
-          size: 'medium'
-        },
-        
-        // Button colors
-        button: {
-          backgroundColor: '#10B981',
-          hoverColor: '#059669'
-        },
-        
-        // Header configuration
-        header: {
-          title: 'עוזר וירטואלי חכם',
-          backgroundColor: '#10B981',
-          textColor: '#FFFFFF'
-        },
-        
-        // Panel configuration
-        panel: {
-          sendButtonColor: '#10B981',
-          sendButtonHoverColor: '#059669',
-          inputPlaceholder: 'הקלד הודעה...'
-        },
-        
-        // Behavior
-        behavior: {
-          startOpen: true, // Start with panel open on page load so design is visible
-          hidden: false, // If true, hides the floating button
-          autoConnect: false, // Single-shot per message, no need to pre-connect
-          showWelcomeMessage: true,
-          welcomeMessage: 'שלום! איך אפשר לעזור?'
-        }
-      });
+      // Create initial widget
+      createWidget(getConfigFromForm());
       
-      // Store widget reference for testing
-      window.testWidget = widget;
-      
-      console.log('Text chat widget initialized successfully!');
-      console.log('Widget instance:', widget);
-      updateStatus('Widget loaded and ready ✓', 'success');
-
-      // Live customization handlers
-      const dirSelect = document.getElementById('dirSelect');
-      const posSelect = document.getElementById('posSelect');
-      const hdrTitle = document.getElementById('hdrTitle');
-      const hdrColor = document.getElementById('hdrColor');
-      const hdrTextColor = document.getElementById('hdrTextColor');
-      const sendBtnColor = document.getElementById('sendBtnColor');
-      const placeholderInput = document.getElementById('placeholderInput');
-      const panelWidth = document.getElementById('panelWidth');
-      const panelHeight = document.getElementById('panelHeight');
-      const msgFont = document.getElementById('msgFont');
-      const agentBg = document.getElementById('agentBg');
-      const userBg = document.getElementById('userBg');
-      const hoverAnim = document.getElementById('hoverAnim');
-
-      const apply = () => {
-        const dir = dirSelect.value;
-        const pos = posSelect.value;
-        const cfg = {
-          direction: dir,
-          position: pos,
-          header: {
-            title: hdrTitle.value,
-            backgroundColor: hdrColor.value,
-            textColor: hdrTextColor.value
-          },
-          panel: {
-            width: Number(panelWidth.value) || 350,
-            height: Number(panelHeight.value) || 500,
-            inputPlaceholder: placeholderInput.value,
-            sendButtonColor: sendBtnColor.value
-          },
-          messages: {
-            fontSize: msgFont.value,
-            agentBackgroundColor: agentBg.value,
-            userBackgroundColor: userBg.value
-          },
-          animation: {
-            enableHover: hoverAnim.value === 'true'
-          }
-        };
-        window.testWidget.updateConfig(cfg);
-        updateStatus('Customization applied', 'success');
-      };
-      document.getElementById('applyBtn').onclick = apply;
+      // Set up event handlers
+      document.getElementById('applyBtn').onclick = applyChanges;
       document.getElementById('resetBtn').onclick = () => window.location.reload();
       
     } catch (error) {
       console.error('Failed to initialize widget:', error);
       updateStatus('Widget failed to load: ' + error.message, 'error');
     }
-
-    // Test functions
-    function testSendMessage() {
-      console.log('💬 Testing send message...');
-      if (window.testWidget) {
-        // Get input field
-        const input = document.getElementById('text-chat-input');
-        if (input) {
-          input.value = 'Hello, this is a test message!';
-          window.testWidget.sendMessage();
-        } else {
-          console.log('💬 Input field not found (panel may be closed)');
-        }
-      }
-    }
-
-    function checkWidgetState() {
-      console.log('💬 Widget state:', {
-        isActive: window.testWidget?.isActive,
-        isOpen: window.testWidget?.isOpen,
-        sdk: window.testWidget?.sdk,
-        isConnected: window.testWidget?.sdk?.isConnected
-      });
-    }
-
-    // Expose test functions globally
-    window.testSendMessage = testSendMessage;
-    window.checkWidgetState = checkWidgetState;
   </script>
 </body>
 </html>
-
