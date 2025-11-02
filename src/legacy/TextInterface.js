@@ -12,32 +12,35 @@ export class TextInterface {
     this.isActive = false;
   }
 
+  // Helper function to get translated text
+  t(key) {
+    const lang = this.config.language || 'en';
+    const translations = this.config.translations?.[lang] || this.config.translations?.en || {};
+    return translations[key] || key;
+  }
+
   /**
    * Generate HTML for text interface
    */
   generateHTML() {
-    // Use text config, fallback to panel config for backward compatibility
-    const inputPlaceholder = this.config.inputPlaceholder || this.config.panel?.inputPlaceholder || 'Type your message...';
+    // Use text config, fallback to panel config, then translation, then default
+    const inputPlaceholder = this.config.inputPlaceholder || 
+                            this.config.panel?.inputPlaceholder || 
+                            this.t('typeMessage') || 
+                            'Type your message...';
     return `<div class="text-interface" id="textInterface">
       <div class="messages-container" id="messagesContainer">
         <div class="empty-state">
           <div class="empty-state-icon">💬</div>
-          <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
-          <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה או עבור למצב קולי לשיחה בזמן אמת' : 'Send a message to get started'}</div>
+          <div class="empty-state-title">${this.t('hello')}</div>
+          <div class="empty-state-text">${this.t('sendMessage')}</div>
         </div>
       </div>
       <div class="input-container">
-        ${this.config.direction === 'rtl' ? `
-          <button class="send-button" id="sendButton" aria-label="Send message">${this.config.sendButtonText || '➤'}</button>
-          <div class="input-wrapper" style="flex:1;">
-            <textarea class="message-input" id="messageInput" placeholder="${inputPlaceholder}" rows="1"></textarea>
-          </div>
-        ` : `
-          <div class="input-wrapper" style="flex:1;">
-            <textarea class="message-input" id="messageInput" placeholder="${inputPlaceholder}" rows="1"></textarea>
-          </div>
-          <button class="send-button" id="sendButton" aria-label="Send message">${this.config.sendButtonText || '➤'}</button>
-        `}
+        <div class="input-wrapper" style="flex:1;">
+          <textarea class="message-input" id="messageInput" placeholder="${inputPlaceholder}" rows="1" dir="${this.config.direction || 'ltr'}"></textarea>
+        </div>
+        <button class="send-button" id="sendButton" aria-label="${this.t('sendMessageAria')}">${this.config.sendButtonText || '➤'}</button>
         ${(this.config.sendButtonHint?.text || this.config.panel?.sendButtonHint?.text) ? `
           <div class="send-button-hint" style="color: ${this.config.sendButtonHint?.color || this.config.panel?.sendButtonHint?.color || '#6B7280'}; font-size: ${this.config.sendButtonHint?.fontSize || this.config.panel?.sendButtonHint?.fontSize || '12px'}; text-align: center; margin-top: 4px;">
             ${this.config.sendButtonHint?.text || this.config.panel?.sendButtonHint?.text}
@@ -56,12 +59,12 @@ export class TextInterface {
     const anim = this.config.animation;
     
     // Use text config, fallback to panel config for backward compatibility
-    const sendButtonColor = this.config.sendButtonColor || this.config.panel?.sendButtonColor || '#667eea';
-    const sendButtonHoverColor = this.config.sendButtonHoverColor || this.config.panel?.sendButtonHoverColor || '#7C3AED';
+    const sendButtonColor = this.config.sendButtonColor || this.config.panel?.sendButtonColor || '#7C3AED'; // Purple default
+    const sendButtonHoverColor = this.config.sendButtonHoverColor || this.config.panel?.sendButtonHoverColor || '#6D28D9';
     const sendButtonTextColor = this.config.sendButtonTextColor || this.config.panel?.sendButtonTextColor || '#FFFFFF';
     const inputPlaceholder = this.config.inputPlaceholder || this.config.panel?.inputPlaceholder || 'Type your message...';
     const inputBorderColor = this.config.inputBorderColor || this.config.panel?.inputBorderColor || '#E5E7EB';
-    const inputFocusColor = this.config.inputFocusColor || this.config.panel?.inputFocusColor || sendButtonColor;
+    const inputFocusColor = this.config.inputFocusColor || this.config.panel?.inputFocusColor || '#7C3AED'; // Purple default
     const inputBackgroundColor = this.config.inputBackgroundColor || this.config.panel?.inputBackgroundColor || '#FFFFFF';
     const inputTextColor = this.config.inputTextColor || this.config.panel?.inputTextColor || '#1F2937';
     const inputFontSize = this.config.inputFontSize || this.config.panel?.inputFontSize || '14px';
@@ -122,6 +125,7 @@ export class TextInterface {
         color: ${messages.textColor}; 
         word-wrap: break-word; 
         text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'}; 
+        direction: ${this.config.direction || 'ltr'};
       }
       .message.user { 
         background: ${messages.userBackgroundColor}; 
@@ -165,8 +169,9 @@ export class TextInterface {
         padding: 12px 16px;
         background: #FFFFFF;
         border-top: 1px solid #E5E7EB;
-        align-items: flex-end;
+        align-items: center;
         flex-shrink: 0;
+        flex-direction: ${this.config.direction === 'rtl' ? 'row-reverse' : 'row'};
       }
       
       .input-wrapper {
@@ -194,7 +199,8 @@ export class TextInterface {
         display: block;
         white-space: pre-wrap;
         word-wrap: break-word;
-        text-align: start;
+        text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'};
+        direction: ${this.config.direction || 'ltr'};
         -webkit-appearance: none;
         appearance: none;
         box-sizing: border-box;
@@ -209,6 +215,7 @@ export class TextInterface {
       
       .message-input::placeholder {
         color: #9CA3AF;
+        text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'};
       }
       
       .send-button {
@@ -226,11 +233,13 @@ export class TextInterface {
         justify-content: center;
         flex-shrink: 0;
         transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(124, 60, 237, 0.3);
       }
       
       .send-button:hover:not(:disabled) {
         background: ${sendButtonHoverColor};
         transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(124, 60, 237, 0.4);
       }
       
       .send-button-hint {
@@ -288,6 +297,9 @@ export class TextInterface {
     if (sendButton) sendButton.onclick = () => this.sendMessage();
     if (newChatBtn) newChatBtn.onclick = () => this.startNewChat();
     
+    // Update placeholder and direction when config changes
+    this.updateInputAttributes();
+    
     // Send on Enter key, auto-resize textarea, and keep cursor visible
     if (inputField) {
       // Set initial height
@@ -342,14 +354,35 @@ export class TextInterface {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">💬</div>
-          <div class="empty-state-title">${this.config.direction === 'rtl' ? 'שלום! איך אפשר לעזור?' : 'Hello! How can I help?'}</div>
-          <div class="empty-state-text">${this.config.direction === 'rtl' ? 'שלח הודעה כדי להתחיל' : 'Send a message to get started'}</div>
+          <div class="empty-state-title">${this.t('hello')}</div>
+          <div class="empty-state-text">${this.t('sendMessage')}</div>
         </div>`;
     }
     
     // Focus message input
     const input = document.getElementById('messageInput');
     if (input) input.focus();
+  }
+
+  /**
+   * Update input attributes (placeholder, direction) when config changes
+   */
+  updateInputAttributes() {
+    const inputField = document.getElementById('messageInput');
+    if (inputField) {
+      // Update placeholder based on current language
+      const inputPlaceholder = this.config.inputPlaceholder || 
+                              this.config.panel?.inputPlaceholder || 
+                              this.t('typeMessage') || 
+                              'Type your message...';
+      inputField.placeholder = inputPlaceholder;
+      
+      // Update direction
+      inputField.dir = this.config.direction || 'ltr';
+      
+      // Update text-align style
+      inputField.style.textAlign = this.config.direction === 'rtl' ? 'right' : 'left';
+    }
   }
 
   /**

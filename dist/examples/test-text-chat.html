@@ -210,32 +210,36 @@
           <span class="section-toggle" id="common-toggle">▼</span>
         </div>
         <div class="section-content" id="common-content">
-          <label>Widget Mode
+          <label id="labelLanguage">Language
+            <select id="languageSelect">
+              <option value="en">English</option>
+              <option value="he" selected>עברית</option>
+              <option value="ar">العربية</option>
+              <option value="ru">Русский</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+            </select>
+          </label>
+          <label id="labelWidgetMode">Widget Mode
             <select id="modeSelect">
               <option value="unified" selected>Unified (Both)</option>
               <option value="voice-only">Voice Only</option>
               <option value="text-only">Text Only</option>
             </select>
           </label>
-          <label>Direction
+          <label id="labelDirection">Direction
             <select id="dirSelect">
               <option value="ltr">LTR</option>
               <option value="rtl" selected>RTL</option>
             </select>
           </label>
-          <label>Position
+          <label id="labelPosition">Position
             <select id="posSelect">
               <option value="bottom-right" selected>bottom-right</option>
               <option value="bottom-left">bottom-left</option>
               <option value="top-right">top-right</option>
               <option value="top-left">top-left</option>
-            </select>
-          </label>
-          <label>Language
-            <select id="languageSelect">
-              <option value="en">English</option>
-              <option value="he" selected>Hebrew</option>
-              <option value="ar">Arabic</option>
             </select>
           </label>
           
@@ -250,7 +254,11 @@
             <input id="panelBorderRadius" type="number" value="12" min="0" max="30" />
           </label>
           <label>Background Color
-            <input id="panelBgColor" type="color" value="#FFFFFF" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="panelBgColor" type="color" value="#FFFFFF" />
+              <div id="panelBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #FFFFFF; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="panelBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#FFFFFF</span>
+            </div>
           </label>
           
           <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Button</h4>
@@ -270,10 +278,18 @@
             </select>
           </label>
           <label>Button Color
-            <input id="buttonBgColor" type="color" value="#10B981" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="buttonBgColor" type="color" value="#7C3AED" />
+              <div id="buttonBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #7C3AED; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="buttonBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#7C3AED</span>
+            </div>
           </label>
           <label>Button Hover Color
-            <input id="buttonHoverColor" type="color" value="#059669" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="buttonHoverColor" type="color" value="#059669" />
+              <div id="buttonHoverColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #059669; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="buttonHoverColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#059669</span>
+            </div>
           </label>
           
           <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Header</h4>
@@ -287,16 +303,44 @@
             </select>
           </label>
           <label>Background Color
-            <input id="headerBgColor" type="color" value="#10B981" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="headerBgColor" type="color" value="#7C3AED" />
+              <div id="headerBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #7C3AED; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="headerBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#7C3AED</span>
+            </div>
           </label>
           <label>Text Color
-            <input id="headerTextColor" type="color" value="#FFFFFF" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="headerTextColor" type="color" value="#FFFFFF" />
+              <div id="headerTextColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #FFFFFF; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="headerTextColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#FFFFFF</span>
+            </div>
           </label>
           <label>Show Close Button
             <select id="headerShowClose">
               <option value="true" selected>Yes</option>
               <option value="false">No</option>
             </select>
+          </label>
+          
+          <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Tooltips</h4>
+          <label>New Chat Tooltip
+            <input id="tooltipNewChat" type="text" value="" placeholder="Leave empty for default" />
+          </label>
+          <label>Back Tooltip
+            <input id="tooltipBack" type="text" value="" placeholder="Leave empty for default" />
+          </label>
+          <label>Close Tooltip
+            <input id="tooltipClose" type="text" value="" placeholder="Leave empty for default" />
+          </label>
+          <label>Mute Tooltip (Voice)
+            <input id="tooltipMute" type="text" value="" placeholder="Leave empty for default" />
+          </label>
+          <label>Speaker Tooltip (Voice)
+            <input id="tooltipSpeaker" type="text" value="" placeholder="Leave empty for default" />
+          </label>
+          <label>End Call Tooltip (Voice)
+            <input id="tooltipEndCall" type="text" value="" placeholder="Leave empty for default" />
           </label>
           
           <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Messages</h4>
@@ -307,19 +351,39 @@
             <input id="msgBorderRadius" type="number" value="8" min="0" max="30" />
           </label>
           <label>Text Color
-            <input id="msgTextColor" type="color" value="#1F2937" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="msgTextColor" type="color" value="#1F2937" />
+              <div id="msgTextColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #1F2937; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="msgTextColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#1F2937</span>
+            </div>
           </label>
           <label>User Bubble Color
-            <input id="userBgColor" type="color" value="#E5E7EB" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="userBgColor" type="color" value="#E5E7EB" />
+              <div id="userBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #E5E7EB; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="userBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#E5E7EB</span>
+            </div>
           </label>
           <label>Agent Bubble Color
-            <input id="agentBgColor" type="color" value="#F3F4F6" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="agentBgColor" type="color" value="#F3F4F6" />
+              <div id="agentBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #F3F4F6; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="agentBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#F3F4F6</span>
+            </div>
           </label>
           <label>System Bubble Color
-            <input id="systemBgColor" type="color" value="#DCFCE7" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="systemBgColor" type="color" value="#DCFCE7" />
+              <div id="systemBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #DCFCE7; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="systemBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#DCFCE7</span>
+            </div>
           </label>
           <label>Error Bubble Color
-            <input id="errorBgColor" type="color" value="#FEE2E2" />
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="errorBgColor" type="color" value="#FEE2E2" />
+              <div id="errorBgColorColorBox" style="width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: #FEE2E2; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+              <span id="errorBgColorValue" style="font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;">#FEE2E2</span>
+            </div>
           </label>
           
           <h4 style="grid-column: 1/-1; margin: 16px 0 8px 0; color: #6B7280; font-size: 14px;">Animation</h4>
@@ -441,13 +505,13 @@
         <div class="section-content hidden" id="text-content">
           <h4 style="grid-column: 1/-1; margin: 0 0 8px 0; color: #6B7280; font-size: 14px;">Send Button</h4>
           <label>Send Button Color
-            <input id="textSendBtnColor" type="color" value="#10B981" />
+            <input id="textSendBtnColor" type="color" value="#7C3AED" />
           </label>
           <label>Send Button Hover Color
             <input id="textSendBtnHoverColor" type="color" value="#7C3AED" />
           </label>
           <label>Send Button Active Color
-            <input id="textSendBtnActiveColor" type="color" value="#059669" />
+            <input id="textSendBtnActiveColor" type="color" value="#6D28D9" />
           </label>
           <label>Send Button Text
             <input id="textSendBtnText" type="text" value="➤" />
@@ -479,7 +543,7 @@
             <input id="textInputBorderColor" type="color" value="#E5E7EB" />
           </label>
           <label>Focus Color
-            <input id="textInputFocusColor" type="color" value="#10B981" />
+            <input id="textInputFocusColor" type="color" value="#7C3AED" />
           </label>
           <label>Background Color
             <input id="textInputBgColor" type="color" value="#FFFFFF" />
@@ -525,10 +589,10 @@
             <input id="landingCardBorder" type="color" value="#E2E8F0" />
           </label>
           <label>Mode Card Hover Border
-            <input id="landingCardHoverBorder" type="color" value="#10B981" />
+            <input id="landingCardHoverBorder" type="color" value="#7C3AED" />
           </label>
           <label>Mode Card Icon Background
-            <input id="landingCardIconBg" type="color" value="#10B981" />
+            <input id="landingCardIconBg" type="color" value="#7C3AED" />
           </label>
           <label>Mode Card Title Color
             <input id="landingCardTitleColor" type="color" value="#111827" />
@@ -545,7 +609,6 @@
     </div>
     
     <div class="action-buttons">
-      <button id="applyBtn">✅ Apply Changes</button>
       <button id="resetBtn" class="secondary">🔄 Reset</button>
     </div>
   </div>
@@ -554,6 +617,110 @@
   <script src="../agent-widget.js" data-agent-id="agent_87c4a55a1" data-app-id="app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC" onload="console.log('SDK script loaded successfully')" onerror="console.error('Failed to load SDK script')"></script>
   
   <script>
+    // Language selection only affects widget, not page UI
+    // No translations needed for page UI
+    
+    // Setup color value displays for all color inputs
+    function setupColorDisplays() {
+      const colorInputs = document.querySelectorAll('input[type="color"]');
+      colorInputs.forEach(input => {
+        // Get or create the value display span
+        const valueSpanId = input.id + 'Value';
+        const colorBoxId = input.id + 'ColorBox';
+        let valueSpan = document.getElementById(valueSpanId);
+        let colorBox = document.getElementById(colorBoxId);
+        
+        if (!valueSpan || !colorBox) {
+          // Check if parent is already a flex container div
+          const parent = input.parentElement;
+          const isParentDiv = parent.tagName === 'DIV' && (parent.style.display === 'flex' || getComputedStyle(parent).display === 'flex');
+          
+          if (isParentDiv) {
+            // Already has wrapper div, just add color box and span
+            if (!colorBox) {
+              colorBox = document.createElement('div');
+              colorBox.id = colorBoxId;
+              colorBox.style.cssText = 'width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: ' + input.value + '; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
+              parent.appendChild(colorBox);
+            }
+            if (!valueSpan) {
+              valueSpan = document.createElement('span');
+              valueSpan.id = valueSpanId;
+              valueSpan.style.cssText = 'font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;';
+              parent.appendChild(valueSpan);
+            }
+          } else if (parent.tagName === 'LABEL') {
+            // Input is directly in label, create wrapper div
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+            
+            // Move input to wrapper
+            parent.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            
+            // Create color box
+            colorBox = document.createElement('div');
+            colorBox.id = colorBoxId;
+            colorBox.style.cssText = 'width: 30px; height: 30px; border-radius: 4px; border: 2px solid #D1D5DB; background: ' + input.value + '; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
+            wrapper.appendChild(colorBox);
+            
+            // Create value span
+            valueSpan = document.createElement('span');
+            valueSpan.id = valueSpanId;
+            valueSpan.style.cssText = 'font-family: monospace; font-size: 12px; color: #6B7280; min-width: 70px;';
+            wrapper.appendChild(valueSpan);
+          }
+        }
+        
+        // Update function
+        const updateDisplay = () => {
+          const currentValue = input.value.toUpperCase();
+          if (valueSpan) {
+            valueSpan.textContent = currentValue;
+          }
+          if (colorBox) {
+            colorBox.style.background = input.value;
+          }
+        };
+        
+        // Set initial value
+        updateDisplay();
+        
+        // Add event listener to update value when color changes
+        input.addEventListener('input', updateDisplay);
+      });
+    }
+    
+    // Initialize color displays and language handler when DOM is ready
+    function initializeUI() {
+      setupColorDisplays();
+      
+      // Set up language change handler - only update widget, not page UI
+      const langSelect = document.getElementById('languageSelect');
+      if (langSelect) {
+        // Update widget language when language changes (don't update page UI)
+        langSelect.addEventListener('change', function(e) {
+          const newLang = e.target.value;
+          
+          // Update widget language if it exists
+          if (window.testWidget && window.testWidget.updateConfig) {
+            const newDirection = (newLang === 'he' || newLang === 'ar') ? 'rtl' : 'ltr';
+            window.testWidget.updateConfig({ 
+              language: newLang,
+              direction: newDirection
+            });
+            // Note: updateConfig already calls createWidget(), so no need to call it again
+          }
+        });
+      }
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeUI);
+    } else {
+      initializeUI();
+    }
+    
     // Toggle section collapse
     function toggleSection(sectionId) {
       const content = document.getElementById(sectionId + '-content');
@@ -589,6 +756,11 @@
       
       console.log('Widget initialized:', widget);
       updateStatus('Widget loaded and ready ✓', 'success');
+      
+      // Setup auto-apply after widget is created
+      setTimeout(() => {
+        setupAutoApply();
+      }, 100);
     }
     
     function getConfigFromForm() {
@@ -606,7 +778,7 @@
           connectionType: 'text_chat'
         },
         
-        primaryColor: document.getElementById('buttonBgColor').value,
+        primaryColor: document.getElementById('buttonBgColor').value || '#7C3AED',
         
         icon: {
           type: 'chat',
@@ -633,6 +805,15 @@
           backgroundColor: document.getElementById('headerBgColor').value,
           textColor: document.getElementById('headerTextColor').value,
           showCloseButton: document.getElementById('headerShowClose').value === 'true'
+        },
+        
+        tooltips: {
+          newChat: document.getElementById('tooltipNewChat').value || null,
+          back: document.getElementById('tooltipBack').value || null,
+          close: document.getElementById('tooltipClose').value || null,
+          mute: document.getElementById('tooltipMute').value || null,
+          speaker: document.getElementById('tooltipSpeaker').value || null,
+          endCall: document.getElementById('tooltipEndCall').value || null
         },
         
         messages: {
@@ -722,6 +903,8 @@
     }
     
     function applyChanges() {
+      if (!widget) return;
+      
       const config = getConfigFromForm();
       const currentMode = widget?.config?.behavior?.mode || 'unified';
       const newMode = config.behavior.mode;
@@ -735,6 +918,44 @@
         widget.updateConfig(config);
         updateStatus('Customization applied ✓', 'success');
       }
+    }
+    
+    // Track which elements already have event listeners to avoid duplicates
+    const elementsWithListeners = new Set();
+    
+    // Auto-apply changes when user modifies any input
+    function setupAutoApply() {
+      if (!widget) return;
+      
+      // Get all input and select elements
+      const allInputs = document.querySelectorAll('input, select, textarea');
+      
+      allInputs.forEach(element => {
+        // Skip if it's the language select (handled separately)
+        if (element.id === 'languageSelect') return;
+        
+        // Skip if already has listener
+        if (elementsWithListeners.has(element)) return;
+        
+        // For text inputs - apply on every keystroke (input event) with debounce
+        if (element.type === 'text' || element.tagName === 'TEXTAREA') {
+          let timeout;
+          element.addEventListener('input', function() {
+            // Debounce for text inputs to avoid too many updates
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+              applyChanges();
+            }, 300); // 300ms delay for text inputs
+          });
+          elementsWithListeners.add(element);
+        } else {
+          // For selects, color inputs, number inputs - apply immediately on change
+          element.addEventListener('change', function() {
+            applyChanges();
+          });
+          elementsWithListeners.add(element);
+        }
+      });
     }
     
     try {
@@ -754,7 +975,6 @@
       createWidget(getConfigFromForm());
       
       // Set up event handlers
-      document.getElementById('applyBtn').onclick = applyChanges;
       document.getElementById('resetBtn').onclick = () => window.location.reload();
       
     } catch (error) {

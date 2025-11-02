@@ -6,6 +6,7 @@
 import TextChatSDK from '../core/TextChatSDK.js';
 import { VoiceInterface } from './VoiceInterface.js';
 import { TextInterface } from './TextInterface.js';
+import widgetTranslations from './widget-translations.js';
 
 export class TextChatWidget {
   constructor(config = {}) {
@@ -14,6 +15,7 @@ export class TextChatWidget {
     this.sdk = new TextChatSDK(this.config);
     this.isOpen = false;
     this.isActive = false;
+    this.translations = widgetTranslations;
     
     // Initialize interfaces with proper config
     // Voice interface needs voice config merged with main config
@@ -21,13 +23,15 @@ export class TextChatWidget {
       ...this.config,
       ...this.config.voice,
       language: this.config.voice?.language || this.config.language || 'en',
-      websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv'
+      websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
+      translations: this.translations
     };
     this.voiceInterface = new VoiceInterface(voiceConfig);
     // Text interface needs text config merged with main config
     const textConfig = {
       ...this.config,
-      ...this.config.text
+      ...this.config.text,
+      translations: this.translations
     };
     this.textInterface = new TextInterface(textConfig, this.sdk);
     
@@ -61,8 +65,8 @@ export class TextChatWidget {
       };
     }
 
-    // Handle legacy primaryColor
-    const primaryColor = userConfig.primaryColor || userConfig.button?.primaryColor || '#4F46E5';
+    // Handle legacy primaryColor - default to purple
+    const primaryColor = userConfig.primaryColor || userConfig.button?.primaryColor || userConfig.button?.backgroundColor || '#7C3AED';
     
     // Calculate headerColor for use in landing config (needed before landing config is defined)
     const headerColor = userConfig.header?.backgroundColor || userConfig.button?.backgroundColor || primaryColor;
@@ -157,9 +161,9 @@ export class TextChatWidget {
       // Text-specific Configuration
       text: {
         // Send button colors (inside panel)
-        sendButtonColor: userConfig.text?.sendButtonColor || userConfig.panel?.sendButtonColor || primaryColor,
-        sendButtonHoverColor: userConfig.text?.sendButtonHoverColor || userConfig.panel?.sendButtonHoverColor || '#7C3AED',
-        sendButtonActiveColor: userConfig.text?.sendButtonActiveColor || userConfig.panel?.sendButtonActiveColor || '#059669',
+        sendButtonColor: userConfig.text?.sendButtonColor || userConfig.panel?.sendButtonColor || '#7C3AED', // Purple default
+        sendButtonHoverColor: userConfig.text?.sendButtonHoverColor || userConfig.panel?.sendButtonHoverColor || '#6D28D9',
+        sendButtonActiveColor: userConfig.text?.sendButtonActiveColor || userConfig.panel?.sendButtonActiveColor || '#6D28D9', // Purple darker for active
         sendButtonText: userConfig.text?.sendButtonText || userConfig.panel?.sendButtonText || '➤',
         sendButtonTextColor: userConfig.text?.sendButtonTextColor || userConfig.panel?.sendButtonTextColor || '#FFFFFF',
         sendButtonFontSize: userConfig.text?.sendButtonFontSize || userConfig.panel?.sendButtonFontSize || '18px',
@@ -175,7 +179,7 @@ export class TextChatWidget {
         // Input field configuration
         inputPlaceholder: userConfig.text?.inputPlaceholder || userConfig.panel?.inputPlaceholder || 'Type your message...',
         inputBorderColor: userConfig.text?.inputBorderColor || userConfig.panel?.inputBorderColor || '#E5E7EB',
-        inputFocusColor: userConfig.text?.inputFocusColor || userConfig.panel?.inputFocusColor || primaryColor,
+        inputFocusColor: userConfig.text?.inputFocusColor || userConfig.panel?.inputFocusColor || '#7C3AED', // Purple default
         inputBackgroundColor: userConfig.text?.inputBackgroundColor || userConfig.panel?.inputBackgroundColor || '#FFFFFF',
         inputTextColor: userConfig.text?.inputTextColor || userConfig.panel?.inputTextColor || '#1F2937',
         inputFontSize: userConfig.text?.inputFontSize || userConfig.panel?.inputFontSize || '14px',
@@ -204,10 +208,21 @@ export class TextChatWidget {
       header: {
         title: userConfig.header?.title || 'Chat Assistant',
         showTitle: userConfig.header?.showTitle !== false,
-        backgroundColor: userConfig.header?.backgroundColor || userConfig.button?.backgroundColor || primaryColor,
+        backgroundColor: userConfig.header?.backgroundColor || userConfig.button?.backgroundColor || '#7C3AED', // Default purple
         textColor: userConfig.header?.textColor || '#FFFFFF',
         showCloseButton: userConfig.header?.showCloseButton !== false,
         ...userConfig.header
+      },
+      
+      // Tooltips Configuration
+      tooltips: {
+        newChat: userConfig.tooltips?.newChat || null, // null means use default based on direction
+        back: userConfig.tooltips?.back || null,
+        close: userConfig.tooltips?.close || null,
+        mute: userConfig.tooltips?.mute || null,
+        speaker: userConfig.tooltips?.speaker || null,
+        endCall: userConfig.tooltips?.endCall || null,
+        ...userConfig.tooltips
       },
       
       // Messages Configuration
@@ -340,6 +355,29 @@ export class TextChatWidget {
     const showVoice = widgetMode === 'unified' || widgetMode === 'voice-only';
     const showText = widgetMode === 'unified' || widgetMode === 'text-only';
     const voiceEnabled = showVoice;
+    
+    // Helper function to get translated text
+    const t = (key) => {
+      const lang = this.config.language || 'en';
+      const translations = this.translations[lang] || this.translations.en;
+      return translations[key] || key;
+    };
+    
+    // Helper function to get tooltip text
+    const getTooltip = (key) => {
+      const tooltip = this.config.tooltips?.[key];
+      if (tooltip !== null && tooltip !== undefined) return tooltip;
+      // Use translations for default tooltips
+      const defaults = {
+        newChat: t('newChat'),
+        back: t('back'),
+        close: t('close'),
+        mute: t('mute'),
+        speaker: t('speaker'),
+        endCall: t('endCall')
+      };
+      return defaults[key] || '';
+    };
 
     return `
       <style>
@@ -356,43 +394,45 @@ export class TextChatWidget {
       <div id="text-chat-panel">
         <div class="widget-shell">
           <div class="panel-inner widget-container" style="direction: ${this.config.direction};">
-          <div class="widget-header">
+          <div class="widget-header" style="background: ${header.backgroundColor}; color: ${header.textColor};">
             <div>
-              <div class="header-title">${header.title}</div>
+              ${header.showTitle ? `<div class="header-title">${header.title}</div>` : ''}
               <div class="header-status">
                 <span class="status-dot"></span>
-                <span>${this.config.direction === 'rtl' ? 'מקוון' : 'Online'}</span>
+                <span>${t('online')}</span>
               </div>
             </div>
+            
             <div style="display: flex; gap: 12px; align-items: center;">
-              <button class="new-chat-btn header-icon" id="newChatBtn" title="Start new chat">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+              <!-- New Chat Button (hide on landing screen, show otherwise) -->
+              <button class="header-icon new-chat-btn" id="newChatBtn" title="${getTooltip('newChat')}" style="${showLanding ? 'display: none;' : ''}">
+                <span style="font-size: 18px; font-weight: bold;">+</span>
               </button>
-              ${showLanding ? '<button class="back-btn header-icon" id="backBtn">'+
-                '<svg width="16" height="16" viewBox="0 0 16 16" fill="none">'+
-                '<path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
-                '</svg></button>' : ''}
-              ${header.showCloseButton ? '<button class="close-btn header-icon" id="text-chat-close">'+
-                '<svg width="16" height="16" viewBox="0 0 16 16" fill="none">'+
-                '<path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'+
-                '</svg></button>' : ''}
+              
+              <!-- Back Button (only show in unified mode) -->
+              ${widgetMode === 'unified' ? `<button class="header-icon back-btn" id="backBtn" title="${getTooltip('back')}" style="display: none;">
+                <span style="font-size: 16px;">‹</span>
+              </button>` : ''}
+              
+              <!-- Close Button -->
+              ${header.showCloseButton ? '<button class="header-icon close-btn" id="closeBtn" title="' + getTooltip('close') + '">'+
+                '<span style="font-size: 18px; font-weight: bold;">×</span>'+
+                '</button>' : ''}
             </div>
           </div>
 
           ${showLanding ? `
           <div class="landing-screen" id="landingScreen">
             <div class="landing-logo">🤖</div>
-            <div class="landing-title">${this.config.direction === 'rtl' ? 'איך תרצה לתקשר?' : 'How would you like to communicate?'}</div>
+            <div class="landing-title">${t('landingTitle')}</div>
             <div class="mode-selection">
               ${showVoice ? `<div class="mode-card voice" id="mode-card-voice">
                 <div class="mode-card-icon">🎤</div>
-                <div class="mode-card-title">${this.config.direction === 'rtl' ? 'שיחה קולית' : 'Voice Call'}</div>
+                <div class="mode-card-title">${t('voiceCall')}</div>
               </div>` : ''}
               ${showText ? `<div class="mode-card text" id="mode-card-text">
                 <div class="mode-card-icon">💬</div>
-                <div class="mode-card-title">${this.config.direction === 'rtl' ? "צ'אט טקסט" : 'Text Chat'}</div>
+                <div class="mode-card-title">${t('textChat')}</div>
               </div>` : ''}
             </div>
           </div>` : ''}
@@ -463,9 +503,9 @@ export class TextChatWidget {
     // Color references for clarity
     const floatingButtonColor = btn.backgroundColor || btn.primaryColor; // Floating button (main)
     const headerColor = header.backgroundColor; // Header/top of panel
-    const sendButtonColor = panel.sendButtonColor || btn.primaryColor; // Send button (similar to micButtonColor in voice widget)
+    const sendButtonColor = panel.sendButtonColor || btn.primaryColor || '#7C3AED'; // Send button (similar to micButtonColor in voice widget) - Purple default
     const sendButtonHoverColor = panel.sendButtonHoverColor || '#7C3AED'; // Send button hover
-    const sendButtonActiveColor = panel.sendButtonActiveColor || '#059669'; // Send button active state
+    const sendButtonActiveColor = panel.sendButtonActiveColor || '#6D28D9'; // Send button active state - Purple darker
     
     // Determine which interfaces to show
     const widgetMode = this.config.behavior.mode || 'unified';
@@ -567,8 +607,6 @@ export class TextChatWidget {
         width: 100%; height: 100%; min-height: 0; background: #FFFFFF; overflow: hidden; display: flex; flex-direction: column; border-radius: ${panel.borderRadius}px;
       }
       #text-chat-panel .widget-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #FFFFFF;
         padding: 12px 16px;
         display: flex;
         justify-content: space-between;
@@ -583,12 +621,40 @@ export class TextChatWidget {
       #text-chat-panel .header-status { display: flex; align-items: center; gap: 8px; font-size: 12px; opacity: 0.9; }
       #text-chat-panel .status-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-      #text-chat-panel .back-btn, #text-chat-panel .close-btn {
-        background: rgba(255,255,255,0.2);
-        border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
+      /* Header icon buttons */
+      .header-icon {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        flex-shrink: 0;
+        font-size: 16px;
+        padding: 0;
+        box-sizing: border-box;
       }
-      #text-chat-panel .new-chat-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+      
+      .header-icon:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      
+      .header-icon svg {
+        pointer-events: none;
+        stroke: white;
+        fill: none;
+      }
+      
+      .back-btn.visible {
+        display: flex !important;
+      }
 
       /* Landing and mode selection (shown only if voice enabled) */
       .landing-screen { 
@@ -610,6 +676,8 @@ export class TextChatWidget {
         color: ${this.config.landing?.titleColor || '#1e293b'}; 
         font-weight: 700; 
         margin-bottom: 20px; 
+        text-align: center;
+        width: 100%;
       }
       .mode-selection { display: flex; gap: 16px; width: 100%; justify-content: center; }
       .mode-card { 
@@ -646,6 +714,8 @@ export class TextChatWidget {
       .mode-card-title { 
         color: ${this.config.landing?.modeCardTitleColor || '#111827'}; 
         font-weight: 600; 
+        text-align: center;
+        width: 100%;
       }
 
       ${showVoice ? this.voiceInterface.generateCSS() : ''}
@@ -669,7 +739,7 @@ export class TextChatWidget {
       openBtn.onclick = () => this.togglePanel();
     }
     
-    const closeBtn = document.getElementById('text-chat-close');
+    const closeBtn = document.getElementById('closeBtn');
     if (closeBtn) {
       closeBtn.onclick = () => this.togglePanel();
     }
@@ -687,24 +757,32 @@ export class TextChatWidget {
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
     
+    // Setup back button handler
+    if (backBtn) {
+      backBtn.onclick = () => this.showLanding();
+    }
+    
     if (showLanding) {
-      if (backBtn) backBtn.onclick = () => this.showLanding();
       if (voiceCard) voiceCard.onclick = () => this.showVoice();
       if (textCard) textCard.onclick = () => this.showText();
       // Initial state: landing visible in unified mode
       if (landing) landing.classList.add('active');
       if (textInterface) textInterface.classList.remove('active');
       if (voiceInterface) voiceInterface.classList.remove('active');
+      // Hide back button on landing screen (only exists in unified mode)
+      if (backBtn && widgetMode === 'unified') backBtn.classList.remove('visible');
     } else if (widgetMode === 'voice-only') {
       // Voice-only mode: show voice interface directly
       if (voiceInterface) voiceInterface.classList.add('active');
       if (textInterface) textInterface.classList.remove('active');
       if (landing) landing.classList.remove('active');
+      // Back button doesn't exist in voice-only mode (only in unified)
     } else if (widgetMode === 'text-only') {
       // Text-only mode: show text interface directly
       if (textInterface) textInterface.classList.add('active');
       if (voiceInterface) voiceInterface.classList.remove('active');
       if (landing) landing.classList.remove('active');
+      // Back button doesn't exist in text-only mode (only in unified)
     }
     
     // Setup interface event handlers
@@ -713,6 +791,17 @@ export class TextChatWidget {
     }
     if (showText) {
       this.textInterface.setupEventHandlers();
+    }
+    
+    // Setup header button handlers
+    const newChatBtn = document.getElementById('newChatBtn');
+    
+    if (newChatBtn) {
+      newChatBtn.onclick = () => this.textInterface.startNewChat();
+      // Hide new chat button on landing screen initially
+      if (showLanding) {
+        newChatBtn.style.display = 'none';
+      }
     }
     
     // Keyboard navigation
@@ -731,26 +820,46 @@ export class TextChatWidget {
     const landing = document.getElementById('landingScreen');
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
+    const backBtn = document.getElementById('backBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
     if (landing) landing.classList.add('active');
     if (textInterface) textInterface.classList.remove('active');
     if (voiceInterface) voiceInterface.classList.remove('active');
+    // Hide back button on landing screen
+    if (backBtn) backBtn.classList.remove('visible');
+    // Hide new chat button on landing screen
+    if (newChatBtn) newChatBtn.style.display = 'none';
   }
 
   showText() {
     const landing = document.getElementById('landingScreen');
     const voiceInterface = document.getElementById('voiceInterface');
+    const backBtn = document.getElementById('backBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
     if (landing) landing.classList.remove('active');
     if (voiceInterface) voiceInterface.classList.remove('active');
     this.textInterface.show();
+    // Show back button when not on landing (only in unified mode)
+    const widgetMode = this.config.behavior.mode || 'unified';
+    if (backBtn && widgetMode === 'unified') backBtn.classList.add('visible');
+    // Show new chat button when not on landing
+    if (newChatBtn) newChatBtn.style.display = '';
   }
 
   showVoice() {
     const landing = document.getElementById('landingScreen');
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
+    const backBtn = document.getElementById('backBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
     if (landing) landing.classList.remove('active');
     if (textInterface) textInterface.classList.remove('active');
     if (voiceInterface) voiceInterface.classList.add('active');
+    // Show back button when not on landing (only in unified mode)
+    const widgetMode = this.config.behavior.mode || 'unified';
+    if (backBtn && widgetMode === 'unified') backBtn.classList.add('visible');
+    // Show new chat button when not on landing
+    if (newChatBtn) newChatBtn.style.display = '';
   }
 
   setupKeyboardNavigation() {
@@ -932,6 +1041,27 @@ export class TextChatWidget {
       }
     }
     
+    // Update language if provided - must be before mergeWithDefaults
+    if (newConfig.language !== undefined) {
+      mergedConfig.language = newConfig.language;
+    }
+    
+    // Update direction if language changed to RTL language
+    if (newConfig.language !== undefined) {
+      const rtlLanguages = ['he', 'ar'];
+      if (rtlLanguages.includes(newConfig.language)) {
+        mergedConfig.direction = 'rtl';
+      } else if (newConfig.direction === undefined) {
+        mergedConfig.direction = 'ltr';
+      }
+    }
+    
+    // Update translations if provided
+    if (newConfig.translations) {
+      mergedConfig.translations = newConfig.translations;
+      this.translations = newConfig.translations;
+    }
+    
     // Merge other configs (shallow merge is fine for these)
     if (newConfig.button) {
       mergedConfig.button = { ...this.config.button, ...newConfig.button };
@@ -954,37 +1084,51 @@ export class TextChatWidget {
     if (newConfig.accessibility) {
       mergedConfig.accessibility = { ...this.config.accessibility, ...newConfig.accessibility };
     }
+    if (newConfig.tooltips) {
+      mergedConfig.tooltips = { ...this.config.tooltips, ...newConfig.tooltips };
+    }
+    if (newConfig.landing) {
+      mergedConfig.landing = { ...this.config.landing, ...newConfig.landing };
+    }
     
-    // Merge direction property
-    if (newConfig.direction !== undefined) {
+    // Merge direction property (only if not set by language change above)
+    if (newConfig.direction !== undefined && mergedConfig.direction === undefined) {
       mergedConfig.direction = newConfig.direction;
     }
     
-    // Merge language property
-    if (newConfig.language !== undefined) {
-      mergedConfig.language = newConfig.language;
+    // Merge primaryColor if provided
+    if (newConfig.primaryColor !== undefined) {
+      mergedConfig.primaryColor = newConfig.primaryColor;
     }
     
     // Merge any other top-level properties
     Object.keys(newConfig).forEach(key => {
-      if (!['panel', 'button', 'header', 'icon', 'messages', 'direction', 'voice', 'text', 'animation', 'behavior', 'accessibility', 'language'].includes(key)) {
+      if (!['panel', 'button', 'header', 'icon', 'messages', 'direction', 'voice', 'text', 'animation', 'behavior', 'accessibility', 'language', 'tooltips', 'landing', 'primaryColor'].includes(key)) {
         mergedConfig[key] = newConfig[key];
       }
     });
     
+    // Store current language before merge to detect changes
+    const oldLanguage = this.config?.language || 'en';
+    
     this.config = this.mergeWithDefaults(mergedConfig);
     
-    // Recreate interfaces with new config
+    // Recreate interfaces with new config (after mergeWithDefaults, so language is current)
+    // Ensure language is correctly passed - use the merged config value
+    const currentLanguage = this.config.language || 'en';
     const voiceConfig = {
       ...this.config,
       ...this.config.voice,
-      language: this.config.voice?.language || this.config.language || 'en',
-      websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv'
+      language: currentLanguage, // Use the current language from merged config
+      websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
+      translations: this.translations
     };
     this.voiceInterface = new VoiceInterface(voiceConfig);
     const textConfig = {
       ...this.config,
-      ...this.config.text
+      ...this.config.text,
+      language: currentLanguage, // Ensure language is set from merged config
+      translations: this.translations
     };
     this.textInterface = new TextInterface(textConfig, this.sdk);
     
@@ -994,6 +1138,11 @@ export class TextChatWidget {
       existingWidget.remove();
     }
     this.createWidget();
+    
+    // Update input attributes in case widget was recreated
+    if (this.textInterface && this.textInterface.updateInputAttributes) {
+      this.textInterface.updateInputAttributes();
+    }
   }
 
   destroy() {

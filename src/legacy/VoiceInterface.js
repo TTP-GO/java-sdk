@@ -57,6 +57,28 @@ export class VoiceInterface {
   }
 
   /**
+   * Helper function to get tooltip text
+   */
+  // Helper function to get translated text
+  t(key) {
+    const lang = this.config.language || 'en';
+    const translations = this.config.translations?.[lang] || this.config.translations?.en || {};
+    return translations[key] || key;
+  }
+
+  getTooltip(key) {
+    const tooltip = this.config.tooltips?.[key];
+    if (tooltip !== null && tooltip !== undefined) return tooltip;
+    // Use translations for default tooltips
+    const defaults = {
+      mute: this.t('mute'),
+      speaker: this.t('speaker'),
+      endCall: this.t('endCall')
+    };
+    return defaults[key] || '';
+  }
+
+  /**
    * Generate HTML for voice interface
    */
   generateHTML() {
@@ -67,15 +89,15 @@ export class VoiceInterface {
           🤖
         </div>
         <div class="voice-status">
-          <div class="voice-status-title">${this.config.direction === 'rtl' ? 'לחץ להתחלת שיחה' : 'Click to Start Call'}</div>
-          <div class="voice-status-subtitle">${this.config.direction === 'rtl' ? 'שיחה קולית בזמן אמת' : 'Real-time voice conversation'}</div>
+          <div class="voice-status-title">${this.t('clickToStartCall')}</div>
+          <div class="voice-status-subtitle">${this.t('realTimeVoice')}</div>
         </div>
         <!-- BIG START CALL BUTTON -->
         <button class="start-call-btn" id="startCallBtn">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
           </svg>
-          <span>${this.config.direction === 'rtl' ? 'התחל שיחה' : 'Start Call'}</span>
+          <span>${this.t('startCall')}</span>
         </button>
       </div>
       <!-- During Call State -->
@@ -89,17 +111,17 @@ export class VoiceInterface {
           🤖
         </div>
         <div class="voice-status">
-          <div class="voice-status-title" id="voiceStatusTitleActive">${this.config.direction === 'rtl' ? 'מקשיב...' : 'Listening...'}</div>
-          <div class="voice-status-subtitle" id="voiceStatusSubtitleActive">${this.config.direction === 'rtl' ? 'דבר בחופשיות' : 'Speak freely'}</div>
+          <div class="voice-status-title" id="voiceStatusTitleActive">${this.t('listening')}</div>
+          <div class="voice-status-subtitle" id="voiceStatusSubtitleActive">${this.t('speakFreely')}</div>
         </div>
         <div class="voice-transcript">
-          <div class="transcript-label">${this.config.direction === 'rtl' ? 'תמלול בזמן אמת' : 'Live Transcript'}</div>
+          <div class="transcript-label">${this.t('liveTranscript')}</div>
           <div class="transcript-text empty" id="transcriptText">
-            ${this.config.direction === 'rtl' ? 'התמלול יופיע כאן במהלך השיחה...' : 'Transcript will appear here during the call...'}
+            ${this.t('transcriptWillAppear')}
           </div>
         </div>
         <div class="voice-controls">
-          <button class="voice-control-btn secondary" id="muteBtn" title="${this.config.direction === 'rtl' ? 'השתק' : 'Mute'}">
+          <button class="voice-control-btn secondary" id="muteBtn" title="${this.getTooltip('mute')}">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mute-icon">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -108,13 +130,13 @@ export class VoiceInterface {
               <line x1="2" y1="2" x2="22" y2="22" class="mute-cross" style="display: none; stroke: #ef4444; stroke-width: 3.5;"/>
             </svg>
           </button>
-          <button class="voice-control-btn primary active" id="endCallBtn">
+          <button class="voice-control-btn primary active" id="endCallBtn" title="${this.getTooltip('endCall')}">
             <svg width="56" height="56" viewBox="0 0 24 24" fill="#ef4444">
               <rect x="6" y="6" width="12" height="12" rx="2"/>
             </svg>
             <div class="voice-timer" id="voiceTimer">00:00</div>
           </button>
-          <button class="voice-control-btn secondary" id="speakerBtn" title="${this.config.direction === 'rtl' ? 'רמקול' : 'Speaker'}">
+          <button class="voice-control-btn secondary" id="speakerBtn" title="${this.getTooltip('speaker')}">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
@@ -638,9 +660,7 @@ export class VoiceInterface {
     // Reset transcript
     const transcriptEl = document.getElementById('transcriptText');
     if (transcriptEl) {
-      transcriptEl.textContent = this.config.direction === 'rtl' 
-        ? 'התמלול יופיע כאן במהלך השיחה...'
-        : 'Transcript will appear here during the call...';
+      transcriptEl.textContent = this.t('transcriptWillAppear');
       transcriptEl.classList.add('empty');
     }
     
@@ -670,9 +690,7 @@ export class VoiceInterface {
   showError(message) {
     const transcriptEl = document.getElementById('transcriptText');
     if (transcriptEl) {
-      transcriptEl.textContent = this.config.direction === 'rtl' 
-        ? `שגיאה: ${message}`
-        : `Error: ${message}`;
+      transcriptEl.textContent = `${this.t('error')}: ${message}`;
       transcriptEl.classList.remove('empty');
     }
   }
