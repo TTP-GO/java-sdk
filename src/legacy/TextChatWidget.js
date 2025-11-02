@@ -500,27 +500,56 @@ export class TextChatWidget {
     const messages = this.config.messages;
     const anim = this.config.animation;
     
-    // Color references for clarity
-    const floatingButtonColor = btn.backgroundColor || btn.primaryColor; // Floating button (main)
-    const headerColor = header.backgroundColor; // Header/top of panel
-    const sendButtonColor = panel.sendButtonColor || btn.primaryColor || '#7C3AED'; // Send button (similar to micButtonColor in voice widget) - Purple default
-    const sendButtonHoverColor = panel.sendButtonHoverColor || '#7C3AED'; // Send button hover
-    const sendButtonActiveColor = panel.sendButtonActiveColor || '#6D28D9'; // Send button active state - Purple darker
-    
     // Determine which interfaces to show
     const widgetMode = this.config.behavior.mode || 'unified';
     const showVoice = widgetMode === 'unified' || widgetMode === 'voice-only';
     const showText = widgetMode === 'unified' || widgetMode === 'text-only';
+    
+    // Color references for clarity (needed for landing screen styles)
+    const headerColor = header.backgroundColor;
 
     return `
+      /* MOBILE FIRST - Default styles for all devices */
       #text-chat-widget {
-        position: fixed;
-        ${positionStyles}
+        position: fixed !important;
         z-index: 10000;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-        will-change: transform;
+        /* Mobile defaults */
+        right: 10px;
+        bottom: 10px;
+        left: auto;
+        top: auto;
+      }
+      
+      /* Desktop positioning (only on larger screens) */
+      @media (min-width: 769px) {
+        #text-chat-widget {
+          ${positionStyles}
+          right: ${this.config.position.horizontal === 'right' ? '20px' : 'auto'};
+          left: ${this.config.position.horizontal === 'left' ? '20px' : 'auto'};
+          bottom: ${this.config.position.vertical === 'bottom' ? '20px' : 'auto'};
+          top: ${this.config.position.vertical === 'top' ? '20px' : 'auto'};
+        }
+      }
+      
+      /* Mobile override (force mobile positioning) */
+      @media (max-width: 768px) {
+        #text-chat-widget {
+          right: 10px !important;
+          bottom: 10px !important;
+          left: auto !important;
+          top: auto !important;
+          transform: none !important;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        #text-chat-widget {
+          right: 8px !important;
+          bottom: 8px !important;
+          left: auto !important;
+          top: auto !important;
+        }
       }
       
       #text-chat-button {
@@ -545,25 +574,122 @@ export class TextChatWidget {
       
       @media (max-width: 768px) {
         #text-chat-button {
-          min-width: 56px;
-          min-height: 56px;
+          width: 56px !important;
+          height: 56px !important;
+          min-width: 56px !important;
+          min-height: 56px !important;
+          max-width: 56px !important;
+          max-height: 56px !important;
         }
         
         #text-chat-panel {
-          width: calc(100vw - 20px) !important;
-          max-width: ${panel.width}px;
-          max-height: calc(100vh - 120px) !important;
+          position: fixed !important;
           left: 10px !important;
           right: 10px !important;
+          bottom: 76px !important; /* 56px button + 20px gap */
+          top: auto !important;
+          width: auto !important;
+          max-width: none !important;
+          max-height: calc(100vh - 96px) !important;
+          transform: none !important;
+          margin: 0 !important;
+        }
+        
+        #text-chat-panel .widget-header {
+          padding: 10px 14px;
+          min-height: 56px;
+        }
+        
+        #text-chat-panel .header-title {
+          font-size: 15px;
+        }
+        
+        #text-chat-panel .header-icon {
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          min-height: 40px;
         }
         
         #text-chat-input {
           font-size: 16px !important; /* Prevents iOS zoom on focus */
+          padding: 12px 16px !important;
+          min-height: 48px !important;
         }
         
         #text-chat-send {
-          min-width: 60px;
-          min-height: 44px;
+          min-width: 48px !important;
+          min-height: 48px !important;
+          width: 48px !important;
+          height: 48px !important;
+        }
+        
+        .landing-screen {
+          padding: 16px;
+        }
+        
+        .landing-logo {
+          font-size: 40px;
+        }
+        
+        .landing-title {
+          font-size: 18px;
+          margin-bottom: 16px;
+        }
+        
+        .mode-selection {
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+        }
+        
+        .mode-card {
+          max-width: 100%;
+          width: 100%;
+          padding: 16px;
+        }
+        
+        .mode-card-icon {
+          width: 50px;
+          height: 50px;
+          font-size: 28px;
+        }
+        
+        .mode-card-title {
+          font-size: 14px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        #text-chat-button {
+          width: 54px !important;
+          height: 54px !important;
+          min-width: 54px !important;
+          min-height: 54px !important;
+        }
+        
+        #text-chat-panel {
+          left: 8px !important;
+          right: 8px !important;
+          bottom: 70px !important;
+          max-height: calc(100vh - 86px) !important;
+        }
+        
+        #text-chat-panel .widget-header {
+          padding: 8px 12px;
+          min-height: 52px;
+        }
+        
+        #text-chat-panel .header-title {
+          font-size: 14px;
+        }
+        
+        .landing-logo {
+          font-size: 36px;
+        }
+        
+        .landing-title {
+          font-size: 16px;
         }
       }
       
@@ -591,6 +717,7 @@ export class TextChatWidget {
         overflow: hidden;
         ${panel.backdropFilter ? `backdrop-filter: ${panel.backdropFilter};` : ''}
         ${anim.enableSlide ? `transition: all ${anim.duration}s ease;` : ''}
+        box-sizing: border-box;
       }
       
       #text-chat-panel.open {
@@ -599,8 +726,8 @@ export class TextChatWidget {
       }
 
       /* Shell for gradient border/background */
-      .widget-shell { width: 100%; height: 100%; padding: 0; border-radius: ${panel.borderRadius}px; background: transparent; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; }
-      .panel-inner { width: 100%; height: 100%; background: #ffffff; border-radius: ${panel.borderRadius}px; overflow: hidden; display:flex; flex-direction: column; padding: 0; box-sizing: border-box; }
+      .widget-shell { width: 100%; height: 100%; padding: 0; border-radius: ${panel.borderRadius}px; background: transparent; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; }
+      .panel-inner { width: 100%; height: 100%; background: #ffffff; border-radius: ${panel.borderRadius}px; overflow: hidden; display:flex; flex-direction: column; padding: 0; box-sizing: border-box; max-width: 100%; }
 
       /* New structure styles matching provided design */
       #text-chat-panel .widget-container {

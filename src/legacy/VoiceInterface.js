@@ -431,6 +431,118 @@ export class VoiceInterface {
         color: #64748b;
         font-weight: 500;
       }
+      
+      @media (max-width: 768px) {
+        .voice-interface {
+          padding: 8px 12px 16px 12px;
+        }
+        
+        .voice-avatar,
+        .voice-avatar-active {
+          width: 100px;
+          height: 100px;
+          font-size: 48px;
+          margin-top: 8px;
+          margin-bottom: 12px;
+        }
+        
+        .voice-status-title {
+          font-size: 16px;
+        }
+        
+        .voice-status-subtitle {
+          font-size: 13px;
+        }
+        
+        .voice-start-call-btn {
+          padding: 12px 24px;
+          font-size: 15px;
+          min-height: 44px;
+        }
+        
+        .voice-transcript-container {
+          padding: 12px;
+          max-height: 180px;
+        }
+        
+        .voice-transcript-text {
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        
+        .voice-controls {
+          gap: 12px;
+          padding: 12px;
+        }
+        
+        .voice-control-btn {
+          width: 48px;
+          height: 48px;
+          min-width: 48px;
+          min-height: 48px;
+        }
+        
+        .voice-control-btn.end-call {
+          width: 52px;
+          height: 52px;
+          min-width: 52px;
+          min-height: 52px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .voice-interface {
+          padding: 6px 10px 12px 10px;
+        }
+        
+        .voice-avatar,
+        .voice-avatar-active {
+          width: 90px;
+          height: 90px;
+          font-size: 42px;
+        }
+        
+        .voice-status-title {
+          font-size: 15px;
+        }
+        
+        .voice-status-subtitle {
+          font-size: 12px;
+        }
+        
+        .voice-start-call-btn {
+          padding: 10px 20px;
+          font-size: 14px;
+        }
+        
+        .voice-transcript-container {
+          padding: 10px;
+          max-height: 150px;
+        }
+        
+        .voice-transcript-text {
+          font-size: 13px;
+        }
+        
+        .voice-controls {
+          gap: 10px;
+          padding: 10px;
+        }
+        
+        .voice-control-btn {
+          width: 44px;
+          height: 44px;
+          min-width: 44px;
+          min-height: 44px;
+        }
+        
+        .voice-control-btn.end-call {
+          width: 48px;
+          height: 48px;
+          min-width: 48px;
+          min-height: 48px;
+        }
+      }
     `;
   }
 

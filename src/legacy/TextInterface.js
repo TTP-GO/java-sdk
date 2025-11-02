@@ -283,6 +283,71 @@ export class TextInterface {
         font-size: ${messages.fontSize};
         margin: 8px 0;
       }
+      
+      @media (max-width: 768px) {
+        #messagesContainer {
+          padding: 12px;
+          gap: 12px;
+        }
+        
+        .message-bubble {
+          max-width: 85%;
+          font-size: 14px;
+          padding: 10px;
+        }
+        
+        .text-input-container {
+          padding: 10px;
+          gap: 8px;
+        }
+        
+        #text-chat-input {
+          font-size: 16px !important; /* Prevents iOS zoom on focus */
+          padding: 10px 14px;
+          min-height: 44px;
+        }
+        
+        #text-chat-send {
+          min-width: 56px;
+          min-height: 44px;
+          width: 56px;
+          height: 44px;
+        }
+        
+        .empty-state-icon {
+          font-size: 40px;
+        }
+        
+        .empty-state-title {
+          font-size: 18px;
+        }
+        
+        .empty-state-text {
+          font-size: 12px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        #messagesContainer {
+          padding: 10px;
+          gap: 10px;
+        }
+        
+        .message-bubble {
+          max-width: 90%;
+          font-size: 13px;
+          padding: 8px;
+        }
+        
+        .text-input-container {
+          padding: 8px;
+        }
+        
+        #text-chat-input {
+          font-size: 16px !important;
+          padding: 8px 12px;
+        }
+      }
     `;
   }
 

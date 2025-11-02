@@ -536,6 +536,20 @@ export class AgentWidget {
         will-change: transform;
       }
       
+      @media (max-width: 768px) {
+        #agent-widget {
+          ${this.config.position.horizontal === 'right' || (typeof this.config.position === 'string' && this.config.position.includes('right')) ? 'right: 10px; left: auto;' : 'left: 10px; right: auto;'}
+          ${this.config.position.vertical === 'bottom' || (typeof this.config.position === 'string' && this.config.position.includes('bottom')) ? 'bottom: 10px; top: auto;' : this.config.position.vertical === 'top' || (typeof this.config.position === 'string' && this.config.position.includes('top')) ? 'top: 10px; bottom: auto;' : ''}
+        }
+      }
+      
+      @media (max-width: 480px) {
+        #agent-widget {
+          ${this.config.position.horizontal === 'right' || (typeof this.config.position === 'string' && this.config.position.includes('right')) ? 'right: 5px; left: auto;' : 'left: 5px; right: auto;'}
+          ${this.config.position.vertical === 'bottom' || (typeof this.config.position === 'string' && this.config.position.includes('bottom')) ? 'bottom: 5px; top: auto;' : this.config.position.vertical === 'top' || (typeof this.config.position === 'string' && this.config.position.includes('top')) ? 'top: 5px; bottom: auto;' : ''}
+        }
+      }
+      
       #agent-button {
         width: ${buttonSize}px;
         height: ${buttonSize}px;
@@ -560,6 +574,110 @@ export class AgentWidget {
         #agent-button {
           min-width: 56px;
           min-height: 56px;
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        #agent-panel {
+          position: fixed !important;
+          width: calc(100vw - 20px) !important;
+          max-width: calc(100vw - 20px) !important;
+          max-height: calc(100vh - 80px) !important;
+          left: 10px !important;
+          right: 10px !important;
+          bottom: calc(${buttonSize}px + 10px) !important;
+          top: auto !important;
+          transform: none !important;
+          margin: 0 !important;
+        }
+        
+        #agent-header {
+          padding: 12px 14px;
+          min-height: 56px;
+        }
+        
+        #agent-header h3 {
+          font-size: 15px;
+        }
+        
+        #agent-close {
+          width: 32px;
+          height: 32px;
+          min-width: 32px;
+          min-height: 32px;
+          font-size: 20px;
+        }
+        
+        #agent-messages {
+          padding: 12px;
+          gap: 10px;
+        }
+        
+        .message {
+          padding: 10px;
+          font-size: 14px;
+          max-width: 85%;
+        }
+        
+        #agent-controls {
+          padding: 12px;
+        }
+        
+        #agent-mic-button {
+          min-width: 56px;
+          min-height: 56px;
+          width: 56px;
+          height: 56px;
+        }
+        
+        #agent-mic-hint {
+          font-size: 12px;
+          padding: 8px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        #agent-button {
+          min-width: 60px;
+          min-height: 60px;
+        }
+        
+        #agent-panel {
+          position: fixed !important;
+          width: calc(100vw - 10px) !important;
+          max-width: calc(100vw - 10px) !important;
+          left: 5px !important;
+          right: 5px !important;
+          max-height: calc(100vh - 70px) !important;
+          bottom: calc(${buttonSize}px + 5px) !important;
+          top: auto !important;
+          transform: none !important;
+          margin: 0 !important;
+        }
+        
+        #agent-header {
+          padding: 10px 12px;
+          min-height: 52px;
+        }
+        
+        #agent-header h3 {
+          font-size: 14px;
+        }
+        
+        #agent-messages {
+          padding: 10px;
+        }
+        
+        .message {
+          font-size: 13px;
+          max-width: 90%;
+          padding: 8px;
+        }
+        
+        #agent-mic-button {
+          min-width: 60px;
+          min-height: 60px;
+          width: 60px;
+          height: 60px;
         }
       }
       

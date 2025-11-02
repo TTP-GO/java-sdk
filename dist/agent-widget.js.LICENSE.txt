@@ -1,134 +1,18 @@
-/*! ../core/TextChatSDK.js */
-
-/*! ../core/VoiceSDK.js */
-
-/*! ../index.js */
-
-/*! ./AudioPlayer.js */
-
-/*! ./AudioRecorder.js */
-
-/*! ./EventEmitter.js */
-
-/*! ./TextInterface.js */
-
-/*! ./VoiceInterface.js */
-
-/*! ./WebSocketManager.js */
-
-/*! ./WebSocketSingleton.js */
-
-/*! ./cjs/react-jsx-runtime.development.js */
-
-/*! ./cjs/react.development.js */
-
-/*! ./core/AudioPlayer.js */
-
-/*! ./core/AudioRecorder.js */
-
-/*! ./core/EventEmitter.js */
-
-/*! ./core/TextChatSDK.js */
-
-/*! ./core/VoiceSDK.js */
-
-/*! ./core/WebSocketManager.js */
-
-/*! ./legacy/AgentSDK.js */
-
-/*! ./legacy/TextChatWidget.js */
-
-/*! ./react/VoiceButton.jsx */
-
-/*! ./vanilla/VoiceButton.js */
-
-/*! ./widget-translations.js */
-
-/*! react */
-
-/*! react/jsx-runtime */
-
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
-
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
-
-/*!******************************!*\
-  !*** ./src/core/VoiceSDK.js ***!
-  \******************************/
-
-/*!********************************!*\
-  !*** ./src/legacy/AgentSDK.js ***!
-  \********************************/
-
-/*!*********************************!*\
-  !*** ./src/core/AudioPlayer.js ***!
-  \*********************************/
-
-/*!*********************************!*\
-  !*** ./src/core/TextChatSDK.js ***!
-  \*********************************/
-
-/*!**********************************!*\
-  !*** ./src/core/EventEmitter.js ***!
-  \**********************************/
-
-/*!***********************************!*\
-  !*** ./src/core/AudioRecorder.js ***!
-  \***********************************/
-
-/*!***********************************!*\
-  !*** ./src/react/VoiceButton.jsx ***!
-  \***********************************/
-
-/*!************************************!*\
-  !*** ./src/vanilla/VoiceButton.js ***!
-  \************************************/
-
-/*!*************************************!*\
-  !*** ./node_modules/react/index.js ***!
-  \*************************************/
-
-/*!*************************************!*\
-  !*** ./src/legacy/TextInterface.js ***!
-  \*************************************/
-
-/*!**************************************!*\
-  !*** ./src/core/WebSocketManager.js ***!
-  \**************************************/
-
-/*!**************************************!*\
-  !*** ./src/legacy/TextChatWidget.js ***!
-  \**************************************/
-
-/*!**************************************!*\
-  !*** ./src/legacy/VoiceInterface.js ***!
-  \**************************************/
-
-/*!****************************************!*\
-  !*** ./src/core/WebSocketSingleton.js ***!
-  \****************************************/
-
-/*!*******************************************!*\
-  !*** ./node_modules/react/jsx-runtime.js ***!
-  \*******************************************/
-
-/*!*******************************************!*\
-  !*** ./src/legacy/widget-translations.js ***!
-  \*******************************************/
-
-/*!*****************************************************!*\
-  !*** ./node_modules/react/cjs/react.development.js ***!
-  \*****************************************************/
-
-/*!*****************************************************************!*\
-  !*** ./node_modules/react/cjs/react-jsx-runtime.development.js ***!
-  \*****************************************************************/
 
 /**
  * @license React
- * react-jsx-runtime.development.js
+ * react-jsx-runtime.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react.production.js
  *
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *

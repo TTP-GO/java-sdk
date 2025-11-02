@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Text Chat Widget - Test</title>
   <style>
     body {
@@ -17,6 +17,105 @@
       body {
         margin: 0;
         padding: 10px;
+        font-size: 14px;
+      }
+      
+      .container {
+        padding: 16px;
+        border-radius: 8px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+      
+      h2 {
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+      }
+      
+      .info {
+        padding: 12px;
+        margin: 16px 0;
+        font-size: 14px;
+      }
+      
+      .info ul {
+        margin: 8px 0 0 16px;
+        padding-left: 16px;
+      }
+      
+      .status {
+        padding: 10px;
+        font-size: 12px;
+        margin: 16px 0;
+      }
+      
+      button {
+        padding: 12px 20px;
+        font-size: 14px;
+        margin: 8px 8px 8px 0;
+        touch-action: manipulation;
+        min-height: 44px;
+        width: 100%;
+        max-width: 100%;
+      }
+      
+      .code-block {
+        font-size: 11px;
+        padding: 12px;
+        margin: 16px 0;
+      }
+      
+      .customization-container {
+        gap: 12px;
+        margin-top: 16px;
+      }
+      
+      .customization-section {
+        padding: 16px;
+      }
+      
+      .section-title {
+        font-size: 16px;
+      }
+      
+      .section-content {
+        margin-top: 12px;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .section-content label {
+        font-size: 13px;
+      }
+      
+      select, input[type="text"], input[type="number"], input[type="color"] {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        padding: 10px 12px;
+        min-height: 44px;
+      }
+      
+      input[type="color"] {
+        min-width: 50px;
+        min-height: 50px;
+        width: 50px;
+        height: 50px;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 20px;
+        padding-top: 16px;
+      }
+      
+      .action-buttons button {
+        margin: 0;
       }
     }
     
@@ -169,6 +268,12 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
+    }
+    
+    @media (max-width: 480px) {
+      .section-content {
+        grid-template-columns: 1fr;
+      }
     }
     
     .section-content.hidden {

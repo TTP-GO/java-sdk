@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Voice Agent Widget - Agent ID + App ID Test</title>
   <style>
     body {
@@ -244,6 +244,10 @@
     }
     
     @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+      
       h1 {
         font-size: 24px;
         margin-top: 0;
@@ -265,6 +269,13 @@
       .info ul, .config-info ul {
         margin: 8px 0 0 16px;
         padding-left: 16px;
+        line-height: 1.6;
+      }
+      
+      .info ol {
+        margin: 8px 0 0 16px;
+        padding-left: 16px;
+        line-height: 1.6;
       }
       
       .status {
@@ -289,6 +300,7 @@
       .tab {
         padding: 10px 16px;
         font-size: 13px;
+        min-height: 44px;
       }
       
       .controls-panel {
@@ -301,10 +313,44 @@
         margin: 8px 0;
       }
       
+      .control-row {
+        padding: 12px;
+      }
+      
+      .control-row select,
+      .control-row input[type="text"],
+      .control-row input[type="color"] {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        min-height: 44px;
+      }
+      
+      .control-row input[type="color"] {
+        min-width: 50px;
+        min-height: 50px;
+        width: 50px;
+        height: 50px;
+      }
+      
       #log {
         font-size: 11px;
         max-height: 200px;
         padding: 12px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      button {
+        width: 100%;
+        margin: 8px 0;
+      }
+      
+      .tabs {
+        flex-direction: column;
+      }
+      
+      .tab {
+        width: 100%;
+        text-align: left;
       }
     }
   </style>
