@@ -573,6 +573,14 @@ export class TextChatWidget {
       }
       
       @media (max-width: 768px) {
+        #text-chat-widget {
+          right: 10px !important;
+          bottom: 10px !important;
+          left: auto !important;
+          top: auto !important;
+          transform: none !important;
+        }
+        
         #text-chat-button {
           width: 56px !important;
           height: 56px !important;
@@ -587,10 +595,11 @@ export class TextChatWidget {
           left: 10px !important;
           right: 10px !important;
           bottom: 76px !important; /* 56px button + 20px gap */
-          top: auto !important;
+          top: 60px !important; /* Add top spacing */
           width: auto !important;
           max-width: none !important;
-          max-height: calc(100vh - 96px) !important;
+          height: auto !important; /* Change from max-height to auto */
+          max-height: none !important; /* Remove max-height */
           transform: none !important;
           margin: 0 !important;
         }
@@ -661,6 +670,13 @@ export class TextChatWidget {
       }
       
       @media (max-width: 480px) {
+        #text-chat-widget {
+          right: 8px !important;
+          bottom: 8px !important;
+          left: auto !important;
+          top: auto !important;
+        }
+        
         #text-chat-button {
           width: 54px !important;
           height: 54px !important;
@@ -672,7 +688,9 @@ export class TextChatWidget {
           left: 8px !important;
           right: 8px !important;
           bottom: 70px !important;
-          max-height: calc(100vh - 86px) !important;
+          top: 50px !important; /* Add top spacing for very small screens */
+          height: auto !important;
+          max-height: none !important;
         }
         
         #text-chat-panel .widget-header {
