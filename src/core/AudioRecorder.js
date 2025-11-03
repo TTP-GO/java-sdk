@@ -14,6 +14,39 @@ export default class AudioRecorder extends EventEmitter {
   }
   
   /**
+   * Get the audio processor path
+   * Tries to detect from script source, falls back to config or default
+   */
+  getAudioProcessorPath() {
+    // If explicitly configured, use it
+    if (this.config.audioProcessorPath) {
+      return this.config.audioProcessorPath;
+    }
+    
+    // Try to find the script that loaded the SDK
+    const scripts = document.getElementsByTagName('script');
+    for (let script of scripts) {
+      const src = script.src;
+      // Check if this is the agent-widget.js script
+      if (src && (src.includes('agent-widget.js') || src.includes('ttp-agent-sdk'))) {
+        // Extract base URL and construct processor path
+        try {
+          const url = new URL(src);
+          const basePath = src.substring(0, src.lastIndexOf('/'));
+          return `${basePath}/audio-processor.js`;
+        } catch (e) {
+          // If URL parsing fails, try to extract path manually
+          const basePath = src.substring(0, src.lastIndexOf('/'));
+          return `${basePath}/audio-processor.js`;
+        }
+      }
+    }
+    
+    // Fallback to CDN
+    return 'https://cdn.talktopc.com/audio-processor.js';
+  }
+  
+  /**
    * Start audio recording
    */
   async start() {
@@ -39,8 +72,11 @@ export default class AudioRecorder extends EventEmitter {
         await this.audioContext.resume();
       }
       
+      // Get the audio processor path
+      const processorPath = this.getAudioProcessorPath();
+      
       // Load AudioWorklet module
-      await this.audioContext.audioWorklet.addModule('/audio-processor.js');
+      await this.audioContext.audioWorklet.addModule(processorPath);
       
       // Create AudioWorklet node
       this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'audio-processor');

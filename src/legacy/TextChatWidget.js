@@ -16,6 +16,8 @@ export class TTPChatWidget {
     this.isOpen = false;
     this.isActive = false;
     this.translations = widgetTranslations;
+    // Track current view state in unified mode to prevent resetting when widget is recreated
+    this.currentView = 'landing'; // 'landing', 'text', or 'voice'
     
     // Initialize interfaces with proper config
     // Voice interface needs voice config merged with main config
@@ -285,7 +287,18 @@ export class TTPChatWidget {
   }
 
   setupEventHandlers() {
+    // Handle domain validation errors
+    this.sdk.on('domainError', (error) => {
+      this.textInterface.showError(error);
+      this.textInterface.stopStreamingState();
+    });
+
     this.sdk.on('error', (error) => {
+      // Domain errors are handled by domainError event, skip here
+      if (error && (error.message === 'DOMAIN_NOT_WHITELISTED' || 
+          (error.message && error.message.includes('Domain not whitelisted')))) {
+        return; // Already handled by domainError event
+      }
       this.textInterface.showError(error.message || error);
       this.textInterface.stopStreamingState();
     });
@@ -300,6 +313,12 @@ export class TTPChatWidget {
   }
 
   createWidget() {
+    // Remove existing widget if it exists
+    const existingWidget = document.getElementById('text-chat-widget');
+    if (existingWidget) {
+      existingWidget.remove();
+    }
+    
     const widget = document.createElement('div');
     widget.id = 'text-chat-widget';
     widget.innerHTML = this.generateWidgetHTML();
@@ -886,6 +905,11 @@ export class TTPChatWidget {
   }
 
   setupWidgetEvents() {
+    console.log('⚙️ TextChatWidget.setupWidgetEvents called', {
+      stack: new Error().stack.split('\n').slice(1, 4).join('\n'),
+      currentView: this.currentView
+    });
+    
     const openBtn = document.getElementById('text-chat-button');
     if (openBtn) {
       openBtn.onclick = () => this.togglePanel();
@@ -917,12 +941,31 @@ export class TTPChatWidget {
     if (showLanding) {
       if (voiceCard) voiceCard.onclick = () => this.showVoice();
       if (textCard) textCard.onclick = () => this.showText();
-      // Initial state: landing visible in unified mode
-      if (landing) landing.classList.add('active');
-      if (textInterface) textInterface.classList.remove('active');
-      if (voiceInterface) voiceInterface.classList.remove('active');
-      // Hide back button on landing screen (only exists in unified mode)
-      if (backBtn && widgetMode === 'unified') backBtn.classList.remove('visible');
+      
+      // Restore previous view state if user had selected an interface, otherwise show landing
+      if (this.currentView === 'text') {
+        // User was on text interface, restore it
+        if (landing) landing.classList.remove('active');
+        if (textInterface) textInterface.classList.add('active');
+        if (voiceInterface) voiceInterface.classList.remove('active');
+        if (backBtn && widgetMode === 'unified') backBtn.classList.add('visible');
+        if (newChatBtn) newChatBtn.style.display = '';
+      } else if (this.currentView === 'voice') {
+        // User was on voice interface, restore it
+        if (landing) landing.classList.remove('active');
+        if (textInterface) textInterface.classList.remove('active');
+        if (voiceInterface) voiceInterface.classList.add('active');
+        if (backBtn && widgetMode === 'unified') backBtn.classList.add('visible');
+        if (newChatBtn) newChatBtn.style.display = 'none';
+      } else {
+        // Initial state or landing: show landing screen
+        this.currentView = 'landing';
+        if (landing) landing.classList.add('active');
+        if (textInterface) textInterface.classList.remove('active');
+        if (voiceInterface) voiceInterface.classList.remove('active');
+        // Hide back button on landing screen (only exists in unified mode)
+        if (backBtn && widgetMode === 'unified') backBtn.classList.remove('visible');
+      }
     } else if (widgetMode === 'voice-only') {
       // Voice-only mode: show voice interface directly
       if (voiceInterface) voiceInterface.classList.add('active');
@@ -939,9 +982,11 @@ export class TTPChatWidget {
     
     // Setup interface event handlers
     if (showVoice) {
+      console.log('⚙️ Setting up voice interface event handlers');
       this.voiceInterface.setupEventHandlers();
     }
     if (showText) {
+      console.log('⚙️ Setting up text interface event handlers');
       this.textInterface.setupEventHandlers();
     }
     
@@ -969,6 +1014,7 @@ export class TTPChatWidget {
   showLanding() {
     const widgetMode = this.config.behavior.mode || 'unified';
     if (widgetMode !== 'unified') return; // Only show landing in unified mode
+    this.currentView = 'landing'; // Track state
     const landing = document.getElementById('landingScreen');
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
@@ -984,6 +1030,7 @@ export class TTPChatWidget {
   }
 
   showText() {
+    this.currentView = 'text'; // Track state
     const landing = document.getElementById('landingScreen');
     const voiceInterface = document.getElementById('voiceInterface');
     const backBtn = document.getElementById('backBtn');
@@ -999,6 +1046,7 @@ export class TTPChatWidget {
   }
 
   showVoice() {
+    this.currentView = 'voice'; // Track state
     const landing = document.getElementById('landingScreen');
     const textInterface = document.getElementById('textInterface');
     const voiceInterface = document.getElementById('voiceInterface');
@@ -1010,8 +1058,8 @@ export class TTPChatWidget {
     // Show back button when not on landing (only in unified mode)
     const widgetMode = this.config.behavior.mode || 'unified';
     if (backBtn && widgetMode === 'unified') backBtn.classList.add('visible');
-    // Show new chat button when not on landing
-    if (newChatBtn) newChatBtn.style.display = '';
+    // Hide new chat button on voice interface (not applicable)
+    if (newChatBtn) newChatBtn.style.display = 'none';
   }
 
   setupKeyboardNavigation() {

@@ -51,9 +51,23 @@ export class AgentSDK {
         this.onConnected();
       });
       
-      this.voiceSDK.on('disconnected', () => {
+      this.voiceSDK.on('disconnected', (event) => {
         this.isConnected = false;
+        // Check if disconnect was due to domain whitelist violation
+        if (event && event.code === 1008 && event.reason && 
+            (event.reason.includes('Domain not whitelisted') || 
+             event.reason.includes('domain') || 
+             event.reason.includes('whitelist'))) {
+          const domainError = new Error('DOMAIN_NOT_WHITELISTED');
+          domainError.reason = event.reason;
+          domainError.code = event.code;
+          this.onError(domainError);
+        }
         this.onDisconnected();
+      });
+      
+      this.voiceSDK.on('domainError', (error) => {
+        this.onError(error);
       });
       
       this.voiceSDK.on('error', (error) => {

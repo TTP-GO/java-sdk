@@ -204,7 +204,24 @@ export default class TextChatSDK extends EventEmitter {
       task.reject(e);
     };
 
-    const handleClose = () => {
+    const handleClose = (event) => {
+      // Check if connection was closed due to domain whitelist violation
+      if (event.code === 1008 && event.reason && 
+          (event.reason.includes('Domain not whitelisted') || 
+           event.reason.includes('domain') || 
+           event.reason.includes('whitelist'))) {
+        const domainError = new Error('DOMAIN_NOT_WHITELISTED');
+        domainError.reason = event.reason;
+        domainError.code = event.code;
+        // Only emit domainError, not error - to avoid duplicate handling
+        this.emit('domainError', domainError);
+        task.reject(domainError);
+        // Reset inFlight and drain queue to allow subsequent messages
+        this.config.inFlight = false;
+        this.drainQueue();
+        return;
+      }
+      
       this.config.inFlight = false;
       this.drainQueue();
     };

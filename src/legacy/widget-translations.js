@@ -21,7 +21,9 @@ export default {
     "close": "Close",
     "error": "Error",
     "typeMessage": "Type your message...",
-    "sendMessageAria": "Send message"
+    "sendMessageAria": "Send message",
+    "domainNotValidated": "Domain not validated",
+    "domainErrorMessage": "This domain is not whitelisted. Please contact the administrator to whitelist your website URL."
   },
   "he": {
     "landingTitle": "איך תרצה לתקשר?",
@@ -45,7 +47,9 @@ export default {
     "close": "סגור",
     "error": "שגיאה",
     "typeMessage": "הקלד הודעה...",
-    "sendMessageAria": "שלח הודעה"
+    "sendMessageAria": "שלח הודעה",
+    "domainNotValidated": "דומיין לא מאומת",
+    "domainErrorMessage": "דומיין זה לא ברשימת המורשים. אנא פנה למנהל המערכת כדי להוסיף את כתובת האתר שלך לרשימה."
   },
   "ar": {
     "landingTitle": "كيف تريد التواصل؟",
@@ -69,7 +73,9 @@ export default {
     "close": "إغلاق",
     "error": "خطأ",
     "typeMessage": "اكتب رسالة...",
-    "sendMessageAria": "إرسال رسالة"
+    "sendMessageAria": "إرسال رسالة",
+    "domainNotValidated": "النطاق غير معتمد",
+    "domainErrorMessage": "هذا النطاق غير مسموح به. يرجى الاتصال بالمسؤول لإضافة عنوان موقع الويب الخاص بك إلى القائمة."
   },
   "ru": {
     "landingTitle": "Как вы хотите общаться?",
@@ -93,7 +99,9 @@ export default {
     "close": "Закрыть",
     "error": "Ошибка",
     "typeMessage": "Введите сообщение...",
-    "sendMessageAria": "Отправить сообщение"
+    "sendMessageAria": "Отправить сообщение",
+    "domainNotValidated": "Домен не проверен",
+    "domainErrorMessage": "Этот домен не в белом списке. Пожалуйста, свяжитесь с администратором, чтобы добавить URL вашего веб-сайта в список."
   },
   "es": {
     "landingTitle": "¿Cómo te gustaría comunicarte?",
@@ -117,7 +125,9 @@ export default {
     "close": "Cerrar",
     "error": "Error",
     "typeMessage": "Escribe un mensaje...",
-    "sendMessageAria": "Enviar mensaje"
+    "sendMessageAria": "Enviar mensaje",
+    "domainNotValidated": "Dominio no validado",
+    "domainErrorMessage": "Este dominio no está en la lista blanca. Por favor, contacte al administrador para agregar la URL de su sitio web a la lista."
   },
   "fr": {
     "landingTitle": "Comment souhaitez-vous communiquer?",
@@ -141,7 +151,9 @@ export default {
     "close": "Fermer",
     "error": "Erreur",
     "typeMessage": "Tapez votre message...",
-    "sendMessageAria": "Envoyer un message"
+    "sendMessageAria": "Envoyer un message",
+    "domainNotValidated": "Domaine non validé",
+    "domainErrorMessage": "Ce domaine n'est pas sur la liste blanche. Veuillez contacter l'administrateur pour ajouter l'URL de votre site Web à la liste."
   },
   "de": {
     "landingTitle": "Wie möchten Sie kommunizieren?",
@@ -165,6 +177,8 @@ export default {
     "close": "Schließen",
     "error": "Fehler",
     "typeMessage": "Geben Sie eine Nachricht ein...",
-    "sendMessageAria": "Nachricht senden"
+    "sendMessageAria": "Nachricht senden",
+    "domainNotValidated": "Domain nicht validiert",
+    "domainErrorMessage": "Diese Domain steht nicht auf der Whitelist. Bitte kontaktieren Sie den Administrator, um die URL Ihrer Website zur Liste hinzuzufügen."
   }
 };

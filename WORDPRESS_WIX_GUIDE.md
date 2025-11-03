@@ -21,14 +21,21 @@ Integrating the TTP Agent SDK into WordPress or Wix is straightforward! The SDK 
 
 ```html
 <!-- Load TTP Agent SDK -->
-<script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+<script src="https://cdn.talktopc.com/agent-widget.js"></script>
+<!-- Alternative CDN: https://unpkg.com/ttp-agent-sdk@latest/dist/agent-widget.js -->
 
 <script>
   // Initialize the widget when page loads
   window.addEventListener('DOMContentLoaded', function() {
-    new TTPAgentSDK.AgentWidget({
-      agentId: 'your_agent_id',
-      appId: 'your_app_id',
+    // For unified text + voice chat (recommended)
+    const widget = new TTPAgentSDK.TTPChatWidget({
+      agentId: 'agent_f676e962a',
+      appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+      
+      // Widget mode: 'unified' (text + voice), 'text-only', or 'voice-only'
+      behavior: {
+        mode: 'unified'
+      },
       
       // Optional: Customize appearance
       primaryColor: '#10B981',
@@ -45,6 +52,11 @@ Integrating the TTP Agent SDK into WordPress or Wix is straightforward! The SDK 
       header: {
         title: 'Support Assistant',
         backgroundColor: '#10B981'
+      },
+      
+      // Optional: Pass page context
+      variables: {
+        page: window.location.pathname
       }
     });
   });
@@ -57,11 +69,12 @@ Integrating the TTP Agent SDK into WordPress or Wix is straightforward! The SDK 
 2. **Add the code before `</body>` tag:**
 
 ```html
-<script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+<script src="https://cdn.talktopc.com/agent-widget.js"></script>
 <script>
-  new TTPAgentSDK.AgentWidget({
-    agentId: 'your_agent_id',
-    appId: 'your_app_id',
+  new TTPAgentSDK.TTPChatWidget({
+    agentId: 'agent_f676e962a',
+    appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+    behavior: { mode: 'unified' },
     header: { title: 'Get Help' }
   });
 </script>
@@ -83,11 +96,12 @@ Create a simple plugin to add the SDK site-wide:
 
 function ttp_voice_agent_script() {
     ?>
-    <script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+    <script src="https://cdn.talktopc.com/agent-widget.js"></script>
     <script>
-      new TTPAgentSDK.AgentWidget({
+      new TTPAgentSDK.TTPChatWidget({
         agentId: '<?php echo esc_js(get_option('ttp_agent_id', '')); ?>',
         appId: '<?php echo esc_js(get_option('ttp_app_id', '')); ?>',
+        behavior: { mode: 'unified' },
         header: { title: '<?php echo esc_js(get_option('ttp_header_title', 'Voice Assistant')); ?>' }
       });
     </script>
@@ -108,11 +122,12 @@ add_action('wp_footer', 'ttp_voice_agent_script');
 4. **Paste this code:**
 
 ```html
-<script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+<script src="https://cdn.talktopc.com/agent-widget.js"></script>
 <script>
-  new TTPAgentSDK.AgentWidget({
-    agentId: 'your_agent_id',
-    appId: 'your_app_id',
+  new TTPAgentSDK.TTPChatWidget({
+    agentId: 'agent_f676e962a',
+    appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+    behavior: { mode: 'unified' },
     position: 'bottom-right',
     header: { title: 'Support Chat' }
   });
@@ -126,12 +141,13 @@ add_action('wp_footer', 'ttp_voice_agent_script');
 3. **Paste the script tags:**
 
 ```html
-<script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+<script src="https://cdn.talktopc.com/agent-widget.js"></script>
 <script>
   window.addEventListener('DOMContentLoaded', function() {
-    new TTPAgentSDK.AgentWidget({
-      agentId: 'your_agent_id',
-      appId: 'your_app_id'
+    new TTPAgentSDK.TTPChatWidget({
+      agentId: 'agent_f676e962a',
+      appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+      behavior: { mode: 'unified' }
     });
   });
 </script>
@@ -150,11 +166,12 @@ For production, use **signed links** instead of exposing agent IDs. Here's how:
 ### WordPress / Wix with Signed Links
 
 ```html
-<script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+<script src="https://cdn.talktopc.com/agent-widget.js"></script>
 <script>
-  new TTPAgentSDK.AgentWidget({
-    agentId: 'your_agent_id',
-    appId: 'your_app_id',
+  new TTPAgentSDK.TTPChatWidget({
+    agentId: 'agent_f676e962a',
+    appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+    behavior: { mode: 'unified' },
     
     // Use your backend to generate signed URLs
     getSessionUrl: async ({ agentId, appId, variables }) => {
@@ -179,11 +196,12 @@ For production, use **signed links** instead of exposing agent IDs. Here's how:
 Here's a complete example with all customization options:
 
 ```html
-<script src="https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js"></script>
+<script src="https://cdn.talktopc.com/agent-widget.js"></script>
 <script>
-  new TTPAgentSDK.AgentWidget({
-    agentId: 'your_agent_id',
-    appId: 'your_app_id',
+  new TTPAgentSDK.TTPChatWidget({
+    agentId: 'agent_f676e962a',
+    appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+    behavior: { mode: 'unified' },
     
     // Colors
     primaryColor: '#10B981',
@@ -248,6 +266,30 @@ Here's a complete example with all customization options:
 3. **Check agent/app IDs**: Make sure they're correct
 4. **Z-index issues**: The widget uses `z-index: 10000` - if your theme has higher z-index, you may need to adjust
 
+### "Unable to load a worklet's module" Error?
+
+This error occurs when the AudioWorklet processor file can't be loaded. **The widget now auto-detects the correct path**, but if you still encounter this issue:
+
+1. **Make sure `audio-processor.js` is available** on the CDN:
+   - Check: `https://cdn.talktopc.com/audio-processor.js`
+   - If it doesn't load, contact support to ensure it's deployed
+
+2. **Explicitly set the audio processor path** in your config:
+```javascript
+const widget = new TTPAgentSDK.TTPChatWidget({
+  agentId: 'agent_f676e962a',
+  appId: 'app_bQHDFqydfNPl75MZNijXc4dUyHGqnHeX9e5l',
+  behavior: { mode: 'unified' },
+  
+  // Explicitly set audio processor path if needed
+  voice: {
+    audioProcessorPath: 'https://cdn.talktopc.com/audio-processor.js'
+  }
+});
+```
+
+3. **For self-hosted installations**, ensure `audio-processor.js` is in the same directory as `agent-widget.js`
+
 ### Mobile issues?
 
 - The widget is mobile-responsive by default
@@ -257,7 +299,7 @@ Here's a complete example with all customization options:
 ### WordPress Security Plugins?
 
 Some security plugins may block external scripts. You may need to:
-- Whitelist `unpkg.com` in your security plugin
+- Whitelist `cdn.talktopc.com` in your security plugin
 - Or download the SDK file and host it on your own server
 
 ---
@@ -266,7 +308,7 @@ Some security plugins may block external scripts. You may need to:
 
 If you prefer to host the SDK file yourself:
 
-1. Download: `https://unpkg.com/ttp-agent-sdk@2.2.2/dist/agent-widget.js`
+1. Download: `https://cdn.talktopc.com/agent-widget.js` or `https://unpkg.com/ttp-agent-sdk@latest/dist/agent-widget.js`
 2. Upload to your WordPress media library or Wix assets
 3. Update the script `src` to point to your hosted file
 

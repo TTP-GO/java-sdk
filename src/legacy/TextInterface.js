@@ -10,6 +10,13 @@ export class TextInterface {
     this.streamingEl = null;
     this.hasStartedStreaming = false;
     this.isActive = false;
+    // Store event handlers to allow cleanup
+    this.eventHandlers = {
+      autoResize: null,
+      keydown: null
+    };
+    // Track if event handlers are already set up to avoid unnecessary re-initialization
+    this.eventHandlersSetup = false;
   }
 
   // Helper function to get translated text
@@ -511,7 +518,17 @@ export class TextInterface {
       await this.sdk.sendMessage(text);
     } catch (error) {
       console.error('❌ Failed to send message:', error);
-      this.showError(error.message);
+      // Check if this is a domain error - if so, it's already handled by the domainError event handler
+      // Don't show it here to avoid duplicates
+      const isDomainError = error && (
+        error.message === 'DOMAIN_NOT_WHITELISTED' ||
+        (error.message && error.message.includes('Domain not whitelisted'))
+      );
+      
+      if (!isDomainError) {
+        // Only show non-domain errors here (domain errors are handled by event handler)
+        this.showError(error);
+      }
       this.stopStreamingState();
     }
   }
@@ -637,14 +654,44 @@ export class TextInterface {
   /**
    * Show error message
    */
-  showError(message) {
+  showError(error) {
     const messages = document.getElementById('messagesContainer');
     if (!messages) return;
     
-    const error = document.createElement('div');
-    error.className = 'error-message';
-    error.textContent = message;
-    messages.appendChild(error);
+    // Check if this is a domain validation error
+    const isDomainError = error && (
+      error.message === 'DOMAIN_NOT_WHITELISTED' ||
+      (typeof error === 'string' && error.includes('DOMAIN_NOT_WHITELISTED')) ||
+      (error.message && error.message.includes('Domain not whitelisted')) ||
+      (typeof error === 'string' && error.includes('Domain not whitelisted'))
+    );
+    
+    if (isDomainError) {
+      // Show domain error with title and message
+      const errorContainer = document.createElement('div');
+      errorContainer.className = 'error-message';
+      errorContainer.style.cssText = 'padding: 16px; margin: 12px; border-radius: 8px; background: ' + 
+        (this.config.messages?.errorBackgroundColor || '#FEE2E2') + ';';
+      
+      const title = document.createElement('div');
+      title.style.cssText = 'font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #991B1B;';
+      title.textContent = this.t('domainNotValidated');
+      
+      const message = document.createElement('div');
+      message.style.cssText = 'font-size: 14px; color: #991B1B; line-height: 1.5;';
+      message.textContent = this.t('domainErrorMessage');
+      
+      errorContainer.appendChild(title);
+      errorContainer.appendChild(message);
+      messages.appendChild(errorContainer);
+    } else {
+      // Show regular error
+      const errorEl = document.createElement('div');
+      errorEl.className = 'error-message';
+      errorEl.textContent = typeof error === 'string' ? error : (error?.message || error);
+      messages.appendChild(errorEl);
+    }
+    
     messages.scrollTop = messages.scrollHeight;
   }
 

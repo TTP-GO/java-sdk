@@ -55,6 +55,18 @@ export default class VoiceSDK extends EventEmitter {
     this.webSocketManager.on('disconnected', (event) => {
       this.isConnected = false;
       
+      // Check if disconnect was due to domain whitelist violation
+      if (event && event.code === 1008 && event.reason && 
+          (event.reason.includes('Domain not whitelisted') || 
+           event.reason.includes('domain') || 
+           event.reason.includes('whitelist'))) {
+        const domainError = new Error('DOMAIN_NOT_WHITELISTED');
+        domainError.reason = event.reason;
+        domainError.code = event.code;
+        this.emit('domainError', domainError);
+        this.emit('error', domainError);
+      }
+      
       // IMPORTANT: Stop recording when WebSocket disconnects (e.g., no credits, max duration exceeded)
       // This ensures microphone is released and no more audio is streamed
       if (this.isRecording) {

@@ -52,7 +52,13 @@ export class VoiceInterface {
     // Handle errors
     this.sdk.onError = (error) => {
       console.error('❌ Voice SDK Error:', error);
-      this.showError(error.message || error);
+      // Check if it's a domain error
+      if (error && (error.message === 'DOMAIN_NOT_WHITELISTED' || 
+          (error.message && error.message.includes('Domain not whitelisted')))) {
+        this.showDomainError();
+      } else {
+        this.showError(error.message || error);
+      }
     };
   }
 
@@ -803,6 +809,19 @@ export class VoiceInterface {
     const transcriptEl = document.getElementById('transcriptText');
     if (transcriptEl) {
       transcriptEl.textContent = `${this.t('error')}: ${message}`;
+      transcriptEl.classList.remove('empty');
+    }
+  }
+  
+  /**
+   * Show domain validation error
+   */
+  showDomainError() {
+    const transcriptEl = document.getElementById('transcriptText');
+    if (transcriptEl) {
+      const title = this.t('domainNotValidated');
+      const message = this.t('domainErrorMessage');
+      transcriptEl.innerHTML = `<div style="font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #991B1B;">${title}</div><div style="font-size: 14px; color: #991B1B; line-height: 1.5;">${message}</div>`;
       transcriptEl.classList.remove('empty');
     }
   }
