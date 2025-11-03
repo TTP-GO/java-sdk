@@ -1034,8 +1034,9 @@
     function setupAutoApply() {
       if (!widget) return;
       
-      // Get all input and select elements
-      const allInputs = document.querySelectorAll('input, select, textarea');
+      // Get all input and select elements IN THE CUSTOMIZATION FORM ONLY
+      // Exclude widget's internal inputs
+      const allInputs = document.querySelectorAll('.customization-container input, .customization-container select, .customization-container textarea');
       
       allInputs.forEach(element => {
         // Skip if it's the language select (handled separately)

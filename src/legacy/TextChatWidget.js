@@ -313,6 +313,10 @@ export class TTPChatWidget {
   }
 
   createWidget() {
+    console.log('🏗️ createWidget called', {
+      stack: new Error().stack.split('\n').slice(1, 6).join('\n')
+    });
+    
     // Remove existing widget if it exists
     const existingWidget = document.getElementById('text-chat-widget');
     if (existingWidget) {
@@ -905,8 +909,8 @@ export class TTPChatWidget {
   }
 
   setupWidgetEvents() {
-    console.log('⚙️ TextChatWidget.setupWidgetEvents called', {
-      stack: new Error().stack.split('\n').slice(1, 4).join('\n'),
+    console.log('⚙️ setupWidgetEvents called', {
+      stack: new Error().stack.split('\n').slice(1, 6).join('\n'),
       currentView: this.currentView
     });
     
@@ -1209,6 +1213,11 @@ export class TTPChatWidget {
 
   // Public API methods
   updateConfig(newConfig) {
+    console.log('🔄 updateConfig called', {
+      newConfig,
+      stack: new Error().stack.split('\n').slice(1, 6).join('\n')
+    });
+    
     // Deep merge nested objects
     const mergedConfig = { ...this.config };
     
