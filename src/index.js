@@ -29,9 +29,9 @@ import VoiceButton from './react/VoiceButton.jsx';
 // Vanilla JavaScript components
 import VanillaVoiceButton from './vanilla/VoiceButton.js';
 
-// Legacy AgentSDK (for backward compatibility)
-import { AgentSDK, AgentWidget } from './legacy/AgentSDK.js';
-import { TextChatWidget } from './legacy/TextChatWidget.js';
+// TTPChatWidget and AgentSDK (AgentSDK is used by VoiceInterface, which TTPChatWidget uses)
+import { AgentSDK } from './legacy/AgentSDK.js';
+import { TTPChatWidget } from './legacy/TextChatWidget.js';
 
 // Version
 export const VERSION = '2.0.0';
@@ -47,8 +47,7 @@ export {
   VoiceButton,
   VanillaVoiceButton,
   AgentSDK,
-  AgentWidget,
-  TextChatWidget
+  TTPChatWidget
 };
 
 // Default export for convenience
@@ -62,7 +61,6 @@ export default {
   VoiceButton,
   VanillaVoiceButton,
   AgentSDK,
-  AgentWidget,
-  TextChatWidget,
+  TTPChatWidget,
   VERSION
 };

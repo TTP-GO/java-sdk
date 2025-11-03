@@ -1,5 +1,5 @@
 /**
- * TextChatWidget - Pre-built UI widget for text chat using TextChatSDK
+ * TTPChatWidget - Pre-built UI widget for text chat using TextChatSDK
  * Similar to AgentWidget but designed for text-based chat
  */
 
@@ -8,7 +8,7 @@ import { VoiceInterface } from './VoiceInterface.js';
 import { TextInterface } from './TextInterface.js';
 import widgetTranslations from './widget-translations.js';
 
-export class TextChatWidget {
+export class TTPChatWidget {
   constructor(config = {}) {
     // Merge user config with defaults (backward compatible with simple config)
     this.config = this.mergeWithDefaults(config);

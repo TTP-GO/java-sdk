@@ -71,8 +71,8 @@ class MainActivity : AppCompatActivity() {
             <body>
                 <script src="https://cdn.talktopc.com/agent-widget.js"></script>
                 <script>
-                    // Initialize text chat widget
-                    const widget = new TTPAgentSDK.TextChatWidget({
+                    // Initialize TTP Chat Widget
+                    const widget = new TTPAgentSDK.TTPChatWidget({
                         agentId: 'your_agent_id',
                         appId: 'your_app_id',
                         websocketUrl: 'wss://backend.talktopc.com/ws/conv',

@@ -1,6 +1,6 @@
 /**
  * TextInterface - Handles text chat UI and functionality
- * Part of the unified TextChatWidget
+ * Part of the unified TTPChatWidget
  */
 
 export class TextInterface {

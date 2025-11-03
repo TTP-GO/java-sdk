@@ -33,13 +33,16 @@ const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url);
   let pathname = parsedUrl.pathname;
   
-  // Default to index.html for root
+  // Default to test-text-chat.html for root
   if (pathname === '/') {
-    pathname = '/examples/test-agent-app.html';
+    pathname = '/examples/test-text-chat.html';
   }
   
   // Remove leading slash and resolve path
-  const filePath = path.join(ROOT_DIR, pathname.substring(1));
+  let filePath = path.join(ROOT_DIR, pathname.substring(1));
+  
+  // Normalize the path to handle any issues
+  filePath = path.normalize(filePath);
   
   // Security check - prevent directory traversal
   if (!filePath.startsWith(ROOT_DIR)) {
@@ -87,7 +90,6 @@ server.listen(PORT, () => {
   console.log(`📁 Serving files from: ${ROOT_DIR}`);
   console.log(`🎤 Test pages available at:`);
   console.log(`   - http://localhost:${PORT}/examples/test-text-chat.html`);
-  console.log(`   - http://localhost:${PORT}/examples/test-agent-app.html`);
   console.log(`   - http://localhost:${PORT}/examples/test-signed-link.html`);
   console.log(`   - http://localhost:${PORT}/examples/test.html`);
   console.log(`\n💡 Press Ctrl+C to stop the server`);

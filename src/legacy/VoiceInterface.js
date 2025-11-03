@@ -1,6 +1,6 @@
 /**
  * VoiceInterface - Handles voice call UI and functionality
- * Part of the unified TextChatWidget
+ * Part of the unified TTPChatWidget
  */
 
 import { AgentSDK } from '../index.js';

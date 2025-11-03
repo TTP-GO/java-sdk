@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Text Chat Widget - Test</title>
+  <title>TTP Chat Widget - Test</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -291,7 +291,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>💬 Text Chat Widget Test</h1>
+    <h1>💬 TTP Chat Widget Test</h1>
     
     <div class="info">
       <strong>📝 Instructions:</strong>
@@ -856,7 +856,7 @@
         window.testWidget.destroy();
       }
       
-      window.testWidget = new TTPAgentSDK.TextChatWidget(config);
+      window.testWidget = new TTPAgentSDK.TTPChatWidget(config);
       widget = window.testWidget;
       
       console.log('Widget initialized:', widget);
@@ -1066,16 +1066,16 @@
     }
     
     try {
-      console.log('Initializing text chat widget...');
+      console.log('Initializing TTP Chat Widget...');
       console.log('TTPAgentSDK available:', typeof TTPAgentSDK);
-      console.log('TTPAgentSDK.TextChatWidget available:', typeof TTPAgentSDK?.TextChatWidget);
+      console.log('TTPAgentSDK.TTPChatWidget available:', typeof TTPAgentSDK?.TTPChatWidget);
       
       if (typeof TTPAgentSDK === 'undefined') {
         throw new Error('TTPAgentSDK is not defined. Check if the script loaded correctly.');
       }
       
-      if (typeof TTPAgentSDK.TextChatWidget === 'undefined') {
-        throw new Error('TTPAgentSDK.TextChatWidget is not defined. Check the SDK build.');
+      if (typeof TTPAgentSDK.TTPChatWidget === 'undefined') {
+        throw new Error('TTPAgentSDK.TTPChatWidget is not defined. Check the SDK build.');
       }
       
       // Create initial widget
