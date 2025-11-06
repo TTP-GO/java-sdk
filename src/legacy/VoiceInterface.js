@@ -90,7 +90,7 @@ export class VoiceInterface {
   generateHTML() {
     return `<div class="voice-interface" id="voiceInterface">
       <!-- Before Call State -->
-      <div id="voiceIdleState" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <div id="voiceIdleState" style="display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; min-height: 0; justify-content: center; flex: 1; box-sizing: border-box;">
         <div class="voice-avatar" id="voiceAvatar">
           🤖
         </div>
@@ -107,7 +107,7 @@ export class VoiceInterface {
         </button>
       </div>
       <!-- During Call State -->
-      <div id="voiceActiveState" style="display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: flex-start; overflow: hidden; padding-top: 10px;">
+      <div id="voiceActiveState" style="display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; min-height: 0; justify-content: center; overflow: hidden; flex: 1; box-sizing: border-box;">
         <div class="voice-avatar-active" id="voiceAvatarActive">
           <div class="voice-rings">
             <div class="voice-ring"></div>
@@ -179,46 +179,47 @@ export class VoiceInterface {
         flex-direction: column;
         align-items: center; 
         justify-content: flex-start; 
-        padding: 10px 20px 20px 20px; 
+        padding: clamp(4px, 2%, 20px) clamp(8px, 4%, 20px) clamp(10px, 4%, 20px) clamp(8px, 4%, 20px); 
         background: linear-gradient(180deg, #f8fafc 0%, #e0e7ff 100%);
         overflow: hidden;
         min-height: 0;
+        height: 100%;
+        width: 100%;
+        container-type: size;
+        box-sizing: border-box;
       }
       .voice-interface.active { display: flex; }
       
-      /* Voice Avatar (idle state) */
-      .voice-avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, ${avatarBg} 0%, ${avatarActiveBg} 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 56px;
-        margin-top: 10px;
-        margin-bottom: 16px;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-        transition: all 0.3s ease;
-        flex-shrink: 0;
+      /* Enable scrolling only for extremely small heights (< 250px) */
+      @container (max-height: 250px) {
+        .voice-interface {
+          overflow-y: auto !important;
+        }
       }
       
-      /* Voice Avatar (active state with animations) */
+      @media (max-height: 250px) {
+        .voice-interface {
+          overflow-y: auto !important;
+        }
+      }
+      
+      /* Voice Avatar (active state with animations) - Scale relative to container */
       .voice-avatar-active {
-        width: 120px;
-        height: 120px;
+        width: clamp(60px, 24%, 120px);
+        height: clamp(60px, 24%, 120px);
+        aspect-ratio: 1;
         border-radius: 50%;
         background: linear-gradient(135deg, ${avatarBg} 0%, ${avatarActiveBg} 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 56px;
-        margin-top: 10px;
-        margin-bottom: 16px;
+        font-size: clamp(28px, 11.2%, 56px);
+        margin-top: clamp(4px, 2%, 10px);
+        margin-bottom: clamp(8px, 3.2%, 16px);
         position: relative;
         box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
         animation: avatarPulse 2s ease-in-out infinite;
-        flex-shrink: 0;
+        flex-shrink: 1;
       }
       
       @keyframes avatarPulse {
@@ -276,44 +277,49 @@ export class VoiceInterface {
         }
       }
       
-      /* Voice Status */
+      /* Voice Status - Scale relative to container */
       .voice-status {
         text-align: center;
-        margin-bottom: 10px;
-        flex-shrink: 0;
+        margin-bottom: clamp(4px, 2%, 10px);
+        flex-shrink: 1;
       }
       
       .voice-status-title {
-        font-size: 18px;
+        font-size: clamp(14px, 3.6%, 18px);
         font-weight: 600;
         color: ${statusTitleColor};
-        margin-bottom: 4px;
+        margin-bottom: clamp(2px, 0.8%, 4px);
       }
       
       .voice-status-subtitle {
-        font-size: 12px;
+        font-size: clamp(10px, 2.4%, 12px);
         color: ${statusSubtitleColor};
       }
       
-      /* Start Call Button */
+      /* Start Call Button - Scale relative to container */
       .start-call-btn {
-        margin-top: 20px;
-        width: 200px;
-        height: 56px;
-        border-radius: 28px;
+        margin-top: clamp(8px, 4%, 20px);
+        width: clamp(160px, 57%, 200px);
+        height: clamp(44px, 11.2%, 56px);
+        border-radius: clamp(22px, 5.6%, 28px);
         border: none;
         background: ${startCallBtnColor};
         color: ${startCallBtnTextColor};
-        font-size: 18px;
+        font-size: clamp(14px, 3.6%, 18px);
         font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 12px;
+        gap: clamp(8px, 2.4%, 12px);
         box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
         transition: all 0.3s ease;
-        flex-shrink: 0;
+        flex-shrink: 1;
+      }
+      
+      .start-call-btn svg {
+        width: clamp(24px, 6.4%, 32px);
+        height: clamp(24px, 6.4%, 32px);
       }
       
       .start-call-btn:hover {
@@ -325,35 +331,35 @@ export class VoiceInterface {
         transform: translateY(-2px);
       }
       
-      /* Voice Transcript */
+      /* Voice Transcript - Scale relative to container */
       .voice-transcript {
         background: ${transcriptBg};
-        padding: 12px;
-        border-radius: 12px;
-        max-width: 300px;
+        padding: clamp(8px, 2.4%, 12px);
+        border-radius: clamp(8px, 2.4%, 12px);
+        max-width: clamp(240px, 85%, 300px);
         width: 100%;
-        margin-bottom: 12px;
-        min-height: 50px;
-        max-height: 90px;
+        margin-bottom: clamp(8px, 2.4%, 12px);
+        min-height: clamp(40px, 10%, 50px);
+        max-height: clamp(60px, 18%, 90px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         flex-shrink: 1;
-        overflow-y: auto;
+        overflow: hidden;
       }
       
       .transcript-label {
-        font-size: 10px;
+        font-size: clamp(8px, 2%, 10px);
         color: ${transcriptLabelColor};
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 6px;
+        margin-bottom: clamp(4px, 1.2%, 6px);
       }
       
       .transcript-text {
-        font-size: 14px;
+        font-size: clamp(12px, 2.8%, 14px);
         color: ${transcriptTextColor};
         line-height: 1.5;
-        min-height: 30px;
+        min-height: clamp(24px, 6%, 30px);
       }
       
       .transcript-text.empty {
@@ -361,17 +367,19 @@ export class VoiceInterface {
         font-style: italic;
       }
       
-      /* Voice Controls */
+      /* Voice Controls - Scale relative to container */
       .voice-controls {
         display: flex;
-        gap: 12px;
+        gap: clamp(8px, 2.4%, 12px);
         align-items: center;
-        flex-shrink: 0;
+        flex-shrink: 1;
+        margin-top: clamp(8px, 2.4%, 12px);
       }
       
       .voice-control-btn {
-        width: 72px;
-        height: 72px;
+        width: clamp(56px, 14.4%, 72px);
+        height: clamp(56px, 14.4%, 72px);
+        aspect-ratio: 1;
         border-radius: 50%;
         border: none;
         cursor: pointer;
@@ -380,12 +388,18 @@ export class VoiceInterface {
         justify-content: center;
         transition: all 0.2s;
         position: relative;
-        flex-shrink: 0;
+        flex-shrink: 1;
+      }
+      
+      .voice-control-btn svg {
+        width: clamp(20px, 4.8%, 24px);
+        height: clamp(20px, 4.8%, 24px);
       }
       
       .voice-control-btn.primary {
-        width: 80px;
-        height: 80px;
+        width: clamp(64px, 16%, 80px);
+        height: clamp(64px, 16%, 80px);
+        aspect-ratio: 1;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
@@ -432,8 +446,8 @@ export class VoiceInterface {
       
       .voice-timer {
         position: absolute;
-        bottom: -24px;
-        font-size: 12px;
+        bottom: clamp(-20px, -4.8%, -24px);
+        font-size: clamp(10px, 2.4%, 12px);
         color: #64748b;
         font-weight: 500;
       }
