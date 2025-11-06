@@ -1,6 +1,6 @@
 {
   "name": "ttp-agent-sdk",
-  "version": "2.2.11",
+  "version": "2.2.15",
   "description": "Comprehensive Voice Agent SDK with Enhanced Customizable Widget - Real-time audio, WebSocket communication, React components, and extensive customization options",
   "main": "dist/agent-widget.js",
   "module": "dist/agent-widget.js",

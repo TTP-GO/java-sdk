@@ -780,7 +780,20 @@ export class TTPChatWidget {
       /* New structure styles matching provided design */
       #text-chat-panel .widget-container {
         width: 100%; height: 100%; min-height: 0; background: #FFFFFF; overflow: hidden; display: flex; flex-direction: column; border-radius: ${panel.borderRadius}px;
+        container-type: size;
       }
+      
+      /* Ensure content areas can scroll when height is constrained */
+      #text-chat-panel .widget-container > .landing-screen,
+      #text-chat-panel .widget-container > .voice-interface,
+      #text-chat-panel .widget-container > .text-interface {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      
+      /* Header should not scroll */
       #text-chat-panel .widget-header {
         padding: 12px 16px;
         display: flex;
