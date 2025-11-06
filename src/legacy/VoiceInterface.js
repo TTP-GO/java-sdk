@@ -199,30 +199,40 @@ export class VoiceInterface {
         overflow: hidden;
         flex: 1;
         box-sizing: border-box;
-        gap: clamp(8px, 2vh, 16px);
+        gap: clamp(6px, 1.5vh, 12px);
       }
       
       #voiceActiveState[style*="display: none"] {
         display: none !important;
       }
       
-      /* Voice Avatar - Scale based on available height */
+      /* Voice Avatar - Responsive scaling based on container height */
       .voice-avatar,
       .voice-avatar-active {
-        width: min(25vh, 180px, 40vw);
-        height: min(25vh, 180px, 40vw);
+        width: min(20vh, 140px, 35vw);
+        height: min(20vh, 140px, 35vw);
         aspect-ratio: 1;
         border-radius: 50%;
         background: linear-gradient(135deg, ${avatarBg} 0%, ${avatarActiveBg} 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: min(12vh, 80px, 20vw);
+        font-size: min(10vh, 64px, 18vw);
         margin: 0;
         box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
         transition: all 0.3s ease;
         flex-shrink: 1;
         position: relative;
+      }
+      
+      /* Smaller avatar for very small heights */
+      @media (max-height: 400px) {
+        .voice-avatar,
+        .voice-avatar-active {
+          width: min(16vh, 100px, 30vw);
+          height: min(16vh, 100px, 30vw);
+          font-size: min(8vh, 48px, 15vw);
+        }
       }
       
       .voice-avatar-active {
@@ -293,43 +303,53 @@ export class VoiceInterface {
       }
       
       .voice-status-title {
-        font-size: clamp(14px, 3.5vh, 22px);
+        font-size: clamp(13px, 3vh, 20px);
         font-weight: 600;
         color: ${statusTitleColor};
-        margin-bottom: 4px;
+        margin-bottom: 3px;
         line-height: 1.2;
       }
       
       .voice-status-subtitle {
-        font-size: clamp(11px, 2.2vh, 15px);
+        font-size: clamp(10px, 2vh, 14px);
         color: ${statusSubtitleColor};
         line-height: 1.3;
+      }
+      
+      /* Even smaller text for very small heights */
+      @media (max-height: 400px) {
+        .voice-status-title {
+          font-size: clamp(12px, 2.5vh, 16px);
+        }
+        .voice-status-subtitle {
+          font-size: clamp(9px, 1.8vh, 12px);
+        }
       }
       
       /* Start Call Button */
       .start-call-btn {
         margin: 0;
         width: min(280px, 70vw);
-        height: clamp(48px, 8vh, 64px);
-        border-radius: clamp(24px, 4vh, 32px);
+        height: clamp(44px, 7vh, 60px);
+        border-radius: clamp(22px, 3.5vh, 30px);
         border: none;
         background: ${startCallBtnColor};
         color: ${startCallBtnTextColor};
-        font-size: clamp(14px, 2.5vh, 18px);
+        font-size: clamp(13px, 2.2vh, 17px);
         font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 8px;
         box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
         transition: all 0.3s ease;
         flex-shrink: 0;
       }
       
       .start-call-btn svg {
-        width: clamp(24px, 4vh, 32px);
-        height: clamp(24px, 4vh, 32px);
+        width: clamp(20px, 3.5vh, 28px);
+        height: clamp(20px, 3.5vh, 28px);
       }
       
       .start-call-btn:hover {
@@ -341,15 +361,15 @@ export class VoiceInterface {
         transform: translateY(-2px);
       }
       
-      /* Voice Transcript - More flexible sizing */
+      /* Voice Transcript - More flexible sizing with minimum */
       .voice-transcript {
         background: ${transcriptBg};
-        padding: clamp(8px, 1.5vh, 14px);
-        border-radius: 12px;
+        padding: clamp(6px, 1.2vh, 12px);
+        border-radius: 10px;
         width: min(360px, 85vw);
         margin: 0;
-        min-height: clamp(60px, 12vh, 90px);
-        max-height: clamp(80px, 18vh, 120px);
+        min-height: clamp(50px, 10vh, 80px);
+        max-height: clamp(70px, 15vh, 110px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         flex-shrink: 1;
         overflow-y: auto;
@@ -357,20 +377,29 @@ export class VoiceInterface {
         flex-direction: column;
       }
       
+      /* Smaller transcript for very small heights */
+      @media (max-height: 400px) {
+        .voice-transcript {
+          min-height: 40px;
+          max-height: 60px;
+          padding: 6px 8px;
+        }
+      }
+      
       .transcript-label {
-        font-size: clamp(9px, 1.6vh, 11px);
+        font-size: clamp(8px, 1.4vh, 10px);
         color: ${transcriptLabelColor};
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         flex-shrink: 0;
       }
       
       .transcript-text {
-        font-size: clamp(12px, 2.2vh, 15px);
+        font-size: clamp(11px, 2vh, 14px);
         color: ${transcriptTextColor};
-        line-height: 1.4;
+        line-height: 1.3;
         flex: 1;
         overflow-y: auto;
       }
@@ -383,17 +412,17 @@ export class VoiceInterface {
       /* Voice Controls */
       .voice-controls {
         display: flex;
-        gap: clamp(12px, 2vh, 16px);
+        gap: clamp(10px, 1.8vh, 14px);
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
         margin: 0;
-        padding-top: clamp(8px, 1.5vh, 12px);
+        padding-top: clamp(6px, 1.2vh, 10px);
       }
       
       .voice-control-btn {
-        width: clamp(56px, 10vh, 80px);
-        height: clamp(56px, 10vh, 80px);
+        width: clamp(50px, 9vh, 72px);
+        height: clamp(50px, 9vh, 72px);
         aspect-ratio: 1;
         border-radius: 50%;
         border: none;
@@ -406,17 +435,37 @@ export class VoiceInterface {
         flex-shrink: 0;
       }
       
+      /* Smaller buttons for very small heights */
+      @media (max-height: 400px) {
+        .voice-control-btn {
+          width: clamp(44px, 8vh, 60px);
+          height: clamp(44px, 8vh, 60px);
+        }
+        
+        .voice-controls {
+          gap: 8px;
+          padding-top: 4px;
+        }
+      }
+      
       .voice-control-btn svg {
         width: 50%;
         height: 50%;
       }
       
       .voice-control-btn.primary {
-        width: clamp(64px, 11vh, 88px);
-        height: clamp(64px, 11vh, 88px);
+        width: clamp(56px, 10vh, 80px);
+        height: clamp(56px, 10vh, 80px);
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      }
+      
+      @media (max-height: 400px) {
+        .voice-control-btn.primary {
+          width: clamp(50px, 9vh, 68px);
+          height: clamp(50px, 9vh, 68px);
+        }
       }
       
       .voice-control-btn.primary:hover {
@@ -459,16 +508,23 @@ export class VoiceInterface {
       
       .voice-timer {
         position: absolute;
-        bottom: -24px;
-        font-size: clamp(10px, 1.8vh, 13px);
+        bottom: clamp(-20px, -3.5vh, -24px);
+        font-size: clamp(9px, 1.6vh, 12px);
         color: #64748b;
         font-weight: 500;
         white-space: nowrap;
       }
       
+      @media (max-height: 400px) {
+        .voice-timer {
+          bottom: -18px;
+          font-size: 9px;
+        }
+      }
+      
       @media (max-width: 768px) {
         .voice-interface {
-          padding: 8px 12px 16px 12px;
+          padding: 8px 12px;
         }
         
         .voice-avatar,
