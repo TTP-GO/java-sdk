@@ -143,8 +143,13 @@ export class TextInterface {
         align-self: ${this.config.direction === 'rtl' ? 'flex-end' : 'flex-start'}; 
       }
       .message .message-bubble { 
-        text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'}; 
+        text-align: ${this.config.direction === 'rtl' ? 'right' : 'left'} !important; 
       }
+      ${this.config.direction === 'rtl' ? `
+      .message-bubble {
+        text-align: right !important;
+      }
+      ` : ''}
       .message-avatar { 
         width: 20px; 
         height: 20px; 
