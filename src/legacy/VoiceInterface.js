@@ -506,25 +506,33 @@ export class VoiceInterface {
       speakerBtn.onclick = () => this.toggleSpeaker();
     }
     
-    // Adjust sizes when the interface first loads - with retries
+    // Adjust sizes when the interface first loads - with retries and longer delays
     const tryAdjustSizes = (attempt = 0) => {
       const voiceInterface = document.getElementById('voiceInterface');
-      if (voiceInterface && voiceInterface.classList.contains('active')) {
-        console.log('✅ Interface is active, adjusting sizes (attempt', attempt + 1, ')');
+      if (voiceInterface && voiceInterface.classList.contains('active') && voiceInterface.clientHeight > 100) {
+        console.log('✅ Interface is active and has proper dimensions, adjusting sizes (attempt', attempt + 1, ')');
         this.adjustSizesForContainer();
-      } else if (attempt < 10) {
-        console.log('⏳ Interface not active yet, retrying... (attempt', attempt + 1, ')');
-        setTimeout(() => tryAdjustSizes(attempt + 1), 200);
+        
+        // Do one more adjustment after a short delay to ensure everything is rendered
+        if (attempt === 0) {
+          setTimeout(() => this.adjustSizesForContainer(), 500);
+        }
+      } else if (attempt < 15) {
+        console.log('⏳ Interface not ready yet (height:', voiceInterface?.clientHeight, '), retrying... (attempt', attempt + 1, ')');
+        setTimeout(() => tryAdjustSizes(attempt + 1), 250);
       } else {
-        console.warn('⚠️ Interface never became active, adjusting sizes anyway');
+        console.warn('⚠️ Interface never became fully ready, adjusting sizes anyway');
         this.adjustSizesForContainer();
       }
     };
     
-    setTimeout(() => tryAdjustSizes(), 100);
+    setTimeout(() => tryAdjustSizes(), 200);
     
     // Also adjust on window resize
-    window.addEventListener('resize', () => this.adjustSizesForContainer());
+    window.addEventListener('resize', () => {
+      console.log('🔄 Window resized, re-adjusting sizes');
+      this.adjustSizesForContainer();
+    });
   }
 
   /**
