@@ -1,6 +1,7 @@
 /**
  * VoiceInterface - Handles voice call UI and functionality
  * Part of the unified TTPChatWidget
+ * Optimized for Wix iframe embedding
  */
 
 import { AgentSDK } from '../index.js';
@@ -63,9 +64,8 @@ export class VoiceInterface {
   }
 
   /**
-   * Helper function to get tooltip text
+   * Helper function to get translated text
    */
-  // Helper function to get translated text
   t(key) {
     const lang = this.config.language || 'en';
     const translations = this.config.translations?.[lang] || this.config.translations?.en || {};
@@ -152,7 +152,7 @@ export class VoiceInterface {
   }
 
   /**
-   * Generate CSS for voice interface
+   * Generate CSS for voice interface - Optimized for small heights
    */
   generateCSS() {
     const avatarBg = this.config.avatarBackgroundColor || '#667eea';
@@ -169,14 +169,14 @@ export class VoiceInterface {
     const endCallBtnColor = this.config.endCallButtonColor || '#ef4444';
     
     return `
-      /* Voice Interface Styles - Better iframe compatibility */
+      /* Voice Interface Styles - Ultra-compact for Wix iframes */
       .voice-interface { 
         display: none; 
         flex: 1; 
         flex-direction: column;
         align-items: center; 
         justify-content: center; 
-        padding: 12px 16px; 
+        padding: 6px 10px 6px 10px; 
         background: linear-gradient(180deg, #f8fafc 0%, #e0e7ff 100%);
         overflow: hidden;
         min-height: 0;
@@ -186,7 +186,7 @@ export class VoiceInterface {
       }
       .voice-interface.active { display: flex; }
       
-      /* Voice States - Use flexbox to distribute space */
+      /* Voice States - Better scaling gaps */
       #voiceIdleState,
       #voiceActiveState {
         display: flex;
@@ -206,33 +206,23 @@ export class VoiceInterface {
         display: none !important;
       }
       
-      /* Voice Avatar - Responsive scaling based on container height */
+      /* Voice Avatar - Scales better from small to large */
       .voice-avatar,
       .voice-avatar-active {
-        width: min(20vh, 140px, 35vw);
-        height: min(20vh, 140px, 35vw);
+        width: clamp(80px, 18vh, 160px);
+        height: clamp(80px, 18vh, 160px);
         aspect-ratio: 1;
         border-radius: 50%;
         background: linear-gradient(135deg, ${avatarBg} 0%, ${avatarActiveBg} 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: min(10vh, 64px, 18vw);
+        font-size: clamp(40px, 9vh, 80px);
         margin: 0;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
         transition: all 0.3s ease;
         flex-shrink: 1;
         position: relative;
-      }
-      
-      /* Smaller avatar for very small heights */
-      @media (max-height: 400px) {
-        .voice-avatar,
-        .voice-avatar-active {
-          width: min(16vh, 100px, 30vw);
-          height: min(16vh, 100px, 30vw);
-          font-size: min(8vh, 48px, 15vw);
-        }
       }
       
       .voice-avatar-active {
@@ -242,11 +232,9 @@ export class VoiceInterface {
       @keyframes avatarPulse {
         0%, 100% { 
           transform: scale(1);
-          box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
         }
         50% { 
           transform: scale(1.05);
-          box-shadow: 0 15px 50px rgba(102, 126, 234, 0.5);
         }
       }
       
@@ -294,7 +282,7 @@ export class VoiceInterface {
         }
       }
       
-      /* Voice Status */
+      /* Voice Status - Scales with container */
       .voice-status {
         text-align: center;
         margin: 0;
@@ -303,105 +291,92 @@ export class VoiceInterface {
       }
       
       .voice-status-title {
-        font-size: clamp(13px, 3vh, 20px);
+        font-size: clamp(12px, 3vh, 20px);
         font-weight: 600;
         color: ${statusTitleColor};
-        margin-bottom: 3px;
+        margin-bottom: clamp(2px, 0.5vh, 4px);
         line-height: 1.2;
       }
       
       .voice-status-subtitle {
         font-size: clamp(10px, 2vh, 14px);
         color: ${statusSubtitleColor};
-        line-height: 1.3;
+        line-height: 1.2;
       }
       
-      /* Even smaller text for very small heights */
-      @media (max-height: 400px) {
-        .voice-status-title {
-          font-size: clamp(12px, 2.5vh, 16px);
-        }
-        .voice-status-subtitle {
-          font-size: clamp(9px, 1.8vh, 12px);
-        }
-      }
-      
-      /* Start Call Button */
+      /* Start Call Button - Scales with container */
       .start-call-btn {
         margin: 0;
         width: min(280px, 70vw);
-        height: clamp(44px, 7vh, 60px);
-        border-radius: clamp(22px, 3.5vh, 30px);
+        height: clamp(48px, 8vh, 64px);
+        border-radius: clamp(24px, 4vh, 32px);
         border: none;
         background: ${startCallBtnColor};
         color: ${startCallBtnTextColor};
-        font-size: clamp(13px, 2.2vh, 17px);
+        font-size: clamp(14px, 2.5vh, 18px);
         font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: clamp(8px, 1.5vh, 12px);
         box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
         transition: all 0.3s ease;
         flex-shrink: 0;
       }
       
       .start-call-btn svg {
-        width: clamp(20px, 3.5vh, 28px);
-        height: clamp(20px, 3.5vh, 28px);
+        width: clamp(22px, 4vh, 32px);
+        height: clamp(22px, 4vh, 32px);
       }
       
       .start-call-btn:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 40px rgba(102, 126, 234, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(102, 126, 234, 0.5);
       }
       
       .start-call-btn:active {
-        transform: translateY(-2px);
+        transform: translateY(-1px);
       }
       
-      /* Voice Transcript - More flexible sizing with minimum */
+      /* Voice Transcript - Scales with container */
       .voice-transcript {
         background: ${transcriptBg};
-        padding: clamp(6px, 1.2vh, 12px);
+        padding: clamp(6px, 1.5vh, 12px);
         border-radius: 10px;
-        width: min(360px, 85vw);
+        width: min(360px, calc(100% - 40px));
         margin: 0;
-        min-height: clamp(50px, 10vh, 80px);
-        max-height: clamp(70px, 15vh, 110px);
+        min-height: clamp(45px, 10vh, 80px);
+        max-height: clamp(70px, 16vh, 110px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         flex-shrink: 1;
         overflow-y: auto;
+        overflow-x: hidden;
         display: flex;
         flex-direction: column;
-      }
-      
-      /* Smaller transcript for very small heights */
-      @media (max-height: 400px) {
-        .voice-transcript {
-          min-height: 40px;
-          max-height: 60px;
-          padding: 6px 8px;
-        }
+        box-sizing: border-box;
       }
       
       .transcript-label {
-        font-size: clamp(8px, 1.4vh, 10px);
+        font-size: clamp(8px, 1.4vh, 11px);
         color: ${transcriptLabelColor};
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        letter-spacing: 0.3px;
+        margin-bottom: clamp(3px, 0.6vh, 6px);
         flex-shrink: 0;
+        word-wrap: break-word;
       }
       
       .transcript-text {
-        font-size: clamp(11px, 2vh, 14px);
+        font-size: clamp(11px, 2vh, 15px);
         color: ${transcriptTextColor};
-        line-height: 1.3;
+        line-height: 1.4;
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
       
       .transcript-text.empty {
@@ -409,20 +384,20 @@ export class VoiceInterface {
         font-style: italic;
       }
       
-      /* Voice Controls */
+      /* Voice Controls - Scales with container */
       .voice-controls {
         display: flex;
-        gap: clamp(10px, 1.8vh, 14px);
+        gap: clamp(8px, 1.8vh, 14px);
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
         margin: 0;
-        padding-top: clamp(6px, 1.2vh, 10px);
+        padding-top: clamp(5px, 1.2vh, 10px);
       }
       
       .voice-control-btn {
-        width: clamp(50px, 9vh, 72px);
-        height: clamp(50px, 9vh, 72px);
+        width: clamp(48px, 9vh, 72px);
+        height: clamp(48px, 9vh, 72px);
         aspect-ratio: 1;
         border-radius: 50%;
         border: none;
@@ -435,42 +410,21 @@ export class VoiceInterface {
         flex-shrink: 0;
       }
       
-      /* Smaller buttons for very small heights */
-      @media (max-height: 400px) {
-        .voice-control-btn {
-          width: clamp(44px, 8vh, 60px);
-          height: clamp(44px, 8vh, 60px);
-        }
-        
-        .voice-controls {
-          gap: 8px;
-          padding-top: 4px;
-        }
-      }
-      
       .voice-control-btn svg {
-        width: 50%;
-        height: 50%;
+        width: 48%;
+        height: 48%;
       }
       
       .voice-control-btn.primary {
-        width: clamp(56px, 10vh, 80px);
-        height: clamp(56px, 10vh, 80px);
+        width: clamp(54px, 10vh, 80px);
+        height: clamp(54px, 10vh, 80px);
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-      }
-      
-      @media (max-height: 400px) {
-        .voice-control-btn.primary {
-          width: clamp(50px, 9vh, 68px);
-          height: clamp(50px, 9vh, 68px);
-        }
+        box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
       }
       
       .voice-control-btn.primary:hover {
         transform: scale(1.05);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
       }
       
       .voice-control-btn.primary.active {
@@ -480,17 +434,17 @@ export class VoiceInterface {
       
       @keyframes recordingPulse {
         0%, 100% { 
-          box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+          box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
         50% { 
-          box-shadow: 0 8px 30px rgba(239, 68, 68, 0.7);
+          box-shadow: 0 6px 24px rgba(239, 68, 68, 0.7);
         }
       }
       
       .voice-control-btn.secondary {
         background: ${controlBtnColor};
         color: ${controlBtnSecondaryColor};
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       }
       
       .voice-control-btn.secondary:hover {
@@ -508,129 +462,23 @@ export class VoiceInterface {
       
       .voice-timer {
         position: absolute;
-        bottom: clamp(-20px, -3.5vh, -24px);
+        bottom: clamp(-18px, -3vh, -24px);
         font-size: clamp(9px, 1.6vh, 12px);
         color: #64748b;
         font-weight: 500;
         white-space: nowrap;
       }
       
-      @media (max-height: 400px) {
-        .voice-timer {
-          bottom: -18px;
-          font-size: 9px;
-        }
-      }
-      
+      /* Mobile optimization */
       @media (max-width: 768px) {
         .voice-interface {
-          padding: 8px 12px;
-        }
-        
-        .voice-avatar,
-        .voice-avatar-active {
-          width: 100px;
-          height: 100px;
-          font-size: 48px;
-          margin-top: 8px;
-          margin-bottom: 12px;
-        }
-        
-        .voice-status-title {
-          font-size: 16px;
-        }
-        
-        .voice-status-subtitle {
-          font-size: 13px;
-        }
-        
-        .voice-start-call-btn {
-          padding: 12px 24px;
-          font-size: 15px;
-          min-height: 44px;
-        }
-        
-        .voice-transcript-container {
-          padding: 12px;
-          max-height: 180px;
-        }
-        
-        .voice-transcript-text {
-          font-size: 14px;
-          line-height: 1.5;
-        }
-        
-        .voice-controls {
-          gap: 12px;
-          padding: 12px;
-        }
-        
-        .voice-control-btn {
-          width: 48px;
-          height: 48px;
-          min-width: 48px;
-          min-height: 48px;
-        }
-        
-        .voice-control-btn.end-call {
-          width: 52px;
-          height: 52px;
-          min-width: 52px;
-          min-height: 52px;
+          padding: 6px 10px;
         }
       }
       
       @media (max-width: 480px) {
         .voice-interface {
-          padding: 6px 10px 12px 10px;
-        }
-        
-        .voice-avatar,
-        .voice-avatar-active {
-          width: 90px;
-          height: 90px;
-          font-size: 42px;
-        }
-        
-        .voice-status-title {
-          font-size: 15px;
-        }
-        
-        .voice-status-subtitle {
-          font-size: 12px;
-        }
-        
-        .voice-start-call-btn {
-          padding: 10px 20px;
-          font-size: 14px;
-        }
-        
-        .voice-transcript-container {
-          padding: 10px;
-          max-height: 150px;
-        }
-        
-        .voice-transcript-text {
-          font-size: 13px;
-        }
-        
-        .voice-controls {
-          gap: 10px;
-          padding: 10px;
-        }
-        
-        .voice-control-btn {
-          width: 44px;
-          height: 44px;
-          min-width: 44px;
-          min-height: 44px;
-        }
-        
-        .voice-control-btn.end-call {
-          width: 48px;
-          height: 48px;
-          min-width: 48px;
-          min-height: 48px;
+          padding: 5px 8px;
         }
       }
     `;
@@ -657,6 +505,26 @@ export class VoiceInterface {
     if (speakerBtn) {
       speakerBtn.onclick = () => this.toggleSpeaker();
     }
+    
+    // Adjust sizes when the interface first loads - with retries
+    const tryAdjustSizes = (attempt = 0) => {
+      const voiceInterface = document.getElementById('voiceInterface');
+      if (voiceInterface && voiceInterface.classList.contains('active')) {
+        console.log('✅ Interface is active, adjusting sizes (attempt', attempt + 1, ')');
+        this.adjustSizesForContainer();
+      } else if (attempt < 10) {
+        console.log('⏳ Interface not active yet, retrying... (attempt', attempt + 1, ')');
+        setTimeout(() => tryAdjustSizes(attempt + 1), 200);
+      } else {
+        console.warn('⚠️ Interface never became active, adjusting sizes anyway');
+        this.adjustSizesForContainer();
+      }
+    };
+    
+    setTimeout(() => tryAdjustSizes(), 100);
+    
+    // Also adjust on window resize
+    window.addEventListener('resize', () => this.adjustSizesForContainer());
   }
 
   /**
@@ -737,6 +605,203 @@ export class VoiceInterface {
   }
 
   /**
+   * Adjust UI sizes based on container height
+   */
+  adjustSizesForContainer() {
+    const voiceInterface = document.getElementById('voiceInterface');
+    if (!voiceInterface) {
+      console.warn('⚠️ voiceInterface not found, skipping size adjustment');
+      return;
+    }
+    
+    const containerHeight = voiceInterface.clientHeight;
+    const containerWidth = voiceInterface.clientWidth;
+    
+    console.log('📏 Container size:', containerHeight, 'x', containerWidth);
+    
+    // Check if we have visible elements
+    const idleState = document.getElementById('voiceIdleState');
+    const activeState = document.getElementById('voiceActiveState');
+    const isIdleVisible = idleState && idleState.style.display !== 'none';
+    const isActiveVisible = activeState && activeState.style.display !== 'none';
+    
+    console.log('👁️ Visible state - Idle:', isIdleVisible, 'Active:', isActiveVisible);
+    
+    // Calculate sizes ensuring everything fits
+    // Total height = padding + gaps + avatar + status + transcript + controls
+    const padding = 12; // top + bottom padding
+    const gapsCount = 4; // gaps between elements
+    
+    let avatarSize, avatarFontSize, titleSize, subtitleSize, statusHeight, transcriptHeight, buttonSize, primaryButtonSize, gapSize;
+    
+    if (containerHeight <= 350) {
+      // Very small - ultra compact
+      gapSize = 5;
+      avatarSize = 70;
+      avatarFontSize = 35;
+      titleSize = 11;
+      subtitleSize = 9;
+      statusHeight = 32;
+      transcriptHeight = 45;
+      buttonSize = 42;
+      primaryButtonSize = 48;
+    } else if (containerHeight <= 450) {
+      // Small (400-420px) - BIGGER AVATAR for 500px Wix height
+      gapSize = 7;
+      avatarSize = 110;  // Increased from 85 to 110
+      avatarFontSize = 55;  // Increased from 42 to 55
+      titleSize = 15;  // Increased from 13
+      subtitleSize = 11;  // Increased from 10
+      statusHeight = 38;
+      transcriptHeight = 58;  // Slightly reduced
+      buttonSize = 52;  // Increased from 48
+      primaryButtonSize = 58;  // Increased from 54
+    } else if (containerHeight <= 550) {
+      // Medium (500px) - BIGGER ROBOT
+      gapSize = 8;
+      avatarSize = 140;  // Increased from 110 to 140
+      avatarFontSize = 70;  // Increased from 55 to 70
+      titleSize = 16;  // Increased from 15
+      subtitleSize = 12;  // Increased from 11
+      statusHeight = 42;
+      transcriptHeight = 68;  // Reduced slightly to compensate for bigger robot
+      buttonSize = 56;  // Increased from 54
+      primaryButtonSize = 64;  // Increased from 62
+    } else if (containerHeight <= 700) {
+      // Medium-Large (600px)
+      gapSize = 10;
+      avatarSize = 130;
+      avatarFontSize = 65;
+      titleSize = 18;
+      subtitleSize = 13;
+      statusHeight = 46;
+      transcriptHeight = 85;
+      buttonSize = 60;
+      primaryButtonSize = 70;
+    } else {
+      // Large (700+)
+      gapSize = 12;
+      avatarSize = 150;
+      avatarFontSize = 75;
+      titleSize = 20;
+      subtitleSize = 14;
+      statusHeight = 50;
+      transcriptHeight = 100;
+      buttonSize = 66;
+      primaryButtonSize = 76;
+    }
+    
+    // Apply gap size
+    const stateContainers = document.querySelectorAll('#voiceIdleState, #voiceActiveState');
+    stateContainers.forEach(container => {
+      container.style.gap = `${gapSize}px`;
+    });
+    
+    // Apply sizes to avatar
+    const avatars = document.querySelectorAll('.voice-avatar, .voice-avatar-active');
+    console.log('🤖 Found', avatars.length, 'avatars, setting size to', avatarSize, 'px');
+    avatars.forEach(avatar => {
+      avatar.style.width = `${avatarSize}px`;
+      avatar.style.height = `${avatarSize}px`;
+      avatar.style.fontSize = `${avatarFontSize}px`;
+    });
+    
+    // Apply sizes to status text
+    const statusTitle = document.querySelectorAll('.voice-status-title');
+    statusTitle.forEach(el => el.style.fontSize = `${titleSize}px`);
+    
+    const statusSubtitle = document.querySelectorAll('.voice-status-subtitle');
+    statusSubtitle.forEach(el => el.style.fontSize = `${subtitleSize}px`);
+    
+    // Apply sizes to transcript
+    const transcript = document.querySelector('.voice-transcript');
+    if (transcript) {
+      transcript.style.minHeight = `${transcriptHeight}px`;
+      transcript.style.maxHeight = `${transcriptHeight}px`;
+      transcript.style.height = `${transcriptHeight}px`;
+      transcript.style.width = `min(360px, ${containerWidth - 40}px)`;  // Ensure it doesn't overflow
+      transcript.style.boxSizing = 'border-box';
+    }
+    
+    const transcriptLabel = document.querySelector('.transcript-label');
+    if (transcriptLabel) {
+      transcriptLabel.style.fontSize = `${Math.max(8, titleSize - 4)}px`;
+    }
+    
+    const transcriptText = document.querySelector('.transcript-text');
+    if (transcriptText) {
+      transcriptText.style.fontSize = `${Math.max(10, titleSize - 2)}px`;
+    }
+    
+    // Apply sizes to control buttons
+    const secondaryButtons = document.querySelectorAll('.voice-control-btn.secondary');
+    secondaryButtons.forEach(btn => {
+      btn.style.width = `${buttonSize}px`;
+      btn.style.height = `${buttonSize}px`;
+      
+      // Scale the SVG icon inside the button - much bigger!
+      const svg = btn.querySelector('svg');
+      if (svg) {
+        const iconSize = buttonSize * 0.65; // Increased from 50% to 65%
+        svg.style.setProperty('width', `${iconSize}px`, 'important');
+        svg.style.setProperty('height', `${iconSize}px`, 'important');
+        svg.style.setProperty('min-width', `${iconSize}px`, 'important');
+        svg.style.setProperty('min-height', `${iconSize}px`, 'important');
+      }
+    });
+    
+    const primaryButton = document.querySelector('.voice-control-btn.primary');
+    if (primaryButton) {
+      primaryButton.style.width = `${primaryButtonSize}px`;
+      primaryButton.style.height = `${primaryButtonSize}px`;
+      
+      // Scale the SVG icon inside the primary button - much bigger!
+      const svg = primaryButton.querySelector('svg');
+      if (svg) {
+        const iconSize = primaryButtonSize * 0.70; // Increased from 55% to 70%
+        svg.style.setProperty('width', `${iconSize}px`, 'important');
+        svg.style.setProperty('height', `${iconSize}px`, 'important');
+        svg.style.setProperty('min-width', `${iconSize}px`, 'important');
+        svg.style.setProperty('min-height', `${iconSize}px`, 'important');
+      }
+    }
+    
+    // Apply to start call button
+    const startCallBtn = document.querySelector('.start-call-btn');
+    if (startCallBtn) {
+      let btnHeight, btnFontSize;
+      if (containerHeight <= 350) {
+        btnHeight = 48;
+        btnFontSize = 14;
+      } else if (containerHeight <= 450) {
+        btnHeight = 52;
+        btnFontSize = 15;
+      } else if (containerHeight <= 550) {
+        btnHeight = 58;  // Bigger button at 500px
+        btnFontSize = 17;
+      } else if (containerHeight <= 700) {
+        btnHeight = 62;
+        btnFontSize = 18;
+      } else {
+        btnHeight = 64;
+        btnFontSize = 18;
+      }
+      startCallBtn.style.height = `${btnHeight}px`;
+      startCallBtn.style.fontSize = `${btnFontSize}px`;
+      
+      // Also adjust the SVG icon size in the button
+      const btnIcon = startCallBtn.querySelector('svg');
+      if (btnIcon) {
+        const iconSize = Math.max(22, btnHeight * 0.5);
+        btnIcon.style.width = `${iconSize}px`;
+        btnIcon.style.height = `${iconSize}px`;
+      }
+    }
+    
+    console.log('✅ Sizes adjusted - Avatar:', avatarSize, 'Status:', statusHeight, 'Transcript:', transcriptHeight, 'Buttons:', buttonSize);
+  }
+
+  /**
    * Start voice call
    */
   async startVoiceCall() {
@@ -755,6 +820,9 @@ export class VoiceInterface {
       
       if (idleState) idleState.style.display = 'none';
       if (activeState) activeState.style.display = 'flex';
+      
+      // Adjust sizes based on container dimensions
+      setTimeout(() => this.adjustSizesForContainer(), 50);
       
       // Prevent any scrolling when switching states
       if (voiceInterface) {
@@ -858,6 +926,9 @@ export class VoiceInterface {
     
     if (idleState) idleState.style.display = 'flex';
     if (activeState) activeState.style.display = 'none';
+    
+    // Re-adjust sizes for idle state
+    setTimeout(() => this.adjustSizesForContainer(), 50);
     
     // Reset transcript
     const transcriptEl = document.getElementById('transcriptText');
@@ -990,4 +1061,3 @@ export class VoiceInterface {
     }
   }
 }
-
