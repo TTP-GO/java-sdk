@@ -50,6 +50,17 @@ export class VoiceInterface {
       }
     };
     
+    // Handle websocket disconnection - hangup the call
+    this.sdk.onDisconnected = () => {
+      console.log('🔌 WebSocket disconnected, hanging up call...');
+      // Only hangup if call is still active (prevents duplicate calls)
+      if (this.isActive) {
+        // Set isActive to false first to prevent re-entry
+        this.isActive = false;
+        this.endVoiceCall();
+      }
+    };
+    
     // Handle errors
     this.sdk.onError = (error) => {
       console.error('❌ Voice SDK Error:', error);
