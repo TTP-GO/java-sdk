@@ -473,6 +473,7 @@ app.post('/api/get-voice-session', async (req, res) => {
 });</code></pre>
 
           <h2>Available Override Settings</h2>
+          <p><strong>14 out of 15 settings can be overridden.</strong> Only <code>model</code> selection is not supported (requires infrastructure changes).</p>
           <div class="settings-grid">
             <div class="settings-category">
               <h3>📝 Core Settings</h3>
@@ -480,7 +481,7 @@ app.post('/api/get-voice-session', async (req, res) => {
                 <li><code>prompt</code> - System prompt/instructions</li>
                 <li><code>temperature</code> - LLM temperature (0-2)</li>
                 <li><code>maxTokens</code> - Maximum response tokens</li>
-                <li><code>model</code> - LLM model selection</li>
+                <li><code>model</code> - <strong>⚠️ NOT SUPPORTED</strong></li>
                 <li><code>language</code> - Response language code</li>
               </ul>
             </div>
@@ -498,13 +499,14 @@ app.post('/api/get-voice-session', async (req, res) => {
                 <li><code>firstMessage</code> - Initial greeting</li>
                 <li><code>disableInterruptions</code> - Allow/prevent barge-in</li>
                 <li><code>autoDetectLanguage</code> - Auto language detection</li>
+                <li><code>candidateLanguages</code> - List of languages for auto-detection</li>
                 <li><code>maxCallDuration</code> - Max session duration (seconds)</li>
               </ul>
             </div>
             <div class="settings-category">
               <h3>🛠️ Advanced</h3>
               <ul>
-                <li><code>selectedTools</code> - Array of enabled tools</li>
+                <li><code>selectedTools</code> - Map of enabled tools with configurations</li>
                 <li><code>timezone</code> - User timezone</li>
               </ul>
             </div>
@@ -2311,7 +2313,7 @@ function App() {
                 <td><code>model</code></td>
                 <td>string</td>
                 <td>Model names</td>
-                <td>LLM model to use</td>
+                <td><strong>⚠️ NOT SUPPORTED</strong> - LLM model selection requires infrastructure changes</td>
               </tr>
               <tr>
                 <td><code>language</code></td>
@@ -2384,6 +2386,12 @@ function App() {
                 <td>Automatically detect user's language</td>
               </tr>
               <tr>
+                <td><code>candidateLanguages</code></td>
+                <td>array</td>
+                <td>Language codes</td>
+                <td>List of candidate languages for auto-detection (e.g., ['en', 'es', 'fr'])</td>
+              </tr>
+              <tr>
                 <td><code>maxCallDuration</code></td>
                 <td>number</td>
                 <td>Seconds</td>
@@ -2405,9 +2413,9 @@ function App() {
             <tbody>
               <tr>
                 <td><code>selectedTools</code></td>
-                <td>array</td>
-                <td>Tool names</td>
-                <td>Array of enabled tool identifiers</td>
+                <td>object</td>
+                <td>Tool map</td>
+                <td>Map of enabled tools with configurations</td>
               </tr>
               <tr>
                 <td><code>timezone</code></td>
