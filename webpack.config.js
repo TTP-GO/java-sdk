@@ -101,6 +101,14 @@ module.exports = {
           to: 'index.html'
         },
         {
+          from: 'styles.css',
+          to: 'styles.css'
+        },
+        {
+          from: 'script.js',
+          to: 'script.js'
+        },
+        {
           from: 'examples',
           to: 'examples'
         },
