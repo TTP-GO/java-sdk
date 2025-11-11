@@ -61,17 +61,17 @@ function updateActiveLink() {
   
   if (currentSection) {
     const id = currentSection.getAttribute('id');
-    const correspondingLink = document.querySelector(`.nav-link[href="#${id}"]`);
-    
+      const correspondingLink = document.querySelector(`.nav-link[href="#${id}"]`);
+      
     if (correspondingLink && !correspondingLink.classList.contains('active')) {
-      // Remove active class from all links
-      document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-      });
-      
-      // Add active class to corresponding link
-      correspondingLink.classList.add('active');
-      
+        // Remove active class from all links
+        document.querySelectorAll('.nav-link').forEach(link => {
+          link.classList.remove('active');
+        });
+        
+        // Add active class to corresponding link
+        correspondingLink.classList.add('active');
+        
       // Scroll the active link into view in sidebar
       const sidebar = document.querySelector('.sidebar');
       const linkTop = correspondingLink.offsetTop;
@@ -88,9 +88,9 @@ function updateActiveLink() {
       }
       
       // Update URL without jumping
-      history.replaceState(null, null, `#${id}`);
+        history.replaceState(null, null, `#${id}`);
+      }
     }
-  }
 }
 
 // Better throttle function with leading edge execution

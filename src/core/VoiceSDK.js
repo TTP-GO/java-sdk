@@ -412,7 +412,7 @@ export default class VoiceSDK extends EventEmitter {
       return;
     }
     
-    helloMessage.appId = this.config.appId;
+      helloMessage.appId = this.config.appId;
 
     // NEW: Include agent settings override if provided
     // This is only accepted by the server if using signed link authentication

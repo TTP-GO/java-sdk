@@ -126,7 +126,7 @@
                 <span class="feature-compact-icon">🔒</span>
                 <div>
                   <strong>Secure Authentication</strong>
-                  <p>Backend-to-backend signed link authentication with one-time use tokens</p>
+                  <p>Backend-to-backend signed link authentication with JWT and TTL-based expiration</p>
                 </div>
               </div>
               <div class="feature-compact-item">
@@ -365,10 +365,6 @@ app.post('/api/get-voice-session', async (req, res) => {
             </thead>
             <tbody>
               <tr>
-                <td><code>jti</code></td>
-                <td>Unique token ID for one-time use enforcement</td>
-              </tr>
-              <tr>
                 <td><code>agentId</code></td>
                 <td>The AI agent identifier</td>
               </tr>
@@ -377,12 +373,16 @@ app.post('/api/get-voice-session', async (req, res) => {
                 <td>Your user's identifier</td>
               </tr>
               <tr>
+                <td><code>appId</code></td>
+                <td>Your application identifier</td>
+              </tr>
+              <tr>
                 <td><code>allowOverride</code></td>
-                <td>Permission flag for agent settings override</td>
+                <td>Permission flag for agent settings override (optional)</td>
               </tr>
               <tr>
                 <td><code>exp</code></td>
-                <td>Expiration time (configurable via <code>expirationMs</code>, defaults to 1 hour)</td>
+                <td>Token expiration time (TTL - configurable via <code>expirationMs</code>, defaults to 1 hour)</td>
               </tr>
             </tbody>
           </table>
