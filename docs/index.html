@@ -2083,28 +2083,91 @@ function App() {
                 <td>Language code (default: 'en')</td>
               </tr>
               <tr>
-                <td><code>onConnected</code></td>
-                <td>function</td>
+                <td><code>autoReconnect</code></td>
+                <td>boolean</td>
                 <td>No</td>
-                <td>Connected callback</td>
+                <td>Auto-reconnect on disconnect (default: true)</td>
+              </tr>
+              <tr>
+                <td><code>className</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Custom CSS class for the button</td>
+              </tr>
+              <tr>
+                <td><code>style</code></td>
+                <td>object</td>
+                <td>No</td>
+                <td>Inline styles for the button</td>
+              </tr>
+              <tr>
+                <td><code>children</code></td>
+                <td>React.Node</td>
+                <td>No</td>
+                <td>Custom button content (replaces default icon)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Event Callbacks</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Callback</th>
+                <th>Parameters</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>onConnected</code></td>
+                <td>-</td>
+                <td>Called when successfully connected</td>
               </tr>
               <tr>
                 <td><code>onDisconnected</code></td>
-                <td>function</td>
-                <td>No</td>
-                <td>Disconnected callback</td>
+                <td>-</td>
+                <td>Called when disconnected</td>
+              </tr>
+              <tr>
+                <td><code>onRecordingStarted</code></td>
+                <td>-</td>
+                <td>Called when recording starts</td>
+              </tr>
+              <tr>
+                <td><code>onRecordingStopped</code></td>
+                <td>-</td>
+                <td>Called when recording stops</td>
+              </tr>
+              <tr>
+                <td><code>onPlaybackStarted</code></td>
+                <td>-</td>
+                <td>Called when audio playback starts</td>
+              </tr>
+              <tr>
+                <td><code>onPlaybackStopped</code></td>
+                <td>-</td>
+                <td>Called when audio playback stops</td>
               </tr>
               <tr>
                 <td><code>onMessage</code></td>
-                <td>function</td>
-                <td>No</td>
-                <td>Message callback</td>
+                <td><code>message</code></td>
+                <td>Called for all WebSocket messages</td>
               </tr>
               <tr>
                 <td><code>onError</code></td>
-                <td>function</td>
-                <td>No</td>
-                <td>Error callback</td>
+                <td><code>error</code></td>
+                <td>Called on errors</td>
+              </tr>
+              <tr>
+                <td><code>onBargeIn</code></td>
+                <td><code>message</code></td>
+                <td>Called when user interrupts agent</td>
+              </tr>
+              <tr>
+                <td><code>onStopPlaying</code></td>
+                <td><code>message</code></td>
+                <td>Called when server requests to stop audio</td>
               </tr>
             </tbody>
           </table>
