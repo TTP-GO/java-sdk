@@ -15,11 +15,16 @@ export default class VoiceSDK extends EventEmitter {
     this.config = {
       websocketUrl: config.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
       agentId: config.agentId, // Optional - for direct agent access (unsecured method)
-      appId: config.appId, // User's app ID for authentication
+      appId: config.appId, // User's app ID for authentication (REQUIRED)
       ttpId: config.ttpId, // Optional - custom TTP ID (fallback if appId not provided)
       voice: config.voice || 'default',
       language: config.language || 'en',
       sampleRate: config.sampleRate || 16000,
+      
+      // NEW: Agent settings override (sent via WebSocket message)
+      // Only available with signed link authentication
+      agentSettingsOverride: config.agentSettingsOverride || null,
+      
       ...config
     };
     
@@ -399,15 +404,23 @@ export default class VoiceSDK extends EventEmitter {
       t: "hello"
     };
 
-    // Use app ID for authentication (preferred method)
-    if (this.config.appId) {
-      helloMessage.appId = this.config.appId;
-    } else if (this.config.ttpId) {
-      // Fallback to custom TTP ID if app ID not provided
-      helloMessage.ttpId = this.config.ttpId;
-    } else {
-      // Generate TTP ID as last resort
-      helloMessage.ttpId = this.generateTtpId();
+    // appId is REQUIRED - no fallback to ttpId
+    if (!this.config.appId) {
+      const error = new Error('appId is required for connection');
+      console.error('VoiceSDK: Failed to send hello message:', error);
+      this.emit('error', error);
+      return;
+    }
+    
+    helloMessage.appId = this.config.appId;
+
+    // NEW: Include agent settings override if provided
+    // This is only accepted by the server if using signed link authentication
+    if (this.config.agentSettingsOverride && 
+        Object.keys(this.config.agentSettingsOverride).length > 0) {
+      helloMessage.agentSettingsOverride = this.config.agentSettingsOverride;
+      console.log('🔧 VoiceSDK: Sending agent settings override:', 
+        Object.keys(this.config.agentSettingsOverride));
     }
 
     // Note: agentId is now sent as query parameter in WebSocket URL, not in hello message

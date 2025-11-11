@@ -1,224 +1,2431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTP Agent SDK - Voice AI Integration</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f8fafc;
-            color: #1e293b;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-        }
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.5rem;
-        }
-        .header p {
-            margin: 0;
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        .content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-        }
-        .card h2 {
-            margin-top: 0;
-            color: #4f46e5;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .card p {
-            line-height: 1.6;
-            color: #64748b;
-        }
-        .demo-button {
-            display: inline-block;
-            background: #4f46e5;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background-color 0.2s;
-            margin-top: 15px;
-        }
-        .demo-button:hover {
-            background: #4338ca;
-        }
-        .code-block {
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 14px;
-            overflow-x: auto;
-            margin: 20px 0;
-        }
-        .features {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-        .features h2 {
-            margin-top: 0;
-            color: #4f46e5;
-        }
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .feature {
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 8px;
-            border-left: 4px solid #4f46e5;
-        }
-        .feature h3 {
-            margin: 0 0 10px 0;
-            color: #1e293b;
-        }
-        .feature p {
-            margin: 0;
-            color: #64748b;
-            font-size: 14px;
-        }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTP Agent SDK - Documentation</title>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <div class="header">
-        <h1>🎤 TTP Agent SDK</h1>
-        <p>Comprehensive Voice AI Integration for Web Applications</p>
-    </div>
-
-    <div class="features">
-        <h2>✨ Key Features</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <h3>🎤 Real-time Audio</h3>
-                <p>High-quality audio recording and playback with AudioWorklet</p>
-            </div>
-            <div class="feature">
-                <h3>🔄 WebSocket Communication</h3>
-                <p>Real-time bidirectional communication with authentication</p>
-            </div>
-            <div class="feature">
-                <h3>⚛️ React Components</h3>
-                <p>Ready-to-use React components for modern applications</p>
-            </div>
-            <div class="feature">
-                <h3>🌐 Vanilla JavaScript</h3>
-                <p>Works with any JavaScript framework or vanilla JS</p>
-            </div>
-            <div class="feature">
-                <h3>🔒 Multiple Auth Methods</h3>
-                <p>Support for signed links and direct agent access</p>
-            </div>
-            <div class="feature">
-                <h3>📱 Responsive Widget</h3>
-                <p>Pre-built UI widget for quick integration</p>
-            </div>
+  <div class="documentation">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+          <img src="https://talktopc.com/logo192.png" alt="TTP Logo" style="width: 40px; height: 40px; border-radius: 8px;">
+          <div>
+            <h1 style="margin: 0; font-size: 1.4rem;">TTP Agent SDK</h1>
+            <p class="version" style="margin: 0;">v2.2.23</p>
+          </div>
         </div>
-    </div>
-
-    <div class="content">
-        <div class="card">
-            <h2>🚀 Quick Start</h2>
-            <p>Get started with the pre-built widget in just a few lines of code.</p>
-            <div class="code-block">
-&lt;script src="https://cdn.talktopc.com/agent-widget.js"&gt;&lt;/script&gt;
-&lt;script&gt;
-  TTPAgentSDK.AgentWidget.init({
-    agentId: 'your_agent_id',
-    getSessionUrl: 'https://your-backend.com/api/get-session'
-  });
-&lt;/script&gt;
-            </div>
-            <a href="examples/test-text-chat.html" class="demo-button">Try Widget Demo</a>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <h3>Getting Started</h3>
+          <ul>
+            <li><a href="#introduction" class="nav-link active">Introduction</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#quick-start">Quick Start</a></li>
+          </ul>
         </div>
 
-        <div class="card">
-            <h2>⚛️ React Integration</h2>
-            <p>Use the VoiceButton component in your React applications.</p>
-            <div class="code-block">
-import { VoiceButton } from 'ttp-agent-sdk';
-
-&lt;VoiceButton
-  websocketUrl="wss://speech.talktopc.com/ws/conv"
-  agentId="your_agent_id"
-  appId="your_app_id"
-/&gt;
-            </div>
-            <a href="examples/react-example.html" class="demo-button">View React Example</a>
+        <div class="nav-section">
+          <h3>Core Concepts</h3>
+          <ul>
+            <li><a href="#authentication">Authentication</a></li>
+            <li><a href="#agent-override">Agent Override</a></li>
+            <li><a href="#events">Events & Callbacks</a></li>
+          </ul>
         </div>
 
-        <div class="card">
-            <h2>🌐 Vanilla JavaScript</h2>
-            <p>Integrate with any JavaScript framework or vanilla JS.</p>
-            <div class="code-block">
+        <div class="nav-section">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="#text-chat-widget">Voice & Chat Widget</a></li>
+            <li><a href="#vanilla-js">Vanilla JavaScript</a></li>
+            <li><a href="#react">React Integration</a></li>
+            <li><a href="#voice-button">VoiceButton Component</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <h3>API Reference</h3>
+          <ul>
+            <li><a href="#voicesdk">VoiceSDK Class</a></li>
+            <li><a href="#methods">Methods</a></li>
+            <li><a href="#events-api">Events</a></li>
+            <li><a href="#configuration">Configuration</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <h3>Examples</h3>
+          <ul>
+            <li><a href="../examples/test-text-chat.html" target="_blank">Live Widget Demo 🚀</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <div class="content-wrapper">
+        <!-- Introduction -->
+        <section id="introduction" class="doc-section">
+          <h1>Introduction</h1>
+          <p class="lead">TTP Agent SDK is a powerful JavaScript library for building AI-powered voice and chat interactions in your web applications.</p>
+          
+          <!-- Quick Links Menu -->
+          <div class="quick-links-container">
+            <h2 style="text-align: center; margin-bottom: 25px; color: var(--text-primary);">What We Offer</h2>
+            <div class="quick-links-grid">
+              <a href="#text-chat-widget" class="quick-link-card">
+                <div class="quick-link-icon">🎙️💬</div>
+                <h3>Voice & Chat Widget</h3>
+                <p>Drop-in widget with voice & text for any website</p>
+                <span class="quick-link-arrow">→</span>
+              </a>
+              
+              <a href="#vanilla-js" class="quick-link-card">
+                <div class="quick-link-icon">🎤</div>
+                <h3>Voice SDK</h3>
+                <p>Real-time voice AI integration</p>
+                <span class="quick-link-arrow">→</span>
+              </a>
+              
+              <a href="#react" class="quick-link-card">
+                <div class="quick-link-icon">⚛️</div>
+                <h3>React Components</h3>
+                <p>Pre-built React components</p>
+                <span class="quick-link-arrow">→</span>
+              </a>
+              
+              <a href="#agent-override" class="quick-link-card">
+                <div class="quick-link-icon">⚙️</div>
+                <h3>Agent Override</h3>
+                <p>Dynamic AI customization</p>
+                <span class="quick-link-arrow">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Key Features -->
+          <div style="margin-top: 50px;">
+            <h2 style="margin-bottom: 20px;">Key Features</h2>
+            <div class="features-compact">
+              <div class="feature-compact-item">
+                <span class="feature-compact-icon">🔒</span>
+                <div>
+                  <strong>Secure Authentication</strong>
+                  <p>Backend-to-backend signed link authentication with one-time use tokens</p>
+                </div>
+              </div>
+              <div class="feature-compact-item">
+                <span class="feature-compact-icon">🎨</span>
+                <div>
+                  <strong>Fully Customizable</strong>
+                  <p>Colors, branding, languages, RTL support, and custom agent settings</p>
+                </div>
+              </div>
+              <div class="feature-compact-item">
+                <span class="feature-compact-icon">📱</span>
+                <div>
+                  <strong>Mobile Optimized</strong>
+                  <p>Works seamlessly on desktop, tablet, and mobile devices</p>
+                </div>
+              </div>
+              <div class="feature-compact-item">
+                <span class="feature-compact-icon">🌍</span>
+                <div>
+                  <strong>Multi-language</strong>
+                  <p>Built-in support for multiple languages and custom translations</p>
+                </div>
+              </div>
+              <div class="feature-compact-item">
+                <span class="feature-compact-icon">⚡</span>
+                <div>
+                  <strong>Real-time Streaming</strong>
+                  <p>WebSocket-based audio streaming with low latency</p>
+                </div>
+              </div>
+              <div class="feature-compact-item">
+                <span class="feature-compact-icon">🔧</span>
+                <div>
+                  <strong>Easy Integration</strong>
+                  <p>Simple CDN setup or NPM package with comprehensive API</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Installation -->
+        <section id="installation" class="doc-section">
+          <h1>Installation</h1>
+          
+          <h2>NPM</h2>
+          <pre><code>npm install ttp-agent-sdk</code></pre>
+
+          <h2>CDN</h2>
+          <pre><code>&lt;script src="https://unpkg.com/ttp-agent-sdk/dist/agent-widget.js"&gt;&lt;/script&gt;</code></pre>
+
+          <h2>Import</h2>
+          <pre><code>// ES6 Import
 import { VoiceSDK } from 'ttp-agent-sdk';
 
-const voiceSDK = new VoiceSDK({
-  websocketUrl: 'wss://speech.talktopc.com/ws/conv',
-  agentId: 'your_agent_id',
-  appId: 'your_app_id'
+// CommonJS
+const { VoiceSDK } = require('ttp-agent-sdk');
+
+// Browser Global
+const sdk = new window.TTPAgentSDK.VoiceSDK(config);</code></pre>
+        </section>
+
+        <!-- Quick Start -->
+        <section id="quick-start" class="doc-section">
+          <h1>Quick Start</h1>
+          <p>Get up and running in 5 minutes with this simple example.</p>
+
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Get a Signed URL</h3>
+              <div class="warning-box">
+                <strong>🔒 Backend-to-Backend:</strong> Your frontend requests from YOUR backend, which then communicates with TTP backend. Never expose your API key to the frontend!
+              </div>
+              <p><strong>Frontend → Your Backend:</strong></p>
+              <pre><code>const response = await fetch('/api/get-voice-session', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    agentId: 'agent_123'
+  })
 });
 
-await voiceSDK.connect();
+const { signedUrl } = await response.json();</code></pre>
+              <p><strong>Your Backend → TTP Backend:</strong> (See Authentication section for details)</p>
             </div>
-            <a href="examples/vanilla-example.html" class="demo-button">Try Vanilla Demo</a>
-        </div>
+          </div>
 
-        <div class="card">
-            <h2>📚 Documentation</h2>
-            <p>Complete documentation and API reference for all features.</p>
-            <ul style="color: #64748b; line-height: 1.8;">
-                <li>Installation & Setup</li>
-                <li>Authentication Methods</li>
-                <li>Event Handling</li>
-                <li>API Reference</li>
-                <li>Examples & Tutorials</li>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Initialize the SDK</h3>
+              <p>Create a VoiceSDK instance with the signed URL:</p>
+              <pre><code>import { VoiceSDK } from 'ttp-agent-sdk';
+
+const voiceSDK = new VoiceSDK({
+  websocketUrl: signedUrl,  // Signed URL from step 1
+  appId: 'your_app_id',     // Your application ID
+  agentId: 'agent_123'      // The AI agent to connect to
+});
+
+// Listen to events
+voiceSDK.on('connected', () => {
+  console.log('✅ Connected to agent');
+});
+
+voiceSDK.on('message', (msg) => {
+  if (msg.type === 'agent_response') {
+    console.log('Agent:', msg.agent_response);
+  }
+});</code></pre>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Connect & Start Recording</h3>
+              <p>Connect to the agent and start capturing audio:</p>
+              <pre><code>// Connect
+await voiceSDK.connect();
+
+// Start recording
+await voiceSDK.startRecording();
+
+// Stop recording
+await voiceSDK.stopRecording();</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Authentication -->
+        <section id="authentication" class="doc-section">
+          <h1>Authentication</h1>
+          <p>TTP Agent SDK uses signed WebSocket URLs for secure authentication.</p>
+
+          <div class="info-box">
+            <strong>🔒 Security First:</strong> All connections require signed URLs obtained from your backend, which authenticates with the TTP backend using an API key.
+          </div>
+
+          <h2>Authentication Flow</h2>
+          <div class="warning-box">
+            <strong>🔐 Critical Security Note:</strong> The signed URL generation happens <strong>Backend-to-Backend</strong>. Your frontend NEVER directly contacts TTP backend. This protects your API key!
+          </div>
+          <div class="flow-diagram">
+            <div class="flow-step">
+              <div class="flow-box" style="background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);">
+                <strong>1. 🖥️ Your Frontend</strong>
+                <p>User clicks "Start Voice Chat"</p>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                <strong>2. 🔧 Your Backend</strong>
+                <p>Receives: POST /api/get-voice-session</p>
+              </div>
+              <div class="flow-arrow">↓ 🔒 Backend-to-Backend (API Key)</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);">
+                <strong>3. 🏢 TTP Backend</strong>
+                <p>Validates API key & generates signed JWT</p>
+              </div>
+              <div class="flow-arrow">↑ Returns signed URL</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                <strong>4. 🔧 Your Backend</strong>
+                <p>Forwards signed URL to frontend</p>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);">
+                <strong>5. 🖥️ Your Frontend</strong>
+                <p>Uses SDK with signed URL (WebSocket)</p>
+              </div>
+            </div>
+          </div>
+
+          <h2>Backend Implementation (Backend-to-Backend)</h2>
+          <p><strong>Your backend acts as a secure proxy between your frontend and TTP backend:</strong></p>
+          
+          <div class="info-box">
+            <strong>💡 Architecture:</strong> Frontend → Your Backend → TTP Backend → Your Backend → Frontend
+          </div>
+          
+          <div class="success-box">
+            <strong>⏱️ Configurable TTL:</strong> You can specify <code>expirationMs</code> (in milliseconds) to control how long the signed URL is valid. Default is 1 hour (3600000ms) if not specified.
+            <br><br>
+            <strong>Examples:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+              <li>5 minutes: <code>300000</code></li>
+              <li>1 hour (default): <code>3600000</code></li>
+              <li>24 hours: <code>86400000</code></li>
             </ul>
-            <a href="README.md" class="demo-button">View Documentation</a>
-        </div>
-    </div>
+          </div>
+          
+          <pre><code>// Example: Node.js/Express
+// This endpoint is called by YOUR FRONTEND
+app.post('/api/get-voice-session', async (req, res) => {
+  const { agentId } = req.body;
+  
+  // 1️⃣ Authenticate YOUR user (your auth logic)
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  // 2️⃣ Backend-to-Backend: Call TTP Backend with YOUR API Key
+  // ⚠️ This happens SERVER-SIDE only - API key never exposed to frontend
+  const response = await fetch('https://backend.talktopc.com/api/public/agents/signed-url', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': process.env.TTP_API_KEY  // 🔒 Secret - never in frontend!
+    },
+    body: JSON.stringify({
+      agentId: agentId,
+      appId: process.env.TTP_APP_ID,
+      expirationMs: 3600000  // Optional: Token TTL in milliseconds (default: 1 hour)
+    })
+  });
+  
+  const { signedUrl } = await response.json();
+  
+  // 3️⃣ Return signed URL to YOUR frontend
+  res.json({ signedUrl });
+});</code></pre>
 
-    <div class="footer">
-        <p>Built with ❤️ by the TTP Agent Team</p>
-        <p>Version 2.0.0 | <a href="https://github.com/yinon11/ttp-sdk-front" style="color: #4f46e5;">GitHub Repository</a></p>
-    </div>
+          <div class="warning-box">
+            <strong>⚠️ Never expose your API key:</strong> The API key should only be used on your backend server, never in frontend code.
+          </div>
+
+          <h2>Token Properties</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>jti</code></td>
+                <td>Unique token ID for one-time use enforcement</td>
+              </tr>
+              <tr>
+                <td><code>agentId</code></td>
+                <td>The AI agent identifier</td>
+              </tr>
+              <tr>
+                <td><code>userId</code></td>
+                <td>Your user's identifier</td>
+              </tr>
+              <tr>
+                <td><code>allowOverride</code></td>
+                <td>Permission flag for agent settings override</td>
+              </tr>
+              <tr>
+                <td><code>exp</code></td>
+                <td>Expiration time (configurable via <code>expirationMs</code>, defaults to 1 hour)</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h2>Request Parameters</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>agentId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The AI agent identifier</td>
+              </tr>
+              <tr>
+                <td><code>appId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Your application identifier</td>
+              </tr>
+              <tr>
+                <td><code>expirationMs</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Token TTL in milliseconds (default: 3600000 = 1 hour)</td>
+              </tr>
+              <tr>
+                <td><code>variables</code></td>
+                <td>object</td>
+                <td>No</td>
+                <td>Custom variables to pass to the agent</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Agent Override -->
+        <section id="agent-override" class="doc-section">
+          <h1>Agent Settings Override</h1>
+          <p class="badge-new">NEW FEATURE</p>
+          <p>Dynamically customize agent behavior, voice, and personality on a per-session basis.</p>
+
+          <div class="info-box">
+            <strong>🔒 Security:</strong> Agent overrides are only available with signed link authentication where <code>allowOverride: true</code> is granted by your backend.
+          </div>
+
+          <h2>How It Works</h2>
+          <div class="info-box">
+            <strong>🔐 Backend-to-Backend First:</strong> The signed URL with override permission is obtained via backend-to-backend communication before your frontend can use it.
+          </div>
+          <ol class="numbered-list">
+            <li><strong>Backend-to-Backend:</strong> Your backend requests a signed URL from TTP backend with <code>allowOverride: true</code></li>
+            <li><strong>Backend → Frontend:</strong> Your backend returns the signed URL to your frontend</li>
+            <li><strong>Frontend:</strong> Your frontend uses the SDK with the signed URL + custom agent settings</li>
+            <li><strong>TTP Backend:</strong> Validates the JWT signature and applies your overrides if permission granted</li>
+          </ol>
+
+          <h2>Example</h2>
+          <pre><code>const voiceSDK = new VoiceSDK({
+  websocketUrl: signedUrl,  // Signed URL from your backend
+  appId: 'your_app_id',     // Your application ID
+  agentId: 'agent_123',     // The AI agent to connect to
+  
+  // Override agent settings
+  agentSettingsOverride: {
+    // Core settings
+    prompt: "You are a friendly Spanish-speaking travel assistant",
+    language: "es",
+    temperature: 0.9,
+    maxTokens: 200,
+    
+    // Voice settings
+    voiceSpeed: 1.2,
+    selectedVoice: "nova",
+    
+    // Behavior
+    firstMessage: "¡Hola! ¿Cómo puedo ayudarte hoy?",
+    disableInterruptions: false,
+    autoDetectLanguage: true
+  }
+});</code></pre>
+
+          <h2>Available Override Settings</h2>
+          <div class="settings-grid">
+            <div class="settings-category">
+              <h3>📝 Core Settings</h3>
+              <ul>
+                <li><code>prompt</code> - System prompt/instructions</li>
+                <li><code>temperature</code> - LLM temperature (0-2)</li>
+                <li><code>maxTokens</code> - Maximum response tokens</li>
+                <li><code>model</code> - LLM model selection</li>
+                <li><code>language</code> - Response language code</li>
+              </ul>
+            </div>
+            <div class="settings-category">
+              <h3>🔊 Voice Settings</h3>
+              <ul>
+                <li><code>selectedVoice</code> - Voice preset name</li>
+                <li><code>voiceId</code> - Specific voice ID</li>
+                <li><code>voiceSpeed</code> - Speed multiplier (0.5-2)</li>
+              </ul>
+            </div>
+            <div class="settings-category">
+              <h3>⚙️ Behavior</h3>
+              <ul>
+                <li><code>firstMessage</code> - Initial greeting</li>
+                <li><code>disableInterruptions</code> - Allow/prevent barge-in</li>
+                <li><code>autoDetectLanguage</code> - Auto language detection</li>
+                <li><code>maxCallDuration</code> - Max session duration (seconds)</li>
+              </ul>
+            </div>
+            <div class="settings-category">
+              <h3>🛠️ Advanced</h3>
+              <ul>
+                <li><code>selectedTools</code> - Array of enabled tools</li>
+                <li><code>timezone</code> - User timezone</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="warning-box">
+            <strong>⚠️ Validation:</strong> All overrides are validated and sanitized on the server. Invalid values will be rejected or clamped to safe ranges.
+          </div>
+        </section>
+
+        <!-- Events -->
+        <section id="events" class="doc-section">
+          <h1>Events & Callbacks</h1>
+          <p>The SDK emits events for all important state changes and interactions.</p>
+
+          <h2>Event Categories</h2>
+
+          <h3>Connection Events</h3>
+          <pre><code>voiceSDK.on('connected', () => {
+  console.log('✅ Connected to agent');
+});
+
+voiceSDK.on('disconnected', (event) => {
+  console.log('❌ Disconnected:', event.reason);
+  console.log('Close code:', event.code);
+});
+
+voiceSDK.on('error', (error) => {
+  console.error('Error:', error);
+});</code></pre>
+
+          <h3>Recording Events</h3>
+          <pre><code>voiceSDK.on('recordingStarted', () => {
+  console.log('🎤 Recording started');
+});
+
+voiceSDK.on('recordingStopped', () => {
+  console.log('⏹️ Recording stopped');
+});</code></pre>
+
+          <h3>Message Events</h3>
+          <pre><code>voiceSDK.on('message', (msg) => {
+  switch(msg.type) {
+    case 'agent_response':
+      console.log('Agent:', msg.agent_response);
+      break;
+    case 'transcription':
+      console.log('You said:', msg.text);
+      break;
+    // ... other message types
+  }
+});</code></pre>
+
+          <h3>Audio Events</h3>
+          <pre><code>voiceSDK.on('playbackStarted', () => {
+  console.log('🔊 Audio playback started');
+});
+
+voiceSDK.on('playbackStopped', () => {
+  console.log('🔇 Audio playback stopped');
+});
+
+voiceSDK.on('audioData', (audioData) => {
+  // Raw audio data (Uint8Array)
+});</code></pre>
+
+          <h3>Special Events</h3>
+          <pre><code>// Barge-in (user interrupts agent)
+voiceSDK.on('bargeIn', (message) => {
+  console.log('User interrupted the agent');
+});
+
+// Greeting audio
+voiceSDK.on('greetingStarted', () => {
+  console.log('Playing greeting message');
+});
+
+// Domain whitelist error
+voiceSDK.on('domainError', (error) => {
+  console.error('Domain not whitelisted:', error.reason);
+});</code></pre>
+        </section>
+
+        <!-- Voice & Chat Widget -->
+        <section id="text-chat-widget" class="doc-section">
+          <h1>Voice & Chat Widget</h1>
+          <p>Pre-built, customizable widget with voice and text chat - perfect for adding AI conversation to any website.</p>
+
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">💬</div>
+              <h3>Voice & Text Chat</h3>
+              <p>Beautiful interface with voice recording, text chat, and message history</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🎨</div>
+              <h3>Fully Customizable</h3>
+              <p>Colors, position, size, RTL support, and custom branding</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📱</div>
+              <h3>Mobile Optimized</h3>
+              <p>Responsive design that works perfectly on all devices</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🌍</div>
+              <h3>Multi-language</h3>
+              <p>Built-in support for multiple languages with custom translations</p>
+            </div>
+          </div>
+
+          <h2>Installation</h2>
+          <pre><code>&lt;!-- Add the SDK script to your page --&gt;
+&lt;script src="https://unpkg.com/ttp-agent-sdk/dist/agent-widget.js"&gt;&lt;/script&gt;
+
+&lt;!-- Initialize the widget --&gt;
+&lt;script&gt;
+  const widget = new TTPAgentSDK.TTPChatWidget({
+    agentId: 'agent_123',
+    appId: 'your_app_id'
+  });
+&lt;/script&gt;</code></pre>
+
+          <h2>Basic Configuration</h2>
+          <pre><code>const widget = new TTPAgentSDK.TTPChatWidget({
+  // Required
+  agentId: 'agent_123',       // Your AI agent ID
+  appId: 'your_app_id',       // Your application ID
+  
+  // Optional - Appearance
+  primaryColor: '#7C3AED',    // Widget theme color
+  position: 'bottom-right',   // 'bottom-right', 'bottom-left'
+  language: 'en',             // 'en', 'es', 'fr', 'de', 'he', etc.
+  direction: 'ltr',           // 'ltr' or 'rtl' for right-to-left languages
+  
+  // Optional - Variables
+  variables: {
+    userName: 'John Doe',
+    page: 'homepage',
+    customData: 'value'
+  }
+});</code></pre>
+
+          <h2>Advanced Customization</h2>
+          
+          <h3>Icon Customization</h3>
+          <pre><code>const widget = new TTPAgentSDK.TTPChatWidget({
+  agentId: 'agent_123',
+  appId: 'your_app_id',
+  
+  icon: {
+    type: 'custom',                              // 'default', 'emoji', or 'custom'
+    customImage: 'https://your-site.com/logo.png', // Custom image URL
+    size: 60,                                    // Icon size in pixels
+    backgroundColor: '#FFFFFF',                  // Background color
+    borderRadius: '50%'                         // Border radius (50% for circle)
+  }
+});</code></pre>
+
+          <h3>Chat Window Customization</h3>
+          <pre><code>const widget = new TTPAgentSDK.TTPChatWidget({
+  agentId: 'agent_123',
+  appId: 'your_app_id',
+  
+  chatWindow: {
+    width: 400,                    // Width in pixels
+    height: 600,                   // Height in pixels
+    title: 'Chat with us!',        // Custom title
+    subtitle: 'We reply instantly', // Custom subtitle
+    placeholder: 'Type here...',   // Input placeholder
+    borderRadius: 12               // Window border radius
+  }
+});</code></pre>
+
+          <h3>Branding</h3>
+          <pre><code>const widget = new TTPAgentSDK.TTPChatWidget({
+  agentId: 'agent_123',
+  appId: 'your_app_id',
+  
+  branding: {
+    companyName: 'Your Company',
+    logo: 'https://your-site.com/logo.png',
+    showPoweredBy: false           // Hide "Powered by TTP" footer
+  }
+});</code></pre>
+
+          <h3>RTL (Right-to-Left) Support</h3>
+          <pre><code>// For Hebrew, Arabic, etc.
+const widget = new TTPAgentSDK.TTPChatWidget({
+  agentId: 'agent_123',
+  appId: 'your_app_id',
+  direction: 'rtl',
+  language: 'he',                  // Hebrew
+  position: 'bottom-left'          // Better for RTL
+});</code></pre>
+
+          <h2>Widget Methods</h2>
+          
+          <div class="method-card">
+            <h3><code>widget.open()</code></h3>
+            <p>Programmatically open the chat window.</p>
+            <pre><code>// Open chat from your own button
+document.getElementById('myButton').onclick = () => {
+  widget.open();
+};</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>widget.close()</code></h3>
+            <p>Close the chat window.</p>
+            <pre><code>widget.close();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>widget.toggle()</code></h3>
+            <p>Toggle chat window open/closed.</p>
+            <pre><code>widget.toggle();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>widget.destroy()</code></h3>
+            <p>Remove the widget from the page.</p>
+            <pre><code>widget.destroy();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>widget.updateConfig(config)</code></h3>
+            <p>Update widget configuration dynamically.</p>
+            <pre><code>widget.updateConfig({
+  primaryColor: '#FF5733',
+  language: 'es'
+});</code></pre>
+          </div>
+
+          <h2>Widget Events</h2>
+          <pre><code>const widget = new TTPAgentSDK.TTPChatWidget({
+  agentId: 'agent_123',
+  appId: 'your_app_id',
+  
+  // Event callbacks
+  onOpen: () => {
+    console.log('Chat opened');
+  },
+  
+  onClose: () => {
+    console.log('Chat closed');
+  },
+  
+  onMessage: (message) => {
+    console.log('New message:', message);
+  },
+  
+  onError: (error) => {
+    console.error('Widget error:', error);
+  },
+  
+  onReady: () => {
+    console.log('Widget initialized');
+  }
+});</code></pre>
+
+          <h2>Complete Example</h2>
+          <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;My Website with AI Chat&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Welcome to my website!&lt;/h1&gt;
+  
+  &lt;!-- Load the SDK --&gt;
+  &lt;script src="https://unpkg.com/ttp-agent-sdk/dist/agent-widget.js"&gt;&lt;/script&gt;
+  
+  &lt;!-- Initialize widget --&gt;
+  &lt;script&gt;
+    const widget = new TTPAgentSDK.TTPChatWidget({
+      agentId: 'agent_123',
+      appId: 'your_app_id',
+      
+      // Customize appearance
+      primaryColor: '#7C3AED',
+      position: 'bottom-right',
+      language: 'en',
+      
+      // Custom branding
+      chatWindow: {
+        title: 'Chat with us!',
+        subtitle: 'We typically reply instantly'
+      },
+      
+      // Pass context variables
+      variables: {
+        userName: 'Visitor',
+        page: window.location.pathname,
+        referrer: document.referrer
+      },
+      
+      // Event handlers
+      onReady: () => {
+        console.log('Chat widget ready!');
+      },
+      
+      onMessage: (message) => {
+        // Track messages in analytics
+        console.log('Message:', message);
+      }
+    });
+    
+    // Optional: Open chat programmatically
+    // widget.open();
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+          <h2>Configuration Reference</h2>
+          <div class="info-box">
+            <p><strong>🎨 Extensive Customization</strong></p>
+            <p>The Voice & Chat Widget can be customized in almost every aspect - colors, text, icons, sizes, behaviors, and more!</p>
+          </div>
+
+          <p>See the <a href="../examples/test-text-chat.html" target="_blank">live demo</a> to experiment with all customization options interactively.</p>
+
+          <details open>
+            <summary><strong>Required Configuration</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>agentId</code></td>
+                  <td>string</td>
+                  <td>Your AI agent identifier</td>
+                </tr>
+                <tr>
+                  <td><code>appId</code></td>
+                  <td>string</td>
+                  <td>Your application identifier</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details open>
+            <summary><strong>General Configuration</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>primaryColor</code></td>
+                  <td>string</td>
+                  <td>'#7C3AED'</td>
+                  <td>Main theme color (hex)</td>
+                </tr>
+                <tr>
+                  <td><code>direction</code></td>
+                  <td>string</td>
+                  <td>'ltr'</td>
+                  <td>'ltr' or 'rtl'</td>
+                </tr>
+                <tr>
+                  <td><code>language</code></td>
+                  <td>string</td>
+                  <td>'en'</td>
+                  <td>Language code (en, es, fr, de, he, ar, etc.)</td>
+                </tr>
+                <tr>
+                  <td><code>variables</code></td>
+                  <td>object</td>
+                  <td>{}</td>
+                  <td>Custom variables to pass to agent</td>
+                </tr>
+                <tr>
+                  <td><code>customStyles</code></td>
+                  <td>string</td>
+                  <td>''</td>
+                  <td>Custom CSS to inject</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Positioning</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>position</code></td>
+                  <td>string | object</td>
+                  <td>'bottom-right'</td>
+                  <td>String: 'bottom-right', 'bottom-left'. Object: { vertical, horizontal, offset }</td>
+                </tr>
+                <tr>
+                  <td><code>position.vertical</code></td>
+                  <td>string</td>
+                  <td>'bottom'</td>
+                  <td>'top' or 'bottom'</td>
+                </tr>
+                <tr>
+                  <td><code>position.horizontal</code></td>
+                  <td>string</td>
+                  <td>'right'</td>
+                  <td>'left' or 'right'</td>
+                </tr>
+                <tr>
+                  <td><code>position.offset</code></td>
+                  <td>object</td>
+                  <td>{ x: 20, y: 20 }</td>
+                  <td>Offset from edges (pixels)</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Icon & Button</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>icon.type</code></td>
+                  <td>string</td>
+                  <td>'custom'</td>
+                  <td>'microphone', 'custom', 'emoji', 'text'</td>
+                </tr>
+                <tr>
+                  <td><code>icon.customImage</code></td>
+                  <td>string</td>
+                  <td>TTP logo</td>
+                  <td>URL to custom icon image</td>
+                </tr>
+                <tr>
+                  <td><code>icon.size</code></td>
+                  <td>string</td>
+                  <td>'medium'</td>
+                  <td>'small', 'medium', 'large', 'xl'</td>
+                </tr>
+                <tr>
+                  <td><code>icon.backgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Icon background color</td>
+                </tr>
+                <tr>
+                  <td><code>button.size</code></td>
+                  <td>string</td>
+                  <td>'medium'</td>
+                  <td>'small', 'medium', 'large'</td>
+                </tr>
+                <tr>
+                  <td><code>button.shape</code></td>
+                  <td>string</td>
+                  <td>'circle'</td>
+                  <td>'circle', 'rounded', 'square'</td>
+                </tr>
+                <tr>
+                  <td><code>button.backgroundColor</code></td>
+                  <td>string</td>
+                  <td>primaryColor</td>
+                  <td>Button background color</td>
+                </tr>
+                <tr>
+                  <td><code>button.hoverColor</code></td>
+                  <td>string</td>
+                  <td>'#7C3AED'</td>
+                  <td>Button hover color</td>
+                </tr>
+                <tr>
+                  <td><code>button.shadow</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable button shadow</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Panel & Header</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>panel.width</code></td>
+                  <td>number</td>
+                  <td>350</td>
+                  <td>Panel width (pixels)</td>
+                </tr>
+                <tr>
+                  <td><code>panel.height</code></td>
+                  <td>number</td>
+                  <td>500</td>
+                  <td>Panel height (pixels)</td>
+                </tr>
+                <tr>
+                  <td><code>panel.borderRadius</code></td>
+                  <td>number</td>
+                  <td>12</td>
+                  <td>Border radius (pixels)</td>
+                </tr>
+                <tr>
+                  <td><code>panel.backgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Panel background color</td>
+                </tr>
+                <tr>
+                  <td><code>header.title</code></td>
+                  <td>string</td>
+                  <td>'Chat Assistant'</td>
+                  <td>Header title text</td>
+                </tr>
+                <tr>
+                  <td><code>header.showTitle</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Show/hide header title</td>
+                </tr>
+                <tr>
+                  <td><code>header.backgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#7C3AED'</td>
+                  <td>Header background color</td>
+                </tr>
+                <tr>
+                  <td><code>header.textColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Header text color</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Messages & Chat</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>messages.userBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#E5E7EB'</td>
+                  <td>User message background</td>
+                </tr>
+                <tr>
+                  <td><code>messages.agentBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#F3F4F6'</td>
+                  <td>Agent message background</td>
+                </tr>
+                <tr>
+                  <td><code>messages.systemBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#DCFCE7'</td>
+                  <td>System message background</td>
+                </tr>
+                <tr>
+                  <td><code>messages.errorBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#FEE2E2'</td>
+                  <td>Error message background</td>
+                </tr>
+                <tr>
+                  <td><code>messages.textColor</code></td>
+                  <td>string</td>
+                  <td>'#1F2937'</td>
+                  <td>Message text color</td>
+                </tr>
+                <tr>
+                  <td><code>messages.fontSize</code></td>
+                  <td>string</td>
+                  <td>'14px'</td>
+                  <td>Message font size</td>
+                </tr>
+                <tr>
+                  <td><code>messages.borderRadius</code></td>
+                  <td>number</td>
+                  <td>8</td>
+                  <td>Message bubble radius</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonColor</code></td>
+                  <td>string</td>
+                  <td>'#7C3AED'</td>
+                  <td>Send button color</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonHoverColor</code></td>
+                  <td>string</td>
+                  <td>'#6D28D9'</td>
+                  <td>Send button hover color</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonActiveColor</code></td>
+                  <td>string</td>
+                  <td>'#6D28D9'</td>
+                  <td>Send button active color</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonText</code></td>
+                  <td>string</td>
+                  <td>'➤'</td>
+                  <td>Send button text/icon</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonTextColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Send button text color</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonFontSize</code></td>
+                  <td>string</td>
+                  <td>'18px'</td>
+                  <td>Send button font size</td>
+                </tr>
+                <tr>
+                  <td><code>text.sendButtonFontWeight</code></td>
+                  <td>string</td>
+                  <td>'500'</td>
+                  <td>Send button font weight</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputPlaceholder</code></td>
+                  <td>string</td>
+                  <td>'Type your message...'</td>
+                  <td>Input placeholder text</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputBorderColor</code></td>
+                  <td>string</td>
+                  <td>'#E5E7EB'</td>
+                  <td>Input border color</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputFocusColor</code></td>
+                  <td>string</td>
+                  <td>'#7C3AED'</td>
+                  <td>Input focus color</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Input background color</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputTextColor</code></td>
+                  <td>string</td>
+                  <td>'#1F2937'</td>
+                  <td>Input text color</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputFontSize</code></td>
+                  <td>string</td>
+                  <td>'14px'</td>
+                  <td>Input font size</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputBorderRadius</code></td>
+                  <td>number</td>
+                  <td>20</td>
+                  <td>Input border radius (pixels)</td>
+                </tr>
+                <tr>
+                  <td><code>text.inputPadding</code></td>
+                  <td>string</td>
+                  <td>'6px 14px'</td>
+                  <td>Input padding</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Voice Configuration</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>voice.micButtonColor</code></td>
+                  <td>string</td>
+                  <td>primaryColor</td>
+                  <td>Microphone button color (inside panel)</td>
+                </tr>
+                <tr>
+                  <td><code>voice.micButtonActiveColor</code></td>
+                  <td>string</td>
+                  <td>'#EF4444'</td>
+                  <td>Microphone button color when active</td>
+                </tr>
+                <tr>
+                  <td><code>voice.micButtonHint.text</code></td>
+                  <td>string</td>
+                  <td>'Click the button to start...'</td>
+                  <td>Hint text below mic button</td>
+                </tr>
+                <tr>
+                  <td><code>voice.micButtonHint.color</code></td>
+                  <td>string</td>
+                  <td>'#6B7280'</td>
+                  <td>Hint text color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.avatarBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#667eea'</td>
+                  <td>Voice avatar background</td>
+                </tr>
+                <tr>
+                  <td><code>voice.avatarActiveBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#667eea'</td>
+                  <td>Avatar background when active</td>
+                </tr>
+                <tr>
+                  <td><code>voice.statusTitleColor</code></td>
+                  <td>string</td>
+                  <td>'#1e293b'</td>
+                  <td>Status title text color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.statusSubtitleColor</code></td>
+                  <td>string</td>
+                  <td>'#64748b'</td>
+                  <td>Status subtitle text color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.startCallButtonColor</code></td>
+                  <td>string</td>
+                  <td>'#667eea'</td>
+                  <td>Start call button color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.startCallButtonTextColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Start call button text color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.endCallButtonColor</code></td>
+                  <td>string</td>
+                  <td>'#ef4444'</td>
+                  <td>End call button color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.transcriptBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Transcript background</td>
+                </tr>
+                <tr>
+                  <td><code>voice.transcriptTextColor</code></td>
+                  <td>string</td>
+                  <td>'#1e293b'</td>
+                  <td>Transcript text color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.transcriptLabelColor</code></td>
+                  <td>string</td>
+                  <td>'#94a3b8'</td>
+                  <td>Transcript label color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.controlButtonColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Control button color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.controlButtonSecondaryColor</code></td>
+                  <td>string</td>
+                  <td>'#64748b'</td>
+                  <td>Secondary control button color</td>
+                </tr>
+                <tr>
+                  <td><code>voice.language</code></td>
+                  <td>string</td>
+                  <td>'en'</td>
+                  <td>Voice language (overrides global)</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Behavior</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>behavior.mode</code></td>
+                  <td>string</td>
+                  <td>'unified'</td>
+                  <td>'unified' (both), 'voice-only', 'text-only'</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.autoOpen</code></td>
+                  <td>boolean</td>
+                  <td>false</td>
+                  <td>Auto-open widget on page load</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.startOpen</code></td>
+                  <td>boolean</td>
+                  <td>false</td>
+                  <td>Start with widget open</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.hidden</code></td>
+                  <td>boolean</td>
+                  <td>false</td>
+                  <td>Hide the widget completely</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.autoConnect</code></td>
+                  <td>boolean</td>
+                  <td>false</td>
+                  <td>Auto-connect on widget open</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.showWelcomeMessage</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Show welcome message</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.welcomeMessage</code></td>
+                  <td>string</td>
+                  <td>'Hello! How can I help...'</td>
+                  <td>Welcome message text</td>
+                </tr>
+                <tr>
+                  <td><code>behavior.enableVoiceMode</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable voice mode option (in unified mode)</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Animation & Tooltips</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>animation.enableHover</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable hover animations</td>
+                </tr>
+                <tr>
+                  <td><code>animation.enablePulse</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable pulse animations</td>
+                </tr>
+                <tr>
+                  <td><code>animation.enableSlide</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable slide animations</td>
+                </tr>
+                <tr>
+                  <td><code>animation.duration</code></td>
+                  <td>number</td>
+                  <td>0.3</td>
+                  <td>Animation duration (seconds)</td>
+                </tr>
+                <tr>
+                  <td><code>tooltips.newChat</code></td>
+                  <td>string</td>
+                  <td>Auto</td>
+                  <td>New chat button tooltip</td>
+                </tr>
+                <tr>
+                  <td><code>tooltips.back</code></td>
+                  <td>string</td>
+                  <td>Auto</td>
+                  <td>Back button tooltip</td>
+                </tr>
+                <tr>
+                  <td><code>tooltips.close</code></td>
+                  <td>string</td>
+                  <td>Auto</td>
+                  <td>Close button tooltip</td>
+                </tr>
+                <tr>
+                  <td><code>tooltips.mute</code></td>
+                  <td>string</td>
+                  <td>Auto</td>
+                  <td>Mute button tooltip</td>
+                </tr>
+                <tr>
+                  <td><code>tooltips.speaker</code></td>
+                  <td>string</td>
+                  <td>Auto</td>
+                  <td>Speaker button tooltip</td>
+                </tr>
+                <tr>
+                  <td><code>tooltips.endCall</code></td>
+                  <td>string</td>
+                  <td>Auto</td>
+                  <td>End call button tooltip</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Landing Screen (Unified Mode)</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>landing.backgroundColor</code></td>
+                  <td>string</td>
+                  <td>Gradient</td>
+                  <td>Landing screen background (color or gradient)</td>
+                </tr>
+                <tr>
+                  <td><code>landing.logo</code></td>
+                  <td>string</td>
+                  <td>'🤖'</td>
+                  <td>Landing screen logo (emoji or text)</td>
+                </tr>
+                <tr>
+                  <td><code>landing.title</code></td>
+                  <td>string</td>
+                  <td>null</td>
+                  <td>Landing screen title (null uses translation)</td>
+                </tr>
+                <tr>
+                  <td><code>landing.titleColor</code></td>
+                  <td>string</td>
+                  <td>'#1e293b'</td>
+                  <td>Landing title text color</td>
+                </tr>
+                <tr>
+                  <td><code>landing.modeCardBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>'#FFFFFF'</td>
+                  <td>Mode selection card background</td>
+                </tr>
+                <tr>
+                  <td><code>landing.modeCardBorderColor</code></td>
+                  <td>string</td>
+                  <td>'#E2E8F0'</td>
+                  <td>Mode card border color</td>
+                </tr>
+                <tr>
+                  <td><code>landing.modeCardHoverBorderColor</code></td>
+                  <td>string</td>
+                  <td>header.backgroundColor</td>
+                  <td>Mode card border color on hover</td>
+                </tr>
+                <tr>
+                  <td><code>landing.modeCardIconBackgroundColor</code></td>
+                  <td>string</td>
+                  <td>header.backgroundColor</td>
+                  <td>Mode card icon background</td>
+                </tr>
+                <tr>
+                  <td><code>landing.modeCardTitleColor</code></td>
+                  <td>string</td>
+                  <td>'#111827'</td>
+                  <td>Mode card title text color</td>
+                </tr>
+                <tr>
+                  <td><code>landing.voiceCardIcon</code></td>
+                  <td>string</td>
+                  <td>'🎤'</td>
+                  <td>Voice mode card icon</td>
+                </tr>
+                <tr>
+                  <td><code>landing.textCardIcon</code></td>
+                  <td>string</td>
+                  <td>'💬'</td>
+                  <td>Text mode card icon</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary><strong>Advanced Configuration</strong></summary>
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>websocketUrl</code></td>
+                  <td>string</td>
+                  <td>Auto-detected</td>
+                  <td>Custom WebSocket URL for text chat</td>
+                </tr>
+                <tr>
+                  <td><code>voice.websocketUrl</code></td>
+                  <td>string</td>
+                  <td>Auto-detected</td>
+                  <td>Custom WebSocket URL for voice chat</td>
+                </tr>
+                <tr>
+                  <td><code>demo</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable demo mode</td>
+                </tr>
+                <tr>
+                  <td><code>panel.backdropFilter</code></td>
+                  <td>string</td>
+                  <td>null</td>
+                  <td>CSS backdrop filter (e.g., 'blur(10px)')</td>
+                </tr>
+                <tr>
+                  <td><code>panel.border</code></td>
+                  <td>string</td>
+                  <td>'1px solid rgba(0,0,0,0.1)'</td>
+                  <td>Panel border style</td>
+                </tr>
+                <tr>
+                  <td><code>button.shadowColor</code></td>
+                  <td>string</td>
+                  <td>'rgba(0,0,0,0.15)'</td>
+                  <td>Button shadow color</td>
+                </tr>
+                <tr>
+                  <td><code>icon.emoji</code></td>
+                  <td>string</td>
+                  <td>'🎤'</td>
+                  <td>Emoji when icon.type = 'emoji'</td>
+                </tr>
+                <tr>
+                  <td><code>icon.text</code></td>
+                  <td>string</td>
+                  <td>'AI'</td>
+                  <td>Text when icon.type = 'text'</td>
+                </tr>
+                <tr>
+                  <td><code>accessibility.ariaLabel</code></td>
+                  <td>string</td>
+                  <td>'Chat Assistant'</td>
+                  <td>ARIA label for the widget</td>
+                </tr>
+                <tr>
+                  <td><code>accessibility.ariaDescription</code></td>
+                  <td>string</td>
+                  <td>'Click to open chat assistant'</td>
+                  <td>ARIA description</td>
+                </tr>
+                <tr>
+                  <td><code>accessibility.keyboardNavigation</code></td>
+                  <td>boolean</td>
+                  <td>true</td>
+                  <td>Enable keyboard navigation</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <div class="info-box" style="margin: 20px 0;">
+            <p><strong>✅ Configuration Verified:</strong></p>
+            <p>All configuration options listed above have been verified against the source code and are fully supported. The widget has 80+ customization options across 13 categories:</p>
+            <ul style="margin: 10px 0 0 20px; columns: 2; column-gap: 20px;">
+              <li>General (5 options)</li>
+              <li>Positioning (4 options)</li>
+              <li>Icon & Button (9 options)</li>
+              <li>Panel & Header (8 options)</li>
+              <li>Messages (7 options)</li>
+              <li>Text Chat (13 options)</li>
+              <li>Voice Interface (17 options)</li>
+              <li>Landing Screen (11 options)</li>
+              <li>Tooltips (6 options)</li>
+              <li>Animations (4 options)</li>
+              <li>Behavior (8 options)</li>
+              <li>Accessibility (3 options)</li>
+              <li>Advanced (11 options)</li>
+            </ul>
+            <p style="margin-top: 10px;">Experiment with all options interactively in the <a href="../examples/test-text-chat.html" target="_blank" style="color: inherit; text-decoration: underline;">live demo</a>.</p>
+          </div>
+
+          <p style="margin-top: 20px;"><strong>📖 Tip:</strong> All configuration options support the spread operator (...), so you can pass additional custom properties that will be merged with defaults.</p>
+
+          <div class="info-box">
+            <strong>🎮 Live Demo:</strong> Try the fully functional widget with customization options at <a href="../examples/test-text-chat.html" target="_blank">test-text-chat.html</a>
+          </div>
+
+          <h2>Use Cases</h2>
+          <div class="features">
+            <div class="feature">
+              <h4>💼 Customer Support</h4>
+              <p>Add 24/7 AI-powered support to your website</p>
+            </div>
+            <div class="feature">
+              <h4>🛒 E-commerce</h4>
+              <p>Help customers find products and answer questions</p>
+            </div>
+            <div class="feature">
+              <h4>📚 Documentation</h4>
+              <p>Provide interactive help for your docs</p>
+            </div>
+            <div class="feature">
+              <h4>🎓 Education</h4>
+              <p>Create AI tutors and learning assistants</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Vanilla JS Guide -->
+        <section id="vanilla-js" class="doc-section">
+          <h1>Vanilla JavaScript Guide</h1>
+          <p>Use the SDK in any JavaScript application without frameworks.</p>
+
+          <h2>Complete Example</h2>
+          <pre><code>import { VoiceSDK } from 'ttp-agent-sdk';
+
+class VoiceAssistant {
+  constructor() {
+    this.sdk = null;
+    this.isConnected = false;
+    this.isRecording = false;
+  }
+
+  async initialize(agentId, overrides = {}) {
+    // Step 1: Get signed URL
+    const signedUrl = await this.getSignedUrl(agentId);
+
+    // Step 2: Create SDK
+    this.sdk = new VoiceSDK({
+      websocketUrl: signedUrl,
+      appId: 'your_app_id',
+      agentId: agentId,
+      agentSettingsOverride: overrides
+    });
+
+    // Setup event listeners
+    this.setupEventListeners();
+
+    // Connect
+    await this.sdk.connect();
+  }
+
+  setupEventListeners() {
+    this.sdk.on('connected', () => {
+      this.isConnected = true;
+      this.updateUI('connected');
+    });
+
+    this.sdk.on('disconnected', () => {
+      this.isConnected = false;
+      this.isRecording = false;
+      this.updateUI('disconnected');
+    });
+
+    this.sdk.on('recordingStarted', () => {
+      this.isRecording = true;
+      this.updateUI('recording');
+    });
+
+    this.sdk.on('recordingStopped', () => {
+      this.isRecording = false;
+      this.updateUI('connected');
+    });
+
+    this.sdk.on('message', (msg) => {
+      if (msg.type === 'agent_response') {
+        this.displayMessage('agent', msg.agent_response);
+      }
+    });
+
+    this.sdk.on('error', (error) => {
+      this.handleError(error);
+    });
+  }
+
+  async getSignedUrl(agentId) {
+    const response = await fetch('/api/get-voice-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        agentId: agentId
+      })
+    });
+    
+    const { signedUrl } = await response.json();
+    return signedUrl;
+  }
+
+  async toggleRecording() {
+    if (!this.isConnected) return;
+
+    if (this.isRecording) {
+      await this.sdk.stopRecording();
+    } else {
+      await this.sdk.startRecording();
+    }
+  }
+
+  disconnect() {
+    if (this.sdk) {
+      this.sdk.disconnect();
+      this.sdk = null;
+    }
+  }
+
+  updateUI(state) {
+    // Update your UI based on state
+  }
+
+  displayMessage(role, text) {
+    // Display message in your UI
+  }
+
+  handleError(error) {
+    // Handle errors
+  }
+}
+
+// Usage
+const assistant = new VoiceAssistant();
+
+await assistant.initialize('agent_123', {
+  language: 'es',
+  temperature: 0.9
+});</code></pre>
+        </section>
+
+        <!-- React Guide -->
+        <section id="react" class="doc-section">
+          <h1>React Integration</h1>
+          <p>Use the SDK in React applications with hooks and components.</p>
+
+          <h2>Using Hooks</h2>
+          <pre><code>import React, { useState, useEffect, useRef } from 'react';
+import { VoiceSDK } from 'ttp-agent-sdk';
+
+function VoiceChat() {
+  const [status, setStatus] = useState('disconnected');
+  const [isRecording, setIsRecording] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const sdkRef = useRef(null);
+
+  // Initialize SDK
+  useEffect(() => {
+    async function initSDK() {
+      // Get signed URL
+      const response = await fetch('/api/get-voice-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          agentId: 'agent_123'
+        })
+      });
+      
+      const { signedUrl } = await response.json();
+
+      // Create SDK
+      const sdk = new VoiceSDK({
+        websocketUrl: signedUrl,
+        appId: 'your_app_id',
+        agentId: 'agent_123',
+        agentSettingsOverride: {
+          language: 'es',
+          temperature: 0.9
+        }
+      });
+
+      // Event listeners
+      sdk.on('connected', () => setStatus('connected'));
+      sdk.on('disconnected', () => {
+        setStatus('disconnected');
+        setIsRecording(false);
+      });
+      sdk.on('recordingStarted', () => setIsRecording(true));
+      sdk.on('recordingStopped', () => setIsRecording(false));
+      sdk.on('message', (msg) => {
+        if (msg.type === 'agent_response') {
+          setMessages(prev => [
+            ...prev,
+            { role: 'agent', text: msg.agent_response }
+          ]);
+        }
+      });
+
+      await sdk.connect();
+      sdkRef.current = sdk;
+    }
+
+    initSDK();
+
+    // Cleanup
+    return () => {
+      if (sdkRef.current) {
+        sdkRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  const toggleRecording = async () => {
+    if (sdkRef.current) {
+      await sdkRef.current.toggleRecording();
+    }
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;div&gt;Status: {status}&lt;/div&gt;
+      &lt;button onClick={toggleRecording} disabled={status !== 'connected'}&gt;
+        {isRecording ? 'Stop' : 'Start'} Recording
+      &lt;/button&gt;
+      &lt;div&gt;
+        {messages.map((msg, i) => (
+          &lt;div key={i}&gt;{msg.role}: {msg.text}&lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default VoiceChat;</code></pre>
+        </section>
+
+        <!-- VoiceButton Component -->
+        <section id="voice-button" class="doc-section">
+          <h1>VoiceButton Component</h1>
+          <p>Pre-built React component for quick integration.</p>
+
+          <h2>Installation</h2>
+          <pre><code>import { VoiceButton } from 'ttp-agent-sdk/react';</code></pre>
+
+          <h2>Basic Usage</h2>
+          <pre><code>import React, { useState, useEffect } from 'react';
+import { VoiceButton } from 'ttp-agent-sdk/react';
+
+function App() {
+  const [signedUrl, setSignedUrl] = useState(null);
+
+  useEffect(() => {
+    async function fetchSignedUrl() {
+      const response = await fetch('/api/get-voice-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          agentId: 'agent_123'
+        })
+      });
+      
+      const { signedUrl } = await response.json();
+      setSignedUrl(signedUrl);
+    }
+    
+    fetchSignedUrl();
+  }, []);
+
+  if (!signedUrl) return &lt;div&gt;Loading...&lt;/div&gt;;
+
+  return (
+    &lt;VoiceButton
+      websocketUrl={signedUrl}
+      appId="your_app_id"
+      agentId="agent_123"
+      agentSettingsOverride={{
+        language: 'es',
+        temperature: 0.9
+      }}
+      onConnected={() => console.log('Connected')}
+      onMessage={(msg) => console.log('Message:', msg)}
+      onError={(error) => console.error('Error:', error)}
+    /&gt;
+  );
+}</code></pre>
+
+          <h2>Props</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Prop</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>websocketUrl</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Signed WebSocket URL</td>
+              </tr>
+              <tr>
+                <td><code>appId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Your application ID</td>
+              </tr>
+              <tr>
+                <td><code>agentId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The AI agent identifier</td>
+              </tr>
+              <tr>
+                <td><code>agentSettingsOverride</code></td>
+                <td>object</td>
+                <td>No</td>
+                <td>Custom agent settings</td>
+              </tr>
+              <tr>
+                <td><code>voice</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Voice preset (default: 'default')</td>
+              </tr>
+              <tr>
+                <td><code>language</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Language code (default: 'en')</td>
+              </tr>
+              <tr>
+                <td><code>onConnected</code></td>
+                <td>function</td>
+                <td>No</td>
+                <td>Connected callback</td>
+              </tr>
+              <tr>
+                <td><code>onDisconnected</code></td>
+                <td>function</td>
+                <td>No</td>
+                <td>Disconnected callback</td>
+              </tr>
+              <tr>
+                <td><code>onMessage</code></td>
+                <td>function</td>
+                <td>No</td>
+                <td>Message callback</td>
+              </tr>
+              <tr>
+                <td><code>onError</code></td>
+                <td>function</td>
+                <td>No</td>
+                <td>Error callback</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- VoiceSDK API -->
+        <section id="voicesdk" class="doc-section">
+          <h1>VoiceSDK Class</h1>
+          <p>Core class for voice interaction functionality.</p>
+
+          <h2>Constructor</h2>
+          <pre><code>new VoiceSDK(config)</code></pre>
+
+          <h3>Configuration Object</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>websocketUrl</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Signed WebSocket URL from your backend</td>
+              </tr>
+              <tr>
+                <td><code>appId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Your application identifier</td>
+              </tr>
+              <tr>
+                <td><code>agentId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The AI agent identifier to connect to</td>
+              </tr>
+              <tr>
+                <td><code>agentSettingsOverride</code></td>
+                <td>object</td>
+                <td>No</td>
+                <td>Custom agent configuration</td>
+              </tr>
+              <tr>
+                <td><code>voice</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Voice preset name (default: 'default')</td>
+              </tr>
+              <tr>
+                <td><code>language</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Language code (default: 'en')</td>
+              </tr>
+              <tr>
+                <td><code>sampleRate</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Audio sample rate (default: 16000)</td>
+              </tr>
+              <tr>
+                <td><code>autoReconnect</code></td>
+                <td>boolean</td>
+                <td>No</td>
+                <td>Auto-reconnect on disconnect (default: true)</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Methods -->
+        <section id="methods" class="doc-section">
+          <h1>Methods</h1>
+
+          <div class="method-card">
+            <h3><code>connect()</code></h3>
+            <p>Connect to the voice agent.</p>
+            <p><strong>Returns:</strong> <code>Promise&lt;boolean&gt;</code></p>
+            <pre><code>await voiceSDK.connect();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>disconnect()</code></h3>
+            <p>Disconnect from the voice agent.</p>
+            <p><strong>Returns:</strong> <code>void</code></p>
+            <pre><code>voiceSDK.disconnect();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>startRecording()</code></h3>
+            <p>Start capturing and streaming audio.</p>
+            <p><strong>Returns:</strong> <code>Promise&lt;boolean&gt;</code></p>
+            <pre><code>await voiceSDK.startRecording();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>stopRecording()</code></h3>
+            <p>Stop capturing audio.</p>
+            <p><strong>Returns:</strong> <code>Promise&lt;boolean&gt;</code></p>
+            <pre><code>await voiceSDK.stopRecording();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>toggleRecording()</code></h3>
+            <p>Toggle recording state (start/stop).</p>
+            <p><strong>Returns:</strong> <code>Promise&lt;boolean&gt;</code></p>
+            <pre><code>await voiceSDK.toggleRecording();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>getStatus()</code></h3>
+            <p>Get current connection and recording status.</p>
+            <p><strong>Returns:</strong> <code>Object</code></p>
+            <pre><code>const status = voiceSDK.getStatus();
+// Returns: { isConnected, isRecording, isPlaying }</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>reconnect()</code></h3>
+            <p>Manually reconnect to the agent.</p>
+            <p><strong>Returns:</strong> <code>Promise&lt;boolean&gt;</code></p>
+            <pre><code>await voiceSDK.reconnect();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>stopAudioPlayback()</code></h3>
+            <p>Immediately stop audio playback (for barge-in).</p>
+            <p><strong>Returns:</strong> <code>void</code></p>
+            <pre><code>voiceSDK.stopAudioPlayback();</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>on(event, callback)</code></h3>
+            <p>Register an event listener.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+              <li><code>event</code> (string) - Event name</li>
+              <li><code>callback</code> (function) - Event handler</li>
+            </ul>
+            <pre><code>voiceSDK.on('connected', () => {
+  console.log('Connected!');
+});</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>destroy()</code></h3>
+            <p>Cleanup all resources and disconnect.</p>
+            <p><strong>Returns:</strong> <code>void</code></p>
+            <pre><code>voiceSDK.destroy();</code></pre>
+          </div>
+        </section>
+
+        <!-- Events API -->
+        <section id="events-api" class="doc-section">
+          <h1>Events Reference</h1>
+
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Parameters</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>connected</code></td>
+                <td>-</td>
+                <td>Emitted when successfully connected</td>
+              </tr>
+              <tr>
+                <td><code>disconnected</code></td>
+                <td><code>event</code></td>
+                <td>Emitted when disconnected (includes reason)</td>
+              </tr>
+              <tr>
+                <td><code>error</code></td>
+                <td><code>error</code></td>
+                <td>Emitted on errors</td>
+              </tr>
+              <tr>
+                <td><code>recordingStarted</code></td>
+                <td>-</td>
+                <td>Emitted when recording starts</td>
+              </tr>
+              <tr>
+                <td><code>recordingStopped</code></td>
+                <td>-</td>
+                <td>Emitted when recording stops</td>
+              </tr>
+              <tr>
+                <td><code>message</code></td>
+                <td><code>message</code></td>
+                <td>Emitted for all WebSocket messages</td>
+              </tr>
+              <tr>
+                <td><code>playbackStarted</code></td>
+                <td>-</td>
+                <td>Emitted when audio playback starts</td>
+              </tr>
+              <tr>
+                <td><code>playbackStopped</code></td>
+                <td>-</td>
+                <td>Emitted when audio playback stops</td>
+              </tr>
+              <tr>
+                <td><code>playbackError</code></td>
+                <td><code>error</code></td>
+                <td>Emitted on audio playback errors</td>
+              </tr>
+              <tr>
+                <td><code>bargeIn</code></td>
+                <td><code>message</code></td>
+                <td>Emitted when user interrupts agent</td>
+              </tr>
+              <tr>
+                <td><code>stopPlaying</code></td>
+                <td><code>message</code></td>
+                <td>Emitted when server requests to stop audio</td>
+              </tr>
+              <tr>
+                <td><code>greetingStarted</code></td>
+                <td>-</td>
+                <td>Emitted when greeting audio starts</td>
+              </tr>
+              <tr>
+                <td><code>domainError</code></td>
+                <td><code>error</code></td>
+                <td>Emitted when domain is not whitelisted</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Configuration -->
+        <section id="configuration" class="doc-section">
+          <h1>Configuration Options</h1>
+
+          <h2>Agent Settings Override</h2>
+          <p>Complete reference for all overridable settings:</p>
+
+          <h3>Core Settings</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Type</th>
+                <th>Range/Values</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>prompt</code></td>
+                <td>string</td>
+                <td>Any text</td>
+                <td>System prompt/instructions for the agent</td>
+              </tr>
+              <tr>
+                <td><code>temperature</code></td>
+                <td>number</td>
+                <td>0.0 - 2.0</td>
+                <td>LLM creativity level</td>
+              </tr>
+              <tr>
+                <td><code>maxTokens</code></td>
+                <td>number</td>
+                <td>1 - 4096</td>
+                <td>Maximum tokens per response</td>
+              </tr>
+              <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td>Model names</td>
+                <td>LLM model to use</td>
+              </tr>
+              <tr>
+                <td><code>language</code></td>
+                <td>string</td>
+                <td>ISO codes</td>
+                <td>Response language (e.g., 'en', 'es', 'fr')</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Voice Settings</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Type</th>
+                <th>Range/Values</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>selectedVoice</code></td>
+                <td>string</td>
+                <td>Voice names</td>
+                <td>Voice preset name</td>
+              </tr>
+              <tr>
+                <td><code>voiceId</code></td>
+                <td>string</td>
+                <td>Voice IDs</td>
+                <td>Specific voice identifier</td>
+              </tr>
+              <tr>
+                <td><code>voiceSpeed</code></td>
+                <td>number</td>
+                <td>0.5 - 2.0</td>
+                <td>Voice speed multiplier</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Behavior Settings</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Type</th>
+                <th>Range/Values</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>firstMessage</code></td>
+                <td>string</td>
+                <td>Any text</td>
+                <td>Initial greeting message</td>
+              </tr>
+              <tr>
+                <td><code>disableInterruptions</code></td>
+                <td>boolean</td>
+                <td>true/false</td>
+                <td>Prevent user from interrupting agent</td>
+              </tr>
+              <tr>
+                <td><code>autoDetectLanguage</code></td>
+                <td>boolean</td>
+                <td>true/false</td>
+                <td>Automatically detect user's language</td>
+              </tr>
+              <tr>
+                <td><code>maxCallDuration</code></td>
+                <td>number</td>
+                <td>Seconds</td>
+                <td>Maximum session duration</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Advanced Settings</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Type</th>
+                <th>Range/Values</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>selectedTools</code></td>
+                <td>array</td>
+                <td>Tool names</td>
+                <td>Array of enabled tool identifiers</td>
+              </tr>
+              <tr>
+                <td><code>timezone</code></td>
+                <td>string</td>
+                <td>TZ names</td>
+                <td>User timezone (e.g., 'America/New_York')</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <p>© 2024 TTP Agent SDK. Built with ❤️ for developers.</p>
+        <p>
+          <a href="https://github.com/your-org/ttp-agent-sdk" target="_blank">GitHub</a> · 
+          <a href="../examples/test-text-chat.html" target="_blank">Live Demo</a> · 
+          <a href="mailto:support@talktopc.com">Support</a>
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>
+
+

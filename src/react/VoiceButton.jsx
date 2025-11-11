@@ -7,9 +7,14 @@ import VoiceSDK from '../core/VoiceSDK.js';
 const VoiceButton = ({ 
   websocketUrl,
   agentId, // Optional - for direct agent access (unsecured method)
+  appId, // Required - User's app ID for authentication
   voice = 'default',
   language = 'en',
   autoReconnect = true,
+  
+  // NEW: Agent settings override (only available with signed link)
+  agentSettingsOverride = null,
+  
   onConnected,
   onDisconnected,
   onRecordingStarted,
@@ -45,9 +50,11 @@ const VoiceButton = ({
     const voiceSDK = new VoiceSDK({
       websocketUrl,
       agentId, // Pass through agentId if provided
+      appId, // Required for authentication
       voice,
       language,
-      autoReconnect
+      autoReconnect,
+      agentSettingsOverride // Pass through agent settings override
     });
     
     // Setup event listeners
@@ -112,7 +119,7 @@ const VoiceButton = ({
         voiceSDKRef.current = null;
       }
     };
-  }, [websocketUrl, agentId, voice, language]);
+  }, [websocketUrl, agentId, appId, voice, language, agentSettingsOverride]);
   
   // Handle button click
   const handleClick = async () => {

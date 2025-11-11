@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTP Agent SDK - Voice AI Integration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 0;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card p {
+            line-height: 1.6;
+            color: #64748b;
+        }
+        .demo-button {
+            display: inline-block;
+            background: #4f46e5;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            margin-top: 15px;
+        }
+        .demo-button:hover {
+            background: #4338ca;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .features {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .features h2 {
+            margin-top: 0;
+            color: #4f46e5;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature {
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4f46e5;
+        }
+        .feature h3 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+        }
+        .feature p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎤 TTP Agent SDK</h1>
+        <p>Comprehensive Voice AI Integration for Web Applications</p>
+    </div>
+
+    <div class="features">
+        <h2>✨ Key Features</h2>
+        <div class="feature-grid">
+            <div class="feature">
+                <h3>🎤 Real-time Audio</h3>
+                <p>High-quality audio recording and playback with AudioWorklet</p>
+            </div>
+            <div class="feature">
+                <h3>🔄 WebSocket Communication</h3>
+                <p>Real-time bidirectional communication with authentication</p>
+            </div>
+            <div class="feature">
+                <h3>⚛️ React Components</h3>
+                <p>Ready-to-use React components for modern applications</p>
+            </div>
+            <div class="feature">
+                <h3>🌐 Vanilla JavaScript</h3>
+                <p>Works with any JavaScript framework or vanilla JS</p>
+            </div>
+            <div class="feature">
+                <h3>🔒 Multiple Auth Methods</h3>
+                <p>Support for signed links and direct agent access</p>
+            </div>
+            <div class="feature">
+                <h3>📱 Responsive Widget</h3>
+                <p>Pre-built UI widget for quick integration</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <h2>🚀 Quick Start</h2>
+            <p>Get started with the pre-built widget in just a few lines of code.</p>
+            <div class="code-block">
+&lt;script src="https://cdn.talktopc.com/agent-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  TTPAgentSDK.AgentWidget.init({
+    agentId: 'your_agent_id',
+    getSessionUrl: 'https://your-backend.com/api/get-session'
+  });
+&lt;/script&gt;
+            </div>
+            <a href="examples/test-text-chat.html" class="demo-button">Try Widget Demo</a>
+        </div>
+
+        <div class="card">
+            <h2>⚛️ React Integration</h2>
+            <p>Use the VoiceButton component in your React applications.</p>
+            <div class="code-block">
+import { VoiceButton } from 'ttp-agent-sdk';
+
+&lt;VoiceButton
+  websocketUrl="wss://speech.talktopc.com/ws/conv"
+  agentId="your_agent_id"
+  appId="your_app_id"
+/&gt;
+            </div>
+            <a href="examples/react-example.html" class="demo-button">View React Example</a>
+        </div>
+
+        <div class="card">
+            <h2>🌐 Vanilla JavaScript</h2>
+            <p>Integrate with any JavaScript framework or vanilla JS.</p>
+            <div class="code-block">
+import { VoiceSDK } from 'ttp-agent-sdk';
+
+const voiceSDK = new VoiceSDK({
+  websocketUrl: 'wss://speech.talktopc.com/ws/conv',
+  agentId: 'your_agent_id',
+  appId: 'your_app_id'
+});
+
+await voiceSDK.connect();
+            </div>
+            <a href="examples/vanilla-example.html" class="demo-button">Try Vanilla Demo</a>
+        </div>
+
+        <div class="card">
+            <h2>📚 Documentation</h2>
+            <p>Complete documentation and API reference for all features.</p>
+            <ul style="color: #64748b; line-height: 1.8;">
+                <li>Installation & Setup</li>
+                <li>Authentication Methods</li>
+                <li>Event Handling</li>
+                <li>API Reference</li>
+                <li>Examples & Tutorials</li>
+            </ul>
+            <a href="README.md" class="demo-button">View Documentation</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Built with ❤️ by the TTP Agent Team</p>
+        <p>Version 2.0.0 | <a href="https://github.com/yinon11/ttp-sdk-front" style="color: #4f46e5;">GitHub Repository</a></p>
+    </div>
+</body>
+</html>
