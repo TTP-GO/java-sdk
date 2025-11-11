@@ -336,26 +336,98 @@ app.post('/api/get-voice-session', async (req, res) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-Key': process.env.TTP_API_KEY  // 🔒 Secret - never in frontend!
+      'Authorization': `Bearer ${process.env.TTP_API_KEY}`  // 🔒 Secret - never in frontend!
     },
     body: JSON.stringify({
       agentId: agentId,
       appId: process.env.TTP_APP_ID,
-      expirationMs: 3600000  // Optional: Token TTL in milliseconds (default: 1 hour)
+      expirationMs: 3600000,  // Optional: Token TTL in milliseconds (default: 1 hour)
+      allowOverride: true     // Optional: Enable agent settings override (default: false)
     })
   });
   
-  const { signedUrl } = await response.json();
+  const { signedLink } = await response.json();
   
   // 3️⃣ Return signed URL to YOUR frontend
-  res.json({ signedUrl });
+  res.json({ signedUrl: signedLink });
 });</code></pre>
 
           <div class="warning-box">
             <strong>⚠️ Never expose your API key:</strong> The API key should only be used on your backend server, never in frontend code.
           </div>
 
-          <h2>Token Properties</h2>
+          <h2>Response Format</h2>
+          <p>The signed URL endpoint returns the following response:</p>
+          <pre><code>{
+  "signedLink": "wss://speech.talktopc.com/ws/conv?signed_token=eyJ...",
+  "agentId": "agent_123",
+  "userId": "user_789",
+  "appId": "your_app_id",
+  "expiresAt": "2025-11-11T21:00:00.000+00:00",
+  "expiresIn": 3600000,
+  "generatedAt": "2025-11-11T20:00:00.000+00:00",
+  "availableCredits": 150.5,
+  "authenticationStatus": "SUCCESS"
+}</code></pre>
+
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>signedLink</code></td>
+                <td>string</td>
+                <td>The WebSocket URL with signed JWT token</td>
+              </tr>
+              <tr>
+                <td><code>agentId</code></td>
+                <td>string</td>
+                <td>The AI agent identifier</td>
+              </tr>
+              <tr>
+                <td><code>userId</code></td>
+                <td>string</td>
+                <td>Your user's identifier (ttpId)</td>
+              </tr>
+              <tr>
+                <td><code>appId</code></td>
+                <td>string</td>
+                <td>Your application identifier</td>
+              </tr>
+              <tr>
+                <td><code>expiresAt</code></td>
+                <td>Date</td>
+                <td>When the signed URL expires (ISO 8601 format)</td>
+              </tr>
+              <tr>
+                <td><code>expiresIn</code></td>
+                <td>number</td>
+                <td>Token validity duration in milliseconds</td>
+              </tr>
+              <tr>
+                <td><code>generatedAt</code></td>
+                <td>Date</td>
+                <td>When the signed URL was generated (ISO 8601 format)</td>
+              </tr>
+              <tr>
+                <td><code>availableCredits</code></td>
+                <td>number</td>
+                <td>User's remaining credit balance</td>
+              </tr>
+              <tr>
+                <td><code>authenticationStatus</code></td>
+                <td>string</td>
+                <td>Always "SUCCESS" for successful requests</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>JWT Token Properties</h2>
           <table class="properties-table">
             <thead>
               <tr>
