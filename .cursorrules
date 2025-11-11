@@ -1,0 +1,135 @@
+# TTP Agent SDK - Cursor AI Rules
+
+## Documentation Update Rule
+
+**CRITICAL: Always check if documentation needs updating after ANY SDK changes.**
+
+### When to Update Documentation
+
+After making changes to any of these files, **ALWAYS** update `docs/index.html`:
+
+#### SDK Core Files
+- `src/core/VoiceSDK.js` - Update API Reference, Methods, Configuration
+- `src/core/TextChatSDK.js` - Update Text Chat Widget documentation
+- `src/core/WebSocketManager.js` - Update Events section if events change
+- `src/react/VoiceButton.jsx` - Update React Integration, VoiceButton Component props
+- `src/widget/TTPChatWidget.js` - Update Voice & Chat Widget documentation
+
+#### Configuration Changes
+- Any changes to constructor parameters
+- New/removed/modified configuration options
+- Changes to `agentSettingsOverride` supported settings
+- Authentication method changes
+
+#### API Changes
+- New public methods added
+- Method signatures changed
+- New events emitted
+- Event data structure changes
+
+#### Breaking Changes
+- **MANDATORY**: Update "Quick Start" section
+- Add migration notes
+- Update version number in docs
+- Add changelog entry
+
+### Documentation Sections to Update
+
+When changes affect:
+- **Constructor config** → Update "Configuration Options" section
+- **Public methods** → Update "Methods" section in API Reference
+- **Events** → Update "Events Reference" section
+- **Agent overrides** → Update "Agent Settings Override" section
+- **Authentication** → Update "Authentication" section
+- **Examples** → Update code examples to match new API
+
+### Update Checklist
+
+After making SDK changes, verify:
+- [ ] `docs/index.html` - Main documentation page
+- [ ] Code examples are updated with correct syntax
+- [ ] Props/configuration tables are accurate
+- [ ] Version number matches `package.json`
+- [ ] All new features are documented
+- [ ] Deprecated features are marked
+- [ ] Build and deploy: `npm run build && git commit && git push`
+
+### Example Workflow
+
+```bash
+# 1. Make changes to SDK
+vim src/core/VoiceSDK.js
+
+# 2. Update documentation
+vim docs/index.html
+
+# 3. Build
+npm run build
+
+# 4. Commit both together
+git add src/core/VoiceSDK.js docs/index.html dist/
+git commit -m "feat: Add new feature X
+
+- Implement feature in VoiceSDK
+- Update documentation with examples
+- Rebuild dist"
+
+# 5. Push to deploy
+git push origin master
+```
+
+---
+
+## Code Quality Rules
+
+### Agent Override Implementation
+- Use efficient single-pass algorithms (no double map lookups)
+- Prefer `switch` statements over multiple `if-else` for settings
+- Always use `AtomicReference` for mutable fields in `ConversationState`
+- Thread-safety is required for all state management
+
+### Error Handling
+- Graceful degradation for unsupported overrides (log warnings, don't throw)
+- Per-field try-catch in override handlers
+- Clear error messages in logs
+
+### Documentation Style
+- Use clear, concise language
+- Provide working code examples
+- Include "Why" explanations, not just "What"
+- Backend-to-backend authentication flow must be emphasized
+- Security warnings for API key handling
+
+---
+
+## Testing Requirements
+
+Before committing:
+- [ ] Run `npm run build` successfully
+- [ ] Test documentation on localhost (`python3 -m http.server 8080`)
+- [ ] Verify examples are copy-paste ready
+- [ ] Check all links work
+- [ ] Mobile-friendly (test responsive design)
+
+---
+
+## Deployment Checklist
+
+- [ ] Update `package.json` version if needed
+- [ ] Update version in `docs/index.html`
+- [ ] Run `npm run build`
+- [ ] Commit with descriptive message
+- [ ] Push to GitHub (auto-deploys to Cloudflare Pages)
+- [ ] Wait 2-5 minutes for deployment
+- [ ] Verify live site: https://cdn.talktopc.com/
+- [ ] Clear browser cache to see changes
+
+---
+
+## Remember
+
+🔴 **ALWAYS ASK**: "Does this change affect how users use the SDK?"
+✅ **IF YES**: Update documentation immediately
+📝 **DOCUMENT**: New features, changed behavior, deprecated features
+🚀 **DEPLOY**: Build, commit, push in one atomic operation
+
