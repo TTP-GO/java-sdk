@@ -9,7 +9,7 @@ echo "🚀 Starting TTP Agent SDK CDN Deployment..."
 
 # Configuration
 CDN_BASE_URL="https://cdn.talktopc.com"
-SDK_VERSION="2.1.0"
+SDK_VERSION="2.3.1"
 LOCAL_DIST_DIR="/home/yinon11/ttp-agent-sdk/dist"
 CDN_DOCS_DIR="/home/yinon11/ttp-agent-sdk/cdn-docs"
 
@@ -68,8 +68,10 @@ cp "$LOCAL_DIST_DIR/agent-widget.js.LICENSE.txt" "$DEPLOY_DIR/ttp-agent-sdk/"
 mkdir -p "$DEPLOY_DIR/ttp-agent-sdk/examples"
 cp "$LOCAL_DIST_DIR/examples/"* "$DEPLOY_DIR/ttp-agent-sdk/examples/"
 
-# Copy documentation
-cp "$CDN_DOCS_DIR/index.html" "$DEPLOY_DIR/ttp-agent-sdk/"
+# Copy documentation (new documentation website)
+cp "$LOCAL_DIST_DIR/index.html" "$DEPLOY_DIR/ttp-agent-sdk/"
+cp "$LOCAL_DIST_DIR/styles.css" "$DEPLOY_DIR/ttp-agent-sdk/"
+cp "$LOCAL_DIST_DIR/script.js" "$DEPLOY_DIR/ttp-agent-sdk/"
 
 # Create version info file
 cat > "$DEPLOY_DIR/ttp-agent-sdk/version.json" << EOF

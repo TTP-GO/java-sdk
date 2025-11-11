@@ -8,7 +8,7 @@ set -e
 # Configuration
 CDN_BASE_URL="https://cdn.talktopc.com"
 DEPLOY_DIR="/tmp/ttp-agent-sdk-cdn-deploy/ttp-agent-sdk"
-SDK_VERSION="2.1.0"
+SDK_VERSION="2.3.1"
 
 # Colors
 GREEN='\033[0;32m'
@@ -80,6 +80,8 @@ upload_file "$DEPLOY_DIR/agent-widget.js.LICENSE.txt" "/ttp-agent-sdk/agent-widg
 print_status "Uploading documentation..."
 
 upload_file "$DEPLOY_DIR/index.html" "/ttp-agent-sdk/index.html" "text/html"
+upload_file "$DEPLOY_DIR/styles.css" "/ttp-agent-sdk/styles.css" "text/css"
+upload_file "$DEPLOY_DIR/script.js" "/ttp-agent-sdk/script.js" "application/javascript"
 upload_file "$DEPLOY_DIR/README.md" "/ttp-agent-sdk/README.md" "text/markdown"
 upload_file "$DEPLOY_DIR/version.json" "/ttp-agent-sdk/version.json" "application/json"
 
