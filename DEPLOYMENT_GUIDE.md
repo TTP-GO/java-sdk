@@ -193,12 +193,14 @@ The `_headers` file configures Cloudflare Pages to add CORS headers:
   Content-Type: application/javascript
 ```
 
+**⚠️ CRITICAL:** Do NOT add wildcard rules (like `/*.js`) that would also match `audio-processor.js`. This causes duplicate headers (`'*, *'`) which browsers reject. Only use the specific `/audio-processor.js` rule.
+
 This file is automatically copied to the `dist/` directory during build and deployed to Cloudflare Pages.
 
 **Verification:**
 ```bash
 curl -I https://cdn.talktopc.com/audio-processor.js
-# Should show: access-control-allow-origin: *
+# Should show: access-control-allow-origin: * (single value, not '*, *')
 ```
 
 ## Cloudflare Pages Configuration
