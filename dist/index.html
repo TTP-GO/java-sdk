@@ -2435,7 +2435,431 @@ function App() {
         </section>
       </div>
 
-      <!-- Footer -->
+\n        <!-- Text-to-Speech API -->
+        <section id="text-to-speech" class="doc-section">
+          <h1>Text-to-Speech API</h1>
+          <p class="badge-new">PUBLIC REST API</p>
+          <p>Generate high-quality voice audio from text using our public REST API endpoint.</p>
+
+          <div class="info-box">
+            <strong>🔒 Authentication:</strong> This endpoint requires API key authentication. Never expose your API key in frontend code - always call from your backend.
+          </div>
+
+          <h2>Endpoint</h2>
+          <pre><code>POST https://backend.talktopc.com/api/public/agents/tts/generate</code></pre>
+
+          <h2>Authentication</h2>
+          <p>Include your API key in the Authorization header:</p>
+          <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
+
+          <h2>Request Parameters</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>text</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The text to convert to speech</td>
+              </tr>
+              <tr>
+                <td><code>voiceId</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Voice identifier (default: agent's configured voice)</td>
+              </tr>
+              <tr>
+                <td><code>voiceSpeed</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Voice speed multiplier: 0.5 - 2.0 (default: 1.0)</td>
+              </tr>
+              <tr>
+                <td><code>language</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Language code (e.g., 'en', 'es', 'fr')</td>
+              </tr>
+              <tr>
+                <td><code>agentId</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Agent ID to use voice settings from</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Example Requests</h2>
+          
+          <style>
+            .code-tabs {
+              margin: 20px 0;
+            }
+            .code-tabs-header {
+              display: flex;
+              gap: 5px;
+              border-bottom: 2px solid #e2e8f0;
+              margin-bottom: 0;
+            }
+            .code-tab-button {
+              padding: 10px 20px;
+              background: #f8fafc;
+              border: none;
+              border-bottom: 3px solid transparent;
+              cursor: pointer;
+              font-weight: 500;
+              color: #64748b;
+              transition: all 0.2s;
+            }
+            .code-tab-button:hover {
+              background: #e2e8f0;
+              color: #334155;
+            }
+            .code-tab-button.active {
+              background: white;
+              color: #7c3aed;
+              border-bottom-color: #7c3aed;
+            }
+            .code-tab-content {
+              display: none;
+            }
+            .code-tab-content.active {
+              display: block;
+            }
+          </style>
+          
+          <div class="code-tabs">
+            <div class="code-tabs-header">
+              <button class="code-tab-button active" onclick="showTab(event, 'tab-curl')">cURL</button>
+              <button class="code-tab-button" onclick="showTab(event, 'tab-nodejs')">Node.js</button>
+              <button class="code-tab-button" onclick="showTab(event, 'tab-python')">Python</button>
+              <button class="code-tab-button" onclick="showTab(event, 'tab-php')">PHP</button>
+              <button class="code-tab-button" onclick="showTab(event, 'tab-java')">Java</button>
+            </div>
+            
+            <div id="tab-curl" class="code-tab-content active">
+              <pre><code>curl -X POST https://backend.talktopc.com/api/public/agents/tts/generate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "text": "Hello! Welcome to our service.",
+    "voiceId": "nova",
+    "voiceSpeed": 1.2,
+    "language": "en"
+  }' \
+  --output speech.mp3</code></pre>
+            </div>
+            
+            <div id="tab-nodejs" class="code-tab-content">
+              <pre><code>const response = await fetch('https://backend.talktopc.com/api/public/agents/tts/generate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${process.env.TTP_API_KEY}`
+  },
+  body: JSON.stringify({
+    text: 'Hello! Welcome to our service.',
+    voiceId: 'nova',
+    voiceSpeed: 1.2,
+    language: 'en'
+  })
+});
+
+// Response is audio file
+const audioBuffer = await response.arrayBuffer();
+const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+
+// Play or save the audio
+const audioUrl = URL.createObjectURL(audioBlob);
+const audio = new Audio(audioUrl);
+audio.play();</code></pre>
+            </div>
+            
+            <div id="tab-python" class="code-tab-content">
+              <pre><code>import requests
+import os
+
+url = "https://backend.talktopc.com/api/public/agents/tts/generate"
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {os.environ['TTP_API_KEY']}"
+}
+data = {
+    "text": "Hello! Welcome to our service.",
+    "voiceId": "nova",
+    "voiceSpeed": 1.2,
+    "language": "en"
+}
+
+response = requests.post(url, json=data, headers=headers)
+
+if response.status_code == 200:
+    # Save audio to file
+    with open("speech.mp3", "wb") as f:
+        f.write(response.content)
+    print("Audio saved to speech.mp3")
+else:
+    print(f"Error: {response.status_code}")</code></pre>
+            </div>
+            
+            <div id="tab-php" class="code-tab-content">
+              <pre><code>&lt;?php
+$url = "https://backend.talktopc.com/api/public/agents/tts/generate";
+$apiKey = getenv('TTP_API_KEY');
+
+$data = [
+    'text' => 'Hello! Welcome to our service.',
+    'voiceId' => 'nova',
+    'voiceSpeed' => 1.2,
+    'language' => 'en'
+];
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'Authorization: Bearer ' . $apiKey
+]);
+
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpCode === 200) {
+    file_put_contents('speech.mp3', $response);
+    echo "Audio saved to speech.mp3";
+} else {
+    echo "Error: HTTP $httpCode";
+}
+?&gt;</code></pre>
+            </div>
+            
+            <div id="tab-java" class="code-tab-content">
+              <pre><code>import java.net.http.*;
+import java.net.URI;
+import java.nio.file.*;
+
+public class TTSExample {
+    public static void main(String[] args) throws Exception {
+        String url = "https://backend.talktopc.com/api/public/agents/tts/generate";
+        String apiKey = System.getenv("TTP_API_KEY");
+        
+        String json = """
+            {
+                "text": "Hello! Welcome to our service.",
+                "voiceId": "nova",
+                "voiceSpeed": 1.2,
+                "language": "en"
+            }
+            """;
+        
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + apiKey)
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+        
+        HttpResponse&lt;byte[]&gt; response = client.send(
+            request, 
+            HttpResponse.BodyHandlers.ofByteArray()
+        );
+        
+        if (response.statusCode() == 200) {
+            Files.write(Paths.get("speech.mp3"), response.body());
+            System.out.println("Audio saved to speech.mp3");
+        } else {
+            System.out.println("Error: " + response.statusCode());
+        }
+    }
+}</code></pre>
+            </div>
+          </div>
+          
+          <script>
+            function showTab(event, tabId) {
+              // Hide all tab contents
+              const contents = document.querySelectorAll('.code-tab-content');
+              contents.forEach(content => content.classList.remove('active'));
+              
+              // Deactivate all tab buttons
+              const buttons = document.querySelectorAll('.code-tab-button');
+              buttons.forEach(button => button.classList.remove('active'));
+              
+              // Show selected tab and activate button
+              document.getElementById(tabId).classList.add('active');
+              event.currentTarget.classList.add('active');
+            }
+          </script>
+
+          <h2>Response</h2>
+          <p>The endpoint returns audio data directly with the following headers:</p>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Header</th>
+                <th>Value</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Content-Type</code></td>
+                <td>audio/mpeg</td>
+                <td>Audio format (MP3)</td>
+              </tr>
+              <tr>
+                <td><code>Content-Length</code></td>
+                <td>number</td>
+                <td>Size of audio file in bytes</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Voice Speed Examples</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Speed</th>
+                <th>Effect</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>0.5</code></td>
+                <td>50% slower (half speed)</td>
+                <td>Educational content, accessibility</td>
+              </tr>
+              <tr>
+                <td><code>0.75</code></td>
+                <td>25% slower</td>
+                <td>Clear pronunciation, language learning</td>
+              </tr>
+              <tr>
+                <td><code>1.0</code></td>
+                <td>Normal speed (default)</td>
+                <td>Standard conversation</td>
+              </tr>
+              <tr>
+                <td><code>1.2</code></td>
+                <td>20% faster</td>
+                <td>Quick updates, notifications</td>
+              </tr>
+              <tr>
+                <td><code>1.5</code></td>
+                <td>50% faster</td>
+                <td>Rapid information delivery</td>
+              </tr>
+              <tr>
+                <td><code>2.0</code></td>
+                <td>2x speed (double speed)</td>
+                <td>Maximum speed, time-saving</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Backend Implementation Example</h2>
+          <pre><code>// Your backend endpoint
+app.post('/api/generate-speech', async (req, res) => {
+  const { text, voiceSpeed = 1.0 } = req.body;
+  
+  // Call TTP TTS API
+  const ttpResponse = await fetch('https://backend.talktopc.com/api/public/agents/tts/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.TTP_API_KEY}`  // 🔒 Secret!
+    },
+    body: JSON.stringify({
+      text: text,
+      voiceSpeed: voiceSpeed,
+      voiceId: 'nova',
+      language: 'en'
+    })
+  });
+  
+  if (!ttpResponse.ok) {
+    return res.status(ttpResponse.status).json({ 
+      error: 'TTS generation failed' 
+    });
+  }
+  
+  // Forward audio to client
+  const audioBuffer = await ttpResponse.arrayBuffer();
+  res.set('Content-Type', 'audio/mpeg');
+  res.send(Buffer.from(audioBuffer));
+});</code></pre>
+
+          <h2>Error Responses</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Status Code</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>400</code></td>
+                <td>Bad Request - Invalid parameters</td>
+              </tr>
+              <tr>
+                <td><code>401</code></td>
+                <td>Unauthorized - Invalid or missing API key</td>
+              </tr>
+              <tr>
+                <td><code>429</code></td>
+                <td>Too Many Requests - Rate limit exceeded</td>
+              </tr>
+              <tr>
+                <td><code>500</code></td>
+                <td>Internal Server Error - TTS generation failed</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="warning-box">
+            <strong>⚠️ Security Best Practices:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+              <li>Never expose your API key in frontend JavaScript</li>
+              <li>Always call this endpoint from your backend server</li>
+              <li>Implement rate limiting on your backend</li>
+              <li>Validate and sanitize text input to prevent abuse</li>
+            </ul>
+          </div>
+
+          <h2>Use Cases</h2>
+          <div class="features">
+            <div class="feature">
+              <h4>📢 Announcements</h4>
+              <p>Generate audio announcements for notifications</p>
+            </div>
+            <div class="feature">
+              <h4>📚 Content Creation</h4>
+              <p>Convert articles or books to audio format</p>
+            </div>
+            <div class="feature">
+              <h4>♿ Accessibility</h4>
+              <p>Provide audio alternatives for text content</p>
+            </div>
+            <div class="feature">
+              <h4>🎓 E-Learning</h4>
+              <p>Create voice-overs for educational materials</p>
+            </div>
+          </div>
+        </section>
+\n      <!-- Footer -->
       <footer class="doc-footer">
         <p>© 2024 TTP Agent SDK. Built with ❤️ for developers.</p>
         <p>
