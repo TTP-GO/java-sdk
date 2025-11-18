@@ -172,10 +172,33 @@ plugins: [
       { from: 'styles.css', to: 'styles.css' },      // Documentation CSS
       { from: 'script.js', to: 'script.js' },        // Documentation JS
       { from: 'examples', to: 'examples' },
-      { from: 'src/audio-processor.js', to: 'audio-processor.js' }
+      { from: 'src/audio-processor.js', to: 'audio-processor.js' },
+      { from: '_headers', to: '_headers' }            // Cloudflare Pages headers
     ]
   })
 ]
+```
+
+### CORS Headers Configuration
+
+**⚠️ IMPORTANT:** The `audio-processor.js` file requires CORS headers to work properly with AudioWorklet when loaded from a CDN.
+
+The `_headers` file configures Cloudflare Pages to add CORS headers:
+
+```
+/audio-processor.js
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Access-Control-Allow-Headers: Content-Type
+  Content-Type: application/javascript
+```
+
+This file is automatically copied to the `dist/` directory during build and deployed to Cloudflare Pages.
+
+**Verification:**
+```bash
+curl -I https://cdn.talktopc.com/audio-processor.js
+# Should show: access-control-allow-origin: *
 ```
 
 ## Cloudflare Pages Configuration

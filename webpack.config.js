@@ -115,6 +115,11 @@ module.exports = {
         {
           from: 'src/audio-processor.js',
           to: 'audio-processor.js'
+        },
+        {
+          from: '_headers',
+          to: '_headers',
+          toType: 'file'
         }
       ]
     })
