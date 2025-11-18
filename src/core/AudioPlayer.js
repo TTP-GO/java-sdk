@@ -87,7 +87,9 @@ export default class AudioPlayer extends EventEmitter {
       
       // Create AudioContext if not exists
       if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Use configured sample rate if available, otherwise let browser choose
+        const contextOptions = this.config.sampleRate ? { sampleRate: this.config.sampleRate } : {};
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)(contextOptions);
       }
       
       const audioContext = this.audioContext;
@@ -129,8 +131,8 @@ export default class AudioPlayer extends EventEmitter {
         if (this.audioQueue.length > 0) {
           // More audio to play - continue processing without emitting playbackStopped
           // Keep isPlaying = true since we'll continue playing
-          // Use immediate processing to minimize gaps
-          setTimeout(() => this.processQueue(), 50);
+          // Use immediate processing for gapless playback (0ms instead of 50ms)
+          setTimeout(() => this.processQueue(), 0);
         } else {
           // Queue is empty - playback has truly ended
           // Small delay to ensure smooth transition if new audio arrives quickly
