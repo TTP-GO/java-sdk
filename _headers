@@ -3,15 +3,10 @@
 
 # CORS headers for audio-processor.js (required for AudioWorklet)
 # AudioWorklet requires CORS headers to load from CDN
+# NOTE: Only this specific rule is needed - do not add wildcard rules that would duplicate headers
 /audio-processor.js
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Methods: GET, OPTIONS
   Access-Control-Allow-Headers: Content-Type
   Content-Type: application/javascript
-
-# CORS headers for all JavaScript files (optional but recommended)
-/*.js
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: GET, OPTIONS
-  Access-Control-Allow-Headers: Content-Type
 
