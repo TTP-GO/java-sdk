@@ -111,10 +111,11 @@ const voiceSDK = new VoiceSDK({
 7. ✅ `voiceSpeed` - TTS playback speed
 8. ✅ `autoDetectLanguage` - STT auto-detect
 9. ✅ `candidateLanguages` - STT language candidates
-10. ✅ `selectedTools` - Available function tools
-11. ✅ `firstMessage` - Agent's opening message
-12. ✅ `disableInterruptions` - Prevent user barge-in
-13. ✅ `maxCallDuration` - Maximum session duration
+10. ✅ `toolIds` - Array of custom tool IDs
+11. ✅ `internalToolIds` - Array of internal tool IDs
+12. ✅ `firstMessage` - Agent's opening message
+13. ✅ `disableInterruptions` - Prevent user barge-in
+14. ✅ `maxCallDuration` - Maximum session duration
 14. ✅ `timezone` - Conversation timezone
 
 ---
@@ -490,7 +491,8 @@ app.listen(3000);
 | `voiceSpeed` | number | ✅ | TTS playback speed |
 | `autoDetectLanguage` | boolean | ✅ | STT auto-detect |
 | `candidateLanguages` | array | ✅ | STT language candidates |
-| `selectedTools` | object | ✅ | Available function tools |
+| `toolIds` | array | ✅ | Array of custom tool IDs |
+| `internalToolIds` | array | ✅ | Array of internal tool IDs |
 | `firstMessage` | string | ✅ | Agent's opening message |
 | `disableInterruptions` | boolean | ✅ | Prevent user barge-in |
 | `maxCallDuration` | number | ✅ | Maximum session duration |

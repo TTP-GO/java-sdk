@@ -10,8 +10,7 @@ All settings can now be overridden! `ConversationState` has been updated with se
 - ✅ **maxTokens** - Maximum tokens per response
 
 ### Voice Settings
-- ✅ **selectedVoice** - Voice preset name
-- ✅ **voiceId** - Specific voice identifier (maps to selectedVoice)
+- ✅ **voiceId** - Specific voice identifier
 - ✅ **voiceSpeed** - Voice speed multiplier (0.5 - 2.0)
 
 ### Language/STT Settings
@@ -26,7 +25,8 @@ All settings can now be overridden! `ConversationState` has been updated with se
 
 ### Advanced Settings
 - ✅ **timezone** - User timezone (e.g., 'America/New_York')
-- ✅ **selectedTools** - Tool selection (map of tool configurations)
+- ✅ **toolIds** - Array of custom tool IDs (e.g., [123, 456, 789])
+- ✅ **internalToolIds** - Array of internal tool IDs (e.g., ['calendar', 'weather', 'email'])
 
 ---
 
@@ -70,16 +70,18 @@ const voiceSDK = new VoiceSDK({
     // ✅ Supported - will be applied
     temperature: 0.8,
     maxTokens: 200,
-    selectedVoice: "nova",
+    voiceId: "nova",                // Use voiceId (not selectedVoice)
     voiceSpeed: 1.2,
     language: "es",
     autoDetectLanguage: false,
+    prompt: "Custom prompt",
+    firstMessage: "Hello!",
+    maxCallDuration: 300,
+    toolIds: [123, 456],            // Custom tool IDs
+    internalToolIds: ['calendar'],   // Internal tool IDs
     
     // ⚠️ Not supported - will be skipped with warning
-    prompt: "Custom prompt",        // Ignored
-    model: "gpt-4",                 // Ignored
-    firstMessage: "Hello!",         // Ignored
-    maxCallDuration: 300            // Ignored
+    model: "gpt-4"                  // Ignored
   }
 });
 ```
@@ -119,7 +121,7 @@ The method:
 
 ## Summary
 
-✅ **14 settings** can be overridden  
+✅ **15 settings** can be overridden  
 ❌ **1 setting** cannot be overridden (model)  
 🔧 **Graceful handling** - unsupported settings are skipped with warnings
 
