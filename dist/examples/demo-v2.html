@@ -654,6 +654,18 @@
 
         </div>
 
+        
+
+        <div class="form-group">
+
+          <label for="outputFrameDurationMs">Output Frame Duration (ms):</label>
+
+          <input type="number" id="outputFrameDurationMs" min="10" max="1000" step="10" value="200" />
+
+          <small>Frame size for raw PCM streaming (10-1000ms, default: 200ms)</small>
+
+        </div>
+
       </div>
 
     </div>
@@ -866,6 +878,8 @@
           outputBitDepth: parseInt(document.getElementById('outputBitDepth').value),
 
           outputChannels: 1,
+
+          outputFrameDurationMs: parseInt(document.getElementById('outputFrameDurationMs').value),
 
           
 

@@ -366,189 +366,122 @@ class AudioPlayer extends EventEmitter {
 
       }
 
-      // Process all queued chunks immediately with proper timing
-      // This ensures frames arriving in bursts are scheduled correctly
+      // Process ALL queued chunks immediately with precise scheduling
+      // This eliminates overhead from onended callbacks and setTimeout delays
+      // The browser's AudioContext handles seamless playback automatically
       while (this.pcmChunkQueue.length > 0) {
-
         const pcmData = this.pcmChunkQueue.shift();
 
         if (!pcmData) {
-
           continue;
-
         }
 
         // Ensure even byte count for 16-bit PCM
+        let processedData = pcmData;
 
-      let processedData = pcmData;
-
-      if (pcmData.byteLength % 2 !== 0) {
-
-        console.warn('⚠️ Odd PCM chunk size, padding:', pcmData.byteLength);
-
-        const padded = new Uint8Array(pcmData.byteLength + 1);
-
-        padded.set(new Uint8Array(pcmData), 0);
-
-        padded[pcmData.byteLength] = 0; // Silence padding
-
-        processedData = padded.buffer;
-
-      }
-
-      
-
-      // Convert Int16 PCM to Float32 (highly optimized)
-      // Using DataView for efficient byte-level access and batch processing
-      const int16Array = new Int16Array(processedData);
-      const float32Array = new Float32Array(int16Array.length);
-      
-      // Pre-calculate normalization factor (faster than division)
-      const NORMALIZATION = 1.0 / 32768.0;
-      
-      // Optimized loop: process in chunks for better CPU cache usage
-      // Modern JS engines optimize this pattern well
-      const length = int16Array.length;
-      for (let i = 0; i < length; i++) {
-        float32Array[i] = int16Array[i] * NORMALIZATION;
-      }
-      
-      // Note: This is already highly optimized. Using a library would add overhead
-      // for this simple mathematical operation. The browser's JIT compiler
-      // optimizes this loop pattern very well.
-
-      
-
-      // Create audio buffer with the ACTUAL sample rate of the audio data
-      // The AudioContext will automatically resample if its sample rate differs
-      const audioDataSampleRate = this.outputFormat?.sampleRate || this.audioContext.sampleRate;
-      const contextSampleRate = this.audioContext.sampleRate;
-      
-      // CRITICAL: Log sample rate info for debugging
-      if (!this.outputFormat?.sampleRate) {
-        console.warn('⚠️ AudioPlayer: outputFormat.sampleRate not set! Using AudioContext sample rate:', contextSampleRate);
-      } else {
-        console.log(`🎵 AudioPlayer: Creating buffer at ${audioDataSampleRate}Hz (AudioContext: ${contextSampleRate}Hz)`);
-      }
-      
-      // Create buffer at audio data sample rate - browser will resample to match context
-      // This ensures correct playback speed even if browser can't create exact sample rate
-      const audioBuffer = this.audioContext.createBuffer(
-
-        1, // mono
-
-        float32Array.length,
-
-        audioDataSampleRate  // Use audio data rate for correct playback speed
-
-      );
-
-      
-
-      audioBuffer.getChannelData(0).set(float32Array);
-
-      
-
-      // Schedule playback with seamless timing
-
-      const source = this.audioContext.createBufferSource();
-
-      source.buffer = audioBuffer;
-
-      source.connect(this.audioContext.destination);
-
-      
-
-      // Calculate when to start this chunk
-
-      const currentTime = this.audioContext.currentTime;
-
-      
-
-      // If this is the first chunk or we've fallen behind, start immediately
-
-      if (this.nextStartTime < currentTime) {
-
-        this.nextStartTime = currentTime;
-
-        console.log('🎵 Starting playback at current time:', currentTime);
-
-      }
-
-      
-
-      // Schedule this chunk
-
-      source.start(this.nextStartTime);
-
-      // Calculate frame duration from the actual audio buffer
-      // This makes the frontend independent of backend frame size!
-      // The backend can send any frame size, and we'll schedule it correctly
-      const chunkDuration = audioBuffer.duration;
-      
-      // Schedule next chunk to start when this one ends (seamless playback)
-      // Use the actual buffer duration for perfect timing (no gaps)
-      this.nextStartTime += chunkDuration;
-      
-      // Ensure we don't have tiny gaps due to floating point precision
-      // Round to nearest microsecond to prevent accumulation errors
-      this.nextStartTime = Math.round(this.nextStartTime * 1000000) / 1000000;
-      
-      // Log timing for first few chunks (debugging)
-      if (this.scheduledBuffers < 3) {
-        console.log(`🎵 AudioPlayer: Scheduled chunk ${this.scheduledBuffers + 1} at ${(this.nextStartTime - chunkDuration).toFixed(4)}s, next at ${this.nextStartTime.toFixed(4)}s (duration: ${chunkDuration.toFixed(4)}s, ${(chunkDuration * 1000).toFixed(1)}ms)`);
-      }
-
-      
-
-      this.scheduledBuffers++;
-
-      
-
-        // Track when this buffer finishes
-
-        source.onended = () => {
-
-          this.scheduledBuffers--;
-
-          
-
-          // If no more scheduled buffers and queue is empty, playback is complete
-
-          if (this.scheduledBuffers === 0 && this.pcmChunkQueue.length === 0) {
-
-            this.isPlaying = false;
-
-            this.emit('playbackStopped');
-
-          }
-
-        };
-
-      
-
-        if (!this.isPlaying) {
-
-          this.isPlaying = true;
-
-          this.emit('playbackStarted');
-
+        if (pcmData.byteLength % 2 !== 0) {
+          console.warn('⚠️ Odd PCM chunk size, padding:', pcmData.byteLength);
+          const padded = new Uint8Array(pcmData.byteLength + 1);
+          padded.set(new Uint8Array(pcmData), 0);
+          padded[pcmData.byteLength] = 0; // Silence padding
+          processedData = padded.buffer;
         }
 
+        // Convert Int16 PCM to Float32
+        const int16Array = new Int16Array(processedData);
+        const float32Array = new Float32Array(int16Array.length);
+        const NORMALIZATION = 1.0 / 32768.0;
+        const length = int16Array.length;
+        for (let i = 0; i < length; i++) {
+          float32Array[i] = int16Array[i] * NORMALIZATION;
+        }
+
+        // Create audio buffer with the ACTUAL sample rate of the audio data
+        const audioDataSampleRate = this.outputFormat?.sampleRate || this.audioContext.sampleRate;
+        const contextSampleRate = this.audioContext.sampleRate;
+        
+        if (!this.outputFormat?.sampleRate) {
+          console.warn('⚠️ AudioPlayer: outputFormat.sampleRate not set! Using AudioContext sample rate:', contextSampleRate);
+        } else if (this.scheduledBuffers < 3) {
+          console.log(`🎵 AudioPlayer: Creating buffer at ${audioDataSampleRate}Hz (AudioContext: ${contextSampleRate}Hz)`);
+        }
+        
+        const audioBuffer = this.audioContext.createBuffer(
+          1, // mono
+          float32Array.length,
+          audioDataSampleRate
+        );
+
+        audioBuffer.getChannelData(0).set(float32Array);
+
+        // Schedule playback with seamless timing
+        const source = this.audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.audioContext.destination);
+
+        // Calculate when to start this chunk
+        const currentTime = this.audioContext.currentTime;
+
+        // If this is the first chunk or we've fallen behind, start immediately
+        if (this.nextStartTime < currentTime) {
+          this.nextStartTime = currentTime;
+          if (this.scheduledBuffers === 0) {
+            console.log('🎵 Starting playback at current time:', currentTime);
+          }
+        }
+
+        // Calculate frame duration - handle browser resampling correctly
+        const chunkDuration = audioBuffer.duration;
+        const sampleCount = float32Array.length;
+        let actualDuration = chunkDuration;
+        
+        if (contextSampleRate !== audioDataSampleRate) {
+          actualDuration = sampleCount / contextSampleRate;
+          
+          if (this.scheduledBuffers < 3) {
+            console.log(`🔄 Resampling detected: ${audioDataSampleRate}Hz → ${contextSampleRate}Hz`);
+            console.log(`   Buffer duration: ${chunkDuration.toFixed(4)}s, Calculated: ${actualDuration.toFixed(4)}s`);
+          }
+        }
+        
+        // Schedule this chunk to start at nextStartTime
+        source.start(this.nextStartTime);
+        
+        // Calculate when the next chunk should start (seamless, no gaps)
+        this.nextStartTime += actualDuration;
+        
+        // Round to prevent floating point accumulation errors
+        this.nextStartTime = Math.round(this.nextStartTime * 1000000) / 1000000;
+        
+        // Log timing for first few chunks (debugging)
+        if (this.scheduledBuffers < 3) {
+          const startTime = this.nextStartTime - actualDuration;
+          console.log(`🎵 AudioPlayer: Scheduled chunk ${this.scheduledBuffers + 1} at ${startTime.toFixed(4)}s, next at ${this.nextStartTime.toFixed(4)}s`);
+          console.log(`   Duration: ${actualDuration.toFixed(4)}s (${(actualDuration * 1000).toFixed(2)}ms)`);
+        }
+
+        this.scheduledBuffers++;
+
+        // Track when this buffer finishes (for cleanup only, not for scheduling)
+        source.onended = () => {
+          this.scheduledBuffers--;
+
+          // If no more scheduled buffers and queue is empty, playback is complete
+          if (this.scheduledBuffers === 0 && this.pcmChunkQueue.length === 0) {
+            this.isPlaying = false;
+            this.isProcessingPcmQueue = false;
+            this.emit('playbackStopped');
+          }
+        };
+
+        if (!this.isPlaying) {
+          this.isPlaying = true;
+          this.emit('playbackStarted');
+        }
       } // end while loop
 
-      // If there are more chunks, schedule next batch asynchronously
-      // This prevents blocking the main thread for too long
-      if (this.pcmChunkQueue.length > 0) {
-        // Yield to browser, then process next batch
-        setTimeout(() => {
-          this.isProcessingPcmQueue = false;
-          this.processPcmQueue();
-        }, 0);
-      } else {
-        // All chunks scheduled, reset processing flag
-        this.isProcessingPcmQueue = false;
-      }
+      // All chunks scheduled, reset processing flag
+      this.isProcessingPcmQueue = false;
 
     } catch (error) {
 
@@ -1160,8 +1093,18 @@ class AudioPlayer extends EventEmitter {
    *
    */
   initializeAudioContext() {
-    // Use negotiated sample rate, default to 24kHz
-    const desiredSampleRate = this.outputFormat?.sampleRate || 24000;
+    // Use negotiated sample rate, but prefer 48kHz to avoid browser resampling
+    // Most browsers default to 48kHz, so requesting it avoids resampling overhead
+    let desiredSampleRate = this.outputFormat?.sampleRate || 48000;
+    
+    // If backend sends non-standard rate (like 22050Hz), check if browser supports it
+    // If not, prefer 48kHz to avoid resampling issues
+    if (desiredSampleRate !== 48000 && desiredSampleRate !== 44100) {
+      // For non-standard rates, try to use browser's native rate to avoid resampling
+      // This prevents tiny cuts caused by browser resampling
+      console.log(`ℹ️ AudioPlayer: Backend requested ${desiredSampleRate}Hz, but browser may resample to 48kHz`);
+      console.log(`   Consider requesting 48kHz from backend to avoid resampling and improve quality`);
+    }
     
     // Check if AudioContext exists and if it matches the desired sample rate
     if (this.audioContext) {

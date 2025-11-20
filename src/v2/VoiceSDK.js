@@ -126,6 +126,9 @@ class VoiceSDK_v2 extends EventEmitter {
 
       outputBitDepth: config.outputBitDepth || 16,
 
+      // Output frame duration (for raw PCM streaming)
+      outputFrameDurationMs: config.outputFrameDurationMs || 200, // Default 200ms
+
       
 
       // Legacy support
@@ -883,7 +886,9 @@ class VoiceSDK_v2 extends EventEmitter {
 
       inputFormat: inputFormat,
 
-      requestedOutputFormat: requestedOutputFormat
+      requestedOutputFormat: requestedOutputFormat,
+
+      outputFrameDurationMs: this.config.outputFrameDurationMs // Frame duration in milliseconds
 
     };
 
@@ -1325,6 +1330,10 @@ class VoiceSDK_v2 extends EventEmitter {
     this.stopRecording();
 
     
+    // Stop audio playback and clear queues (like v1)
+    if (this.audioPlayer) {
+      this.audioPlayer.stopImmediate();
+    }
 
     if (this.websocket) {
 
