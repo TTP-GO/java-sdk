@@ -17,6 +17,7 @@
 
 // Core SDK
 import VoiceSDK from './core/VoiceSDK.js';
+import VoiceSDK_v2 from './v2/VoiceSDK.js';
 import TextChatSDK from './core/TextChatSDK.js';
 import WebSocketManager from './core/WebSocketManager.js';
 import AudioRecorder from './core/AudioRecorder.js';
@@ -39,6 +40,7 @@ export const VERSION = '2.0.0';
 // Named exports
 export {
   VoiceSDK,
+  VoiceSDK_v2,
   TextChatSDK,
   WebSocketManager,
   AudioRecorder,
@@ -53,6 +55,7 @@ export {
 // Default export for convenience
 export default {
   VoiceSDK,
+  VoiceSDK_v2,
   TextChatSDK,
   WebSocketManager,
   AudioRecorder,

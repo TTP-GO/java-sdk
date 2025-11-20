@@ -1197,9 +1197,34 @@ class VoiceSDK_v2 extends EventEmitter {
 
     
 
-    // Play audio through AudioPlayer
-
-    this.audioPlayer.playAudio(arrayBuffer);
+    // Check if this is raw PCM or WAV
+    // For raw PCM (container: 'raw'), use playChunk() for seamless playback
+    // For WAV (container: 'wav'), use playAudio() which handles WAV headers
+    const container = this.outputAudioFormat?.container || this.config.outputContainer || 'raw';
+    const encoding = (this.outputAudioFormat?.encoding || this.config.outputEncoding || 'pcm').toLowerCase();
+    
+    if (container === 'raw') {
+      // Raw audio - decode if needed, then use playChunk for seamless scheduling
+      let pcmData = arrayBuffer;
+      
+      if (encoding !== 'pcm') {
+        // Need to decode PCMU/PCMA to PCM
+        const codec = this.audioPlayer.getCodec(encoding);
+        if (codec) {
+          const decoded = codec.decode(new Uint8Array(arrayBuffer));
+          pcmData = decoded.buffer;
+          console.log(`🔄 VoiceSDK v2: Decoded ${encoding.toUpperCase()} to PCM (${decoded.byteLength} bytes)`);
+        } else {
+          console.warn(`⚠️ VoiceSDK v2: No codec for ${encoding}, treating as PCM`);
+        }
+      }
+      
+      // Use playChunk for seamless scheduling
+      this.audioPlayer.playChunk(pcmData);
+    } else {
+      // WAV or other - use playAudio which handles headers
+      this.audioPlayer.playAudio(arrayBuffer);
+    }
 
   }
 
