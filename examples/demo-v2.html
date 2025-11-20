@@ -1,0 +1,1167 @@
+<!-- demo-v2.html -->
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>VoiceSDK v2 Demo - Multi-Codec Support</title>
+
+  <style>
+
+    * {
+
+      margin: 0;
+
+      padding: 0;
+
+      box-sizing: border-box;
+
+    }
+
+    
+
+    body {
+
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+      min-height: 100vh;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      padding: 20px;
+
+    }
+
+    
+
+    .container {
+
+      background: white;
+
+      border-radius: 20px;
+
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+      max-width: 800px;
+
+      width: 100%;
+
+      padding: 40px;
+
+    }
+
+    
+
+    h1 {
+
+      color: #333;
+
+      margin-bottom: 10px;
+
+      font-size: 32px;
+
+    }
+
+    
+
+    .version {
+
+      color: #667eea;
+
+      font-size: 14px;
+
+      margin-bottom: 30px;
+
+    }
+
+    
+
+    .config-section {
+
+      background: #f8f9fa;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+      margin-bottom: 20px;
+
+    }
+
+    
+
+    .config-group {
+
+      margin-bottom: 15px;
+
+    }
+
+    
+
+    .config-group label {
+
+      display: block;
+
+      font-weight: 600;
+
+      margin-bottom: 5px;
+
+      color: #555;
+
+      font-size: 14px;
+
+    }
+
+    
+
+    .config-group input,
+
+    .config-group select {
+
+      width: 100%;
+
+      padding: 10px;
+
+      border: 2px solid #ddd;
+
+      border-radius: 8px;
+
+      font-size: 14px;
+
+      transition: border-color 0.3s;
+
+    }
+
+    
+
+    .config-group input:focus,
+
+    .config-group select:focus {
+
+      outline: none;
+
+      border-color: #667eea;
+
+    }
+
+    
+
+    .config-row {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr;
+
+      gap: 15px;
+
+    }
+
+    
+
+    .status {
+
+      background: #f8f9fa;
+
+      padding: 15px;
+
+      border-radius: 10px;
+
+      margin-bottom: 20px;
+
+      font-family: 'Courier New', monospace;
+
+      font-size: 13px;
+
+    }
+
+    
+
+    .status-item {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      margin-bottom: 8px;
+
+      padding-bottom: 8px;
+
+      border-bottom: 1px solid #e0e0e0;
+
+    }
+
+    
+
+    .status-item:last-child {
+
+      margin-bottom: 0;
+
+      padding-bottom: 0;
+
+      border-bottom: none;
+
+    }
+
+    
+
+    .status-label {
+
+      color: #666;
+
+    }
+
+    
+
+    .status-value {
+
+      font-weight: bold;
+
+      color: #333;
+
+    }
+
+    
+
+    .status-value.connected {
+
+      color: #10b981;
+
+    }
+
+    
+
+    .status-value.disconnected {
+
+      color: #ef4444;
+
+    }
+
+    
+
+    .status-value.active {
+
+      color: #3b82f6;
+
+    }
+
+    
+
+    .controls {
+
+      display: grid;
+
+      grid-template-columns: repeat(2, 1fr);
+
+      gap: 15px;
+
+      margin-bottom: 20px;
+
+    }
+
+    
+
+    button {
+
+      padding: 15px 30px;
+
+      border: none;
+
+      border-radius: 10px;
+
+      font-size: 16px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      transition: all 0.3s;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 10px;
+
+    }
+
+    
+
+    button:disabled {
+
+      opacity: 0.5;
+
+      cursor: not-allowed;
+
+    }
+
+    
+
+    .btn-connect {
+
+      background: #10b981;
+
+      color: white;
+
+    }
+
+    
+
+    .btn-connect:hover:not(:disabled) {
+
+      background: #059669;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+
+    }
+
+    
+
+    .btn-disconnect {
+
+      background: #ef4444;
+
+      color: white;
+
+    }
+
+    
+
+    .btn-disconnect:hover:not(:disabled) {
+
+      background: #dc2626;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+
+    }
+
+    
+
+    .btn-record {
+
+      background: #3b82f6;
+
+      color: white;
+
+    }
+
+    
+
+    .btn-record:hover:not(:disabled) {
+
+      background: #2563eb;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+
+    }
+
+    
+
+    .btn-record.recording {
+
+      background: #f59e0b;
+
+      animation: pulse 2s infinite;
+
+    }
+
+    
+
+    @keyframes pulse {
+
+      0%, 100% { opacity: 1; }
+
+      50% { opacity: 0.7; }
+
+    }
+
+    
+
+    .btn-stop {
+
+      background: #8b5cf6;
+
+      color: white;
+
+    }
+
+    
+
+    .btn-stop:hover:not(:disabled) {
+
+      background: #7c3aed;
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+
+    }
+
+    
+
+    .logs {
+
+      background: #1f2937;
+
+      color: #10b981;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+      max-height: 300px;
+
+      overflow-y: auto;
+
+      font-family: 'Courier New', monospace;
+
+      font-size: 13px;
+
+    }
+
+    
+
+    .log-entry {
+
+      margin-bottom: 5px;
+
+      line-height: 1.4;
+
+    }
+
+    
+
+    .log-entry.error {
+
+      color: #ef4444;
+
+    }
+
+    
+
+    .log-entry.success {
+
+      color: #10b981;
+
+    }
+
+    
+
+    .log-entry.info {
+
+      color: #3b82f6;
+
+    }
+
+    
+
+    .log-entry.warning {
+
+      color: #f59e0b;
+
+    }
+
+    
+
+    .format-info {
+
+      background: #eff6ff;
+
+      border-left: 4px solid #3b82f6;
+
+      padding: 15px;
+
+      border-radius: 8px;
+
+      margin-top: 15px;
+
+    }
+
+    
+
+    .format-info h3 {
+
+      color: #1e40af;
+
+      margin-bottom: 10px;
+
+      font-size: 16px;
+
+    }
+
+    
+
+    .format-info pre {
+
+      background: white;
+
+      padding: 10px;
+
+      border-radius: 5px;
+
+      overflow-x: auto;
+
+      font-size: 12px;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>🎙️ VoiceSDK v2 Demo</h1>
+
+    <p class="version">Multi-Codec Speech-to-Speech SDK</p>
+
+    
+
+    <!-- Configuration -->
+
+    <div class="config-section">
+
+      <h2 style="margin-bottom: 15px; font-size: 18px;">⚙️ Configuration</h2>
+
+      
+
+      <div class="config-group">
+
+        <label>WebSocket URL</label>
+
+        <input type="text" id="websocketUrl" value="wss://speech.talktopc.com/ws/conv">
+
+      </div>
+
+      
+
+      <div class="config-row">
+
+        <div class="config-group">
+
+          <label>Agent ID</label>
+
+          <input type="text" id="agentId" value="agent_5a2b984c1" placeholder="agent-123">
+
+        </div>
+
+        <div class="config-group">
+
+          <label>App ID</label>
+
+          <input type="text" id="appId" value="app_Bc01EqMQt2Euehl4qqZSi6l3FJP42Q9vJ0pC" placeholder="app-456">
+
+        </div>
+
+      </div>
+
+      
+
+      <div class="config-row">
+
+        <div class="config-group">
+
+          <label>Output Container</label>
+
+          <select id="outputContainer">
+
+            <option value="raw">Raw (No container)</option>
+
+            <option value="wav" selected>WAV (With header)</option>
+
+          </select>
+
+        </div>
+
+        <div class="config-group">
+
+          <label>Output Encoding</label>
+
+          <select id="outputEncoding">
+
+            <option value="pcm" selected>PCM (Uncompressed)</option>
+
+            <option value="pcmu">PCMU (μ-law, 8-bit)</option>
+
+            <option value="pcma">PCMA (A-law, 8-bit)</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      
+
+      <div class="config-row">
+
+        <div class="config-group">
+
+          <label>Output Sample Rate</label>
+
+          <select id="outputSampleRate">
+
+            <option value="8000">8 kHz (Telephony)</option>
+
+            <option value="16000" selected>16 kHz (Voice)</option>
+
+            <option value="22050">22.05 kHz</option>
+
+            <option value="24000">24 kHz</option>
+
+            <option value="44100">44.1 kHz (CD Quality)</option>
+
+            <option value="48000">48 kHz (Pro)</option>
+
+          </select>
+
+        </div>
+
+        <div class="config-group">
+
+          <label>Output Bit Depth</label>
+
+          <select id="outputBitDepth">
+
+            <option value="8">8-bit</option>
+
+            <option value="16" selected>16-bit</option>
+
+            <option value="24">24-bit</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    
+
+    <!-- Status -->
+
+    <div class="status">
+
+      <div class="status-item">
+
+        <span class="status-label">Connection:</span>
+
+        <span class="status-value disconnected" id="statusConnection">Disconnected</span>
+
+      </div>
+
+      <div class="status-item">
+
+        <span class="status-label">Recording:</span>
+
+        <span class="status-value" id="statusRecording">Idle</span>
+
+      </div>
+
+      <div class="status-item">
+
+        <span class="status-label">Playback:</span>
+
+        <span class="status-value" id="statusPlayback">Idle</span>
+
+      </div>
+
+      <div class="status-item">
+
+        <span class="status-label">Negotiated Format:</span>
+
+        <span class="status-value" id="statusFormat">Not negotiated</span>
+
+      </div>
+
+    </div>
+
+    
+
+    <!-- Controls -->
+
+    <div class="controls">
+
+      <button class="btn-connect" id="btnConnect">
+
+        🔌 Connect
+
+      </button>
+
+      <button class="btn-disconnect" id="btnDisconnect" disabled>
+
+        🔌 Disconnect
+
+      </button>
+
+      <button class="btn-record" id="btnRecord" disabled>
+
+        🎤 Start Recording
+
+      </button>
+
+      <button class="btn-stop" id="btnStop" disabled>
+
+        🛑 Stop Recording
+
+      </button>
+
+    </div>
+
+    
+
+    <!-- Format Info (shown after negotiation) -->
+
+    <div class="format-info" id="formatInfo" style="display: none;">
+
+      <h3>📊 Negotiated Audio Format</h3>
+
+      <pre id="formatDetails"></pre>
+
+    </div>
+
+    
+
+    <!-- Logs -->
+
+    <h3 style="margin-bottom: 10px; font-size: 18px;">📝 Event Log</h3>
+
+    <div class="logs" id="logs">
+
+      <div class="log-entry info">Waiting to connect...</div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- Load SDK -->
+
+  <!-- Load SDK as UMD module -->
+  <script src="../dist/agent-widget.js"></script>
+
+  <script>
+
+    // Get VoiceSDK_v2 from global TTPAgentSDK (UMD export)
+
+    const VoiceSDK_v2 = window.TTPAgentSDK?.VoiceSDK_v2;
+
+    if (!VoiceSDK_v2) {
+
+      console.error('VoiceSDK_v2 not found in TTPAgentSDK. Available exports:', Object.keys(window.TTPAgentSDK || {}));
+
+      alert('Error: VoiceSDK_v2 not found. Please check the console for details.');
+
+    }
+
+    
+
+    // DOM elements
+
+    const btnConnect = document.getElementById('btnConnect');
+
+    const btnDisconnect = document.getElementById('btnDisconnect');
+
+    const btnRecord = document.getElementById('btnRecord');
+
+    const btnStop = document.getElementById('btnStop');
+
+    
+
+    const statusConnection = document.getElementById('statusConnection');
+
+    const statusRecording = document.getElementById('statusRecording');
+
+    const statusPlayback = document.getElementById('statusPlayback');
+
+    const statusFormat = document.getElementById('statusFormat');
+
+    
+
+    const logsContainer = document.getElementById('logs');
+
+    const formatInfo = document.getElementById('formatInfo');
+
+    const formatDetails = document.getElementById('formatDetails');
+
+    
+
+    // SDK instance
+
+    let sdk = null;
+
+    
+
+    // Logger
+
+    function log(message, type = 'info') {
+
+      const entry = document.createElement('div');
+
+      entry.className = `log-entry ${type}`;
+
+      const timestamp = new Date().toLocaleTimeString();
+
+      entry.textContent = `[${timestamp}] ${message}`;
+
+      logsContainer.appendChild(entry);
+
+      logsContainer.scrollTop = logsContainer.scrollHeight;
+
+      console.log(`[${type.toUpperCase()}] ${message}`);
+
+    }
+
+    
+
+    // Connect button
+
+    btnConnect.addEventListener('click', async () => {
+
+      try {
+
+        // Get config from form
+
+        const config = {
+
+          websocketUrl: document.getElementById('websocketUrl').value,
+
+          agentId: document.getElementById('agentId').value,
+
+          appId: document.getElementById('appId').value,
+
+          
+
+          // Output format
+
+          outputContainer: document.getElementById('outputContainer').value,
+
+          outputEncoding: document.getElementById('outputEncoding').value,
+
+          outputSampleRate: parseInt(document.getElementById('outputSampleRate').value),
+
+          outputBitDepth: parseInt(document.getElementById('outputBitDepth').value),
+
+          outputChannels: 1,
+
+          
+
+          // Input format
+
+          sampleRate: 16000,
+
+          channels: 1,
+
+          bitDepth: 16,
+
+          
+
+          // Disable auto-reconnect for demo (prevents infinite retry loop on connection failure)
+
+          autoReconnect: false
+
+        };
+
+        
+
+        log('Initializing SDK v2...', 'info');
+
+        
+
+        // Create SDK instance
+
+        sdk = new VoiceSDK_v2(config);
+
+        
+
+        // Setup event listeners
+
+        setupSDKEvents();
+
+        
+
+        log(`Connecting to ${config.websocketUrl}...`, 'info');
+
+        
+
+        // Connect
+
+        const connected = await sdk.connect();
+
+        
+
+        if (!connected) {
+
+          log('Failed to connect', 'error');
+
+        }
+
+        
+
+      } catch (error) {
+
+        log(`Error: ${error.message}`, 'error');
+
+        console.error(error);
+
+      }
+
+    });
+
+    
+
+    // Disconnect button
+
+    btnDisconnect.addEventListener('click', () => {
+
+      if (sdk) {
+
+        sdk.disconnect();
+
+        log('Disconnecting...', 'info');
+
+      }
+
+    });
+
+    
+
+    // Record button
+
+    btnRecord.addEventListener('click', async () => {
+
+      try {
+
+        log('Starting recording...', 'info');
+
+        await sdk.startRecording();
+
+      } catch (error) {
+
+        log(`Error starting recording: ${error.message}`, 'error');
+
+      }
+
+    });
+
+    
+
+    // Stop button
+
+    btnStop.addEventListener('click', async () => {
+
+      try {
+
+        log('Stopping recording...', 'info');
+
+        await sdk.stopRecording();
+
+      } catch (error) {
+
+        log(`Error stopping recording: ${error.message}`, 'error');
+
+      }
+
+    });
+
+    
+
+    // Setup SDK event listeners
+
+    function setupSDKEvents() {
+
+      sdk.on('connected', () => {
+
+        log('✅ Connected to server', 'success');
+
+        statusConnection.textContent = 'Connected';
+
+        statusConnection.className = 'status-value connected';
+
+        
+
+        btnConnect.disabled = true;
+
+        btnDisconnect.disabled = false;
+
+        btnRecord.disabled = false;
+
+      });
+
+      
+
+      sdk.on('disconnected', () => {
+
+        log('❌ Disconnected from server', 'warning');
+
+        statusConnection.textContent = 'Disconnected';
+
+        statusConnection.className = 'status-value disconnected';
+
+        
+
+        btnConnect.disabled = false;
+
+        btnDisconnect.disabled = true;
+
+        btnRecord.disabled = true;
+
+        btnStop.disabled = true;
+
+        
+
+        formatInfo.style.display = 'none';
+
+      });
+
+      
+
+      sdk.on('formatNegotiated', (format) => {
+
+        log(`✅ Format negotiated: ${format.container}/${format.encoding} @ ${format.sampleRate}Hz`, 'success');
+
+        
+
+        statusFormat.textContent = `${format.container}/${format.encoding} ${format.sampleRate}Hz ${format.bitDepth}bit`;
+
+        
+
+        // Show format info
+
+        formatInfo.style.display = 'block';
+
+        formatDetails.textContent = JSON.stringify(format, null, 2);
+
+      });
+
+      
+
+      sdk.on('recordingStarted', () => {
+
+        log('🎤 Recording started', 'success');
+
+        statusRecording.textContent = 'Recording';
+
+        statusRecording.className = 'status-value active';
+
+        
+
+        btnRecord.disabled = true;
+
+        btnRecord.classList.add('recording');
+
+        btnStop.disabled = false;
+
+      });
+
+      
+
+      sdk.on('recordingStopped', () => {
+
+        log('🛑 Recording stopped', 'info');
+
+        statusRecording.textContent = 'Idle';
+
+        statusRecording.className = 'status-value';
+
+        
+
+        btnRecord.disabled = false;
+
+        btnRecord.classList.remove('recording');
+
+        btnStop.disabled = true;
+
+      });
+
+      
+
+      sdk.on('playbackStarted', () => {
+
+        log('🔊 Playback started', 'info');
+
+        statusPlayback.textContent = 'Playing';
+
+        statusPlayback.className = 'status-value active';
+
+      });
+
+      
+
+      sdk.on('playbackStopped', () => {
+
+        log('🔇 Playback stopped', 'info');
+
+        statusPlayback.textContent = 'Idle';
+
+        statusPlayback.className = 'status-value';
+
+      });
+
+      
+
+      sdk.on('message', (message) => {
+
+        log(`📨 Message: ${message.t}`, 'info');
+
+        if (message.text) {
+
+          log(`   "${message.text}"`, 'info');
+
+        }
+
+      });
+
+      
+
+      sdk.on('error', (error) => {
+
+        log(`❌ Error: ${error.message}`, 'error');
+
+        console.error(error);
+
+      });
+
+    }
+
+    
+
+    // Make SDK available in console for debugging
+
+    window.sdk = sdk;
+
+    window.VoiceSDK_v2 = VoiceSDK_v2;
+
+    
+
+    log('Demo ready! Configure and click "Connect"', 'success');
+
+  </script>
+
+</body>
+
+</html>
+
