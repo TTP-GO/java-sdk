@@ -6,6 +6,8 @@ import AudioPlayer from './AudioPlayer.js';
 
 import AudioRecorder from '../v1/AudioRecorder.js';
 
+import AudioFormatConverter from './utils/AudioFormatConverter.js';
+
 
 
 /**
@@ -127,7 +129,7 @@ class VoiceSDK_v2 extends EventEmitter {
       outputBitDepth: config.outputBitDepth || 16,
 
       // Output frame duration (for raw PCM streaming)
-      outputFrameDurationMs: config.outputFrameDurationMs || 200, // Default 200ms
+      outputFrameDurationMs: config.outputFrameDurationMs || 600, // Default 600ms - smooth playback with good latency balance
 
       
 
@@ -166,6 +168,10 @@ class VoiceSDK_v2 extends EventEmitter {
     this.isDestroyed = false;
 
     this.outputAudioFormat = null;
+
+    this.requestedOutputFormat = null; // What user requested
+
+    this.formatConverter = null; // Format converter instance
 
     this.websocket = null;
 
@@ -460,11 +466,17 @@ class VoiceSDK_v2 extends EventEmitter {
 
       
 
-      // Notify server
+      // Notify server - CRITICAL for barge-in detection
 
       if (this.isConnected) {
 
+        console.log('📤 VoiceSDK v2: Sending audio_started_playing message to server');
+
         this.sendMessage({ t: 'audio_started_playing' });
+
+      } else {
+
+        console.warn('⚠️ VoiceSDK v2: Cannot send audio_started_playing - not connected');
 
       }
 
@@ -480,11 +492,17 @@ class VoiceSDK_v2 extends EventEmitter {
 
       
 
-      // Notify server
+      // Notify server - CRITICAL for barge-in detection
 
       if (this.isConnected) {
 
+        console.log('📤 VoiceSDK v2: Sending audio_stopped_playing message to server');
+
         this.sendMessage({ t: 'audio_stopped_playing' });
+
+      } else {
+
+        console.warn('⚠️ VoiceSDK v2: Cannot send audio_stopped_playing - not connected');
 
       }
 
@@ -520,23 +538,67 @@ class VoiceSDK_v2 extends EventEmitter {
 
       // If audio is playing, stop it and barge-in
 
-      if (this.isPlaying) {
+      // Check both isPlaying flag and AudioPlayer's actual state (scheduled buffers, sources, etc.)
+
+      const audioPlayerStatus = this.audioPlayer.getStatus();
+
+      const hasScheduledAudio = (audioPlayerStatus.scheduledBuffers && audioPlayerStatus.scheduledBuffers > 0) || 
+
+                                (audioPlayerStatus.scheduledSourcesCount && audioPlayerStatus.scheduledSourcesCount > 0);
+
+      const isActuallyPlaying = this.isPlaying || audioPlayerStatus.isPlaying || hasScheduledAudio;
+
+      
+
+      console.log('🎤 VoiceSDK v2: Recording started - checking for barge-in...');
+
+      console.log('   VoiceSDK.isPlaying:', this.isPlaying);
+
+      console.log('   AudioPlayer.isPlaying:', audioPlayerStatus.isPlaying);
+
+      console.log('   scheduledBuffers:', audioPlayerStatus.scheduledBuffers || 0);
+
+      console.log('   scheduledSourcesCount:', audioPlayerStatus.scheduledSourcesCount || 0);
+
+      console.log('   preparedBufferLength:', audioPlayerStatus.preparedBufferLength || 0);
+
+      console.log('   isActuallyPlaying:', isActuallyPlaying);
+
+      
+
+      if (isActuallyPlaying) {
+
+        console.log('🛑 VoiceSDK v2: Barge-in detected! Stopping audio playback...');
+
+        
 
         this.audioPlayer.stopImmediate();
+
+        console.log('✅ VoiceSDK v2: Audio playback stopped');
+
+        
 
         if (this.isConnected) {
 
           this.sendMessage({ t: 'barge_in' });
 
+          console.log('📤 VoiceSDK v2: Sent barge_in message to server');
+
+        } else {
+
+          console.warn('⚠️ VoiceSDK v2: Cannot send barge_in - not connected');
+
         }
+
+      } else {
+
+        console.log('ℹ️ VoiceSDK v2: No audio playing, normal recording start');
 
       }
 
       
 
       this.emit('recordingStarted');
-
-      console.log('🎤 VoiceSDK v2: Recording started');
 
     });
 
@@ -545,6 +607,8 @@ class VoiceSDK_v2 extends EventEmitter {
     this.audioRecorder.on('recordingStopped', () => {
 
       this.isRecording = false;
+
+      this._bargeInChecked = false; // Reset for next recording session
 
       this.emit('recordingStopped');
 
@@ -556,12 +620,66 @@ class VoiceSDK_v2 extends EventEmitter {
 
     this.audioRecorder.on('audioData', (pcmData) => {
 
+      // Check for barge-in on first audio data (user actually speaking)
+
+      // This is more reliable than checking on recordingStarted
+
+      if (!this._bargeInChecked && this.isRecording) {
+
+        this._bargeInChecked = true; // Only check once per recording session
+
+        
+
+        const audioPlayerStatus = this.audioPlayer.getStatus();
+
+        const hasScheduledAudio = (audioPlayerStatus.scheduledBuffers && audioPlayerStatus.scheduledBuffers > 0) || 
+
+                                  (audioPlayerStatus.scheduledSourcesCount && audioPlayerStatus.scheduledSourcesCount > 0);
+
+        const isActuallyPlaying = this.isPlaying || audioPlayerStatus.isPlaying || hasScheduledAudio;
+
+        
+
+        if (isActuallyPlaying) {
+
+          console.log('🛑 VoiceSDK v2: Barge-in detected on first audio data! Stopping audio playback...');
+
+          console.log('   VoiceSDK.isPlaying:', this.isPlaying);
+
+          console.log('   AudioPlayer.isPlaying:', audioPlayerStatus.isPlaying);
+
+          console.log('   scheduledBuffers:', audioPlayerStatus.scheduledBuffers || 0);
+
+          console.log('   scheduledSourcesCount:', audioPlayerStatus.scheduledSourcesCount || 0);
+
+          
+
+          this.audioPlayer.stopImmediate();
+
+          console.log('✅ VoiceSDK v2: Audio playback stopped');
+
+          
+
+          if (this.isConnected) {
+
+            this.sendMessage({ t: 'barge_in' });
+
+            console.log('📤 VoiceSDK v2: Sent barge_in message to server');
+
+          }
+
+        }
+
+      }
+
+      
+
       // Send audio chunks to server via WebSocket
-
-      if (this.isConnected && this.isRecording) {
-
+      // NOTE: Don't check isRecording here - the audioRecorder emits data when it's active
+      // This allows continuous frame sending even during barge-in scenarios
+      // Matching v1 behavior: frames are sent as long as recorder is producing data
+      if (this.isConnected) {
         this.sendBinary(pcmData);
-
       }
 
     });
@@ -1070,8 +1188,8 @@ class VoiceSDK_v2 extends EventEmitter {
 
       console.log('✅ VoiceSDK v2: Format negotiated by server:', this.outputAudioFormat);
       
-      // Compare requested vs negotiated format in detail
-      const requestedFormat = {
+      // Store requested format
+      this.requestedOutputFormat = {
         container: this.config.outputContainer || 'wav',
         encoding: this.config.outputEncoding || 'pcm',
         sampleRate: this.config.outputSampleRate || 16000,
@@ -1087,32 +1205,51 @@ class VoiceSDK_v2 extends EventEmitter {
         channels: this.outputAudioFormat.channels || 0
       };
       
-      // Check for mismatches
+      // Check for mismatches and create converter if needed
       const mismatches = [];
-      if (requestedFormat.container !== negotiatedFormat.container) {
-        mismatches.push(`container: "${requestedFormat.container}" → "${negotiatedFormat.container}"`);
+      if (this.requestedOutputFormat.container !== negotiatedFormat.container) {
+        mismatches.push(`container: "${this.requestedOutputFormat.container}" → "${negotiatedFormat.container}"`);
       }
-      if (requestedFormat.encoding !== negotiatedFormat.encoding) {
-        mismatches.push(`encoding: "${requestedFormat.encoding}" → "${negotiatedFormat.encoding}"`);
+      if (this.requestedOutputFormat.encoding !== negotiatedFormat.encoding) {
+        mismatches.push(`encoding: "${this.requestedOutputFormat.encoding}" → "${negotiatedFormat.encoding}"`);
       }
-      if (requestedFormat.sampleRate !== negotiatedFormat.sampleRate) {
-        mismatches.push(`sampleRate: ${requestedFormat.sampleRate}Hz → ${negotiatedFormat.sampleRate}Hz`);
+      if (this.requestedOutputFormat.sampleRate !== negotiatedFormat.sampleRate) {
+        mismatches.push(`sampleRate: ${this.requestedOutputFormat.sampleRate}Hz → ${negotiatedFormat.sampleRate}Hz`);
       }
-      if (requestedFormat.bitDepth !== negotiatedFormat.bitDepth) {
-        mismatches.push(`bitDepth: ${requestedFormat.bitDepth}-bit → ${negotiatedFormat.bitDepth}-bit`);
+      if (this.requestedOutputFormat.bitDepth !== negotiatedFormat.bitDepth) {
+        mismatches.push(`bitDepth: ${this.requestedOutputFormat.bitDepth}-bit → ${negotiatedFormat.bitDepth}-bit`);
       }
-      if (requestedFormat.channels !== negotiatedFormat.channels) {
-        mismatches.push(`channels: ${requestedFormat.channels} → ${negotiatedFormat.channels}`);
+      if (this.requestedOutputFormat.channels !== negotiatedFormat.channels) {
+        mismatches.push(`channels: ${this.requestedOutputFormat.channels} → ${negotiatedFormat.channels}`);
       }
       
       if (mismatches.length > 0) {
         console.warn('⚠️ VoiceSDK v2: Format negotiation mismatch!');
-        console.warn('   Requested:', requestedFormat);
+        console.warn('   Requested:', this.requestedOutputFormat);
         console.warn('   Negotiated:', negotiatedFormat);
         console.warn('   Differences:', mismatches.join(', '));
-        console.warn('⚠️ Backend is ignoring your format request and using its own format.');
+        
+        // Create format converter to automatically convert
+        try {
+          this.formatConverter = new AudioFormatConverter(
+            this.requestedOutputFormat,
+            negotiatedFormat
+          );
+          
+          if (this.formatConverter.needsConversion()) {
+            const steps = this.formatConverter.getConversionSteps();
+            console.log('🔄 VoiceSDK v2: Format conversion enabled');
+            console.log('   Conversion steps:', steps.join(', '));
+            console.log('   Audio will be automatically converted to requested format');
+          }
+        } catch (error) {
+          console.error('❌ VoiceSDK v2: Failed to create format converter:', error);
+          console.warn('   Will use backend format without conversion');
+          this.formatConverter = null;
+        }
       } else {
         console.log('✅ VoiceSDK v2: Format perfectly matched!', negotiatedFormat);
+        this.formatConverter = null; // No conversion needed
       }
 
       this.emit('formatNegotiated', this.outputAudioFormat);
@@ -1165,8 +1302,12 @@ class VoiceSDK_v2 extends EventEmitter {
       
 
       this.outputAudioFormat = defaultFormat;
+      
+      this.requestedOutputFormat = defaultFormat; // Same as default when no negotiation
 
       this.audioPlayer.setOutputFormat(defaultFormat);
+      
+      this.formatConverter = null; // No conversion needed when using defaults
 
     }
 
@@ -1202,21 +1343,43 @@ class VoiceSDK_v2 extends EventEmitter {
 
     
 
-    // Check if this is raw PCM or WAV
-    // For raw PCM (container: 'raw'), use playChunk() for seamless playback
-    // For WAV (container: 'wav'), use playAudio() which handles WAV headers
-    const container = this.outputAudioFormat?.container || this.config.outputContainer || 'raw';
-    const encoding = (this.outputAudioFormat?.encoding || this.config.outputEncoding || 'pcm').toLowerCase();
+    // Convert format if needed (before passing to AudioPlayer)
+    let processedAudio = arrayBuffer;
+    
+    if (this.formatConverter && this.formatConverter.needsConversion()) {
+      try {
+        processedAudio = await this.formatConverter.convert(arrayBuffer);
+        console.log('✅ VoiceSDK v2: Audio converted to requested format');
+      } catch (error) {
+        console.error('❌ VoiceSDK v2: Format conversion failed:', error);
+        console.warn('   Using backend format without conversion');
+        processedAudio = arrayBuffer; // Fall back to original
+      }
+    }
+    
+    // Determine format for playback (use requested format if converter was used, otherwise use negotiated)
+    const playbackFormat = this.formatConverter && this.formatConverter.needsConversion() 
+      ? this.requestedOutputFormat 
+      : (this.outputAudioFormat || {
+          container: this.config.outputContainer || 'raw',
+          encoding: this.config.outputEncoding || 'pcm',
+          sampleRate: this.config.outputSampleRate || 16000,
+          bitDepth: this.config.outputBitDepth || 16,
+          channels: this.config.outputChannels || 1
+        });
+    
+    const container = playbackFormat.container || 'raw';
+    const encoding = (playbackFormat.encoding || 'pcm').toLowerCase();
     
     if (container === 'raw') {
       // Raw audio - decode if needed, then use playChunk for seamless scheduling
-      let pcmData = arrayBuffer;
+      let pcmData = processedAudio;
       
       if (encoding !== 'pcm') {
         // Need to decode PCMU/PCMA to PCM
         const codec = this.audioPlayer.getCodec(encoding);
         if (codec) {
-          const decoded = codec.decode(new Uint8Array(arrayBuffer));
+          const decoded = codec.decode(new Uint8Array(processedAudio));
           pcmData = decoded.buffer;
           console.log(`🔄 VoiceSDK v2: Decoded ${encoding.toUpperCase()} to PCM (${decoded.byteLength} bytes)`);
         } else {
@@ -1224,11 +1387,18 @@ class VoiceSDK_v2 extends EventEmitter {
         }
       }
       
+      // Ensure outputFormat is set on AudioPlayer before playing chunks
+      // This is critical for raw PCM playback
+      if (!this.audioPlayer.outputFormat) {
+        console.warn('⚠️ VoiceSDK v2: outputFormat not set on AudioPlayer, setting from playbackFormat');
+        this.audioPlayer.setOutputFormat(playbackFormat);
+      }
+      
       // Use playChunk for seamless scheduling
       this.audioPlayer.playChunk(pcmData);
     } else {
       // WAV or other - use playAudio which handles headers
-      this.audioPlayer.playAudio(arrayBuffer);
+      this.audioPlayer.playAudio(processedAudio);
     }
 
   }

@@ -66,11 +66,23 @@ class AudioPlayer extends EventEmitter {
 
     this.scheduledBuffers = 0;
 
-    // Queue for PCM chunks (used by playChunk)
+    // Track all scheduled AudioBufferSource nodes (for stopping on barge-in)
+    this.scheduledSources = new Set();
 
+    // Queue for raw PCM chunks (before processing)
     this.pcmChunkQueue = [];
 
+    // Queue for prepared AudioBuffers (ready to schedule)
+    this.preparedBuffer = [];
+
     this.isProcessingPcmQueue = false;
+
+    this.isSchedulingFrames = false;
+
+    // Minimal scheduling delay to avoid scheduling audio in the past
+    // REMOVED: Lookahead buffering was causing quality degradation due to browser resampling/timing issues
+    // Now we only schedule with minimal delay (20ms) just enough to avoid gaps
+    this.MAX_LOOKAHEAD_SECONDS = 0.02; // 20ms minimal delay to avoid scheduling in the past
 
     
 
@@ -308,17 +320,500 @@ class AudioPlayer extends EventEmitter {
 
   async playChunk(pcmData) {
 
-    // Add to queue
+    // Pre-process frame immediately (convert to AudioBuffer)
+    const preparedFrame = this.prepareChunk(pcmData);
 
-    this.pcmChunkQueue.push(pcmData);
+    if (preparedFrame) {
+
+      // Add prepared frame to buffer
+
+      this.preparedBuffer.push(preparedFrame);
+
+      
+
+      // Always try to schedule prepared frames
+
+      // Use requestAnimationFrame to avoid blocking, but ensure scheduling happens
+
+      if (!this.isSchedulingFrames) {
+
+        // Schedule immediately if not already scheduling
+
+        this.schedulePreparedFrames();
+
+      } else {
+
+        // Already scheduling, but ensure we'll schedule this new frame too
+
+        // The scheduling loop will pick it up, but we can also trigger a re-check
+
+        requestAnimationFrame(() => {
+
+          if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames) {
+
+            this.schedulePreparedFrames();
+
+          }
+
+        });
+
+      }
+
+      
+
+      // Also process any raw chunks in queue (for backward compatibility)
+
+      if (this.pcmChunkQueue.length > 0 && !this.isProcessingPcmQueue) {
+
+        this.processPcmQueue();
+
+      }
+
+    } else {
+
+      // prepareChunk returned null - log error for debugging
+      console.error('❌ AudioPlayer: playChunk failed - prepareChunk returned null');
+      console.error('   pcmData length:', pcmData?.byteLength || 'undefined');
+      console.error('   outputFormat:', this.outputFormat);
+      console.error('   audioContext:', this.audioContext ? 'initialized' : 'not initialized');
+      console.error('   audioContext state:', this.audioContext?.state || 'N/A');
+      
+      // Emit error event
+      this.emit('playbackError', new Error('Failed to prepare PCM chunk for playback'));
+    }
+
+  }
+
+  
+
+  /**
+
+   * Pre-process a PCM chunk: convert to Float32 and create AudioBuffer
+
+   * This happens immediately when frame arrives, not during playback
+
+   * @param {ArrayBuffer|Uint8Array} pcmData - Raw PCM data
+
+   * @returns {Object|null} Prepared frame with AudioBuffer and metadata
+
+   */
+
+  prepareChunk(pcmData) {
+
+    try {
+
+      // Ensure output format is set
+      if (!this.outputFormat) {
+        console.error('❌ AudioPlayer: Cannot prepare chunk - outputFormat not set');
+        console.error('   Call setOutputFormat() before playing audio chunks');
+        return null;
+      }
+
+      // Ensure audio context is initialized
+
+      if (!this.audioContext) {
+
+        this.initializeAudioContext();
+
+      }
+
+      
+
+      if (!this.audioContext) {
+
+        console.error('❌ AudioPlayer: Cannot prepare chunk - AudioContext not available');
+
+        return null;
+
+      }
+
+      
+
+      // Ensure even byte count for 16-bit PCM
+
+      let processedData = pcmData;
+
+      if (pcmData.byteLength % 2 !== 0) {
+
+        console.warn('⚠️ Odd PCM chunk size, padding:', pcmData.byteLength);
+
+        const padded = new Uint8Array(pcmData.byteLength + 1);
+
+        padded.set(new Uint8Array(pcmData), 0);
+
+        padded[pcmData.byteLength] = 0; // Silence padding
+
+        processedData = padded.buffer;
+
+      }
+
+      
+
+      // Convert Int16 PCM to Float32 (pre-processing)
+
+      const int16Array = new Int16Array(processedData);
+
+      const float32Array = new Float32Array(int16Array.length);
+
+      const NORMALIZATION = 1.0 / 32768.0;
+
+      const length = int16Array.length;
+
+      for (let i = 0; i < length; i++) {
+
+        float32Array[i] = int16Array[i] * NORMALIZATION;
+
+      }
+
+      
+
+      // Create audio buffer with the ACTUAL sample rate of the audio data
+
+      const audioDataSampleRate = this.outputFormat?.sampleRate || this.audioContext.sampleRate;
+
+      const contextSampleRate = this.audioContext.sampleRate;
+
+      
+
+      const audioBuffer = this.audioContext.createBuffer(
+
+        1, // mono
+
+        float32Array.length,
+
+        audioDataSampleRate
+
+      );
+
+      
+
+      audioBuffer.getChannelData(0).set(float32Array);
+
+      // Calculate duration (handle browser resampling)
+
+      const chunkDuration = audioBuffer.duration;
+
+      const sampleCount = float32Array.length;
+
+      let actualDuration = chunkDuration;
+
+      
+
+      if (contextSampleRate !== audioDataSampleRate) {
+
+        actualDuration = sampleCount / contextSampleRate;
+
+      }
+
+      
+
+      // Return prepared frame
+
+      return {
+
+        buffer: audioBuffer,
+
+        duration: actualDuration,
+
+        sampleRate: audioDataSampleRate,
+
+        contextSampleRate: contextSampleRate
+
+      };
+
+      
+
+    } catch (error) {
+
+      console.error('❌ AudioPlayer: Error preparing chunk:', error);
+
+      return null;
+
+    }
+
+  }
+
+  /**
+   * Apply fade-out to audio buffer (stub method to prevent errors)
+   * This method is called by some code paths but doesn't need to do anything
+   * @param {AudioBuffer} audioBuffer - Audio buffer to fade
+   * @returns {AudioBuffer} - Same audio buffer (no modification)
+   */
+  applyFadeOut(audioBuffer) {
+    // Stub method - fade-out is not needed for streaming audio
+    // This method exists to prevent "is not a function" errors
+    return audioBuffer;
+  }
+
+  
+
+  /**
+
+   * Schedule prepared frames ahead of time for smooth playback
+
+   * This runs continuously to keep frames scheduled ahead
+
+   */
+
+  async schedulePreparedFrames() {
+
+    if (this.isSchedulingFrames) {
+
+      return;
+
+    }
 
     
 
-    // Start processing queue if not already processing
+    this.isSchedulingFrames = true;
+    
+    // REMOVED: Dynamic lookahead calculation
+    // Now we only schedule 1-2 frames ahead to avoid gaps, but not far in advance
+    // This preserves audio quality by avoiding browser resampling/timing issues
+    let targetLookaheadFrames = 1; // Schedule only 1 frame ahead (just enough to avoid gaps)
 
-    if (!this.isProcessingPcmQueue) {
+    
 
-      this.processPcmQueue();
+    try {
+
+      // Initialize audio context if needed
+
+      if (!this.audioContext) {
+
+        this.initializeAudioContext();
+
+      }
+
+      
+
+      // Resume if suspended
+
+      if (this.audioContext.state === 'suspended') {
+
+        await this.audioContext.resume();
+
+      }
+
+      
+
+      // Schedule frames up to target lookahead (ensures smooth playback)
+      // For small frames (200ms), we need more frames scheduled ahead
+      // For large frames (1200ms), fewer frames are needed
+      let scheduledCount = 0;
+      while (this.preparedBuffer.length > 0 && scheduledCount < targetLookaheadFrames) {
+
+        // Get next prepared frame
+
+        const preparedFrame = this.preparedBuffer.shift();
+
+        if (!preparedFrame) {
+
+          break;
+
+        }
+
+        
+
+        // Create source and schedule playback
+
+        const source = this.audioContext.createBufferSource();
+
+        source.buffer = preparedFrame.buffer;
+
+        source.connect(this.audioContext.destination);
+
+        
+
+        // Track this source so we can stop it on barge-in
+
+        this.scheduledSources.add(source);
+
+        
+
+        // Calculate when to start this chunk
+
+        const currentTime = this.audioContext.currentTime;
+
+        
+
+        // Ensure we don't schedule in the past, but NEVER decrease nextStartTime
+        // This prevents overlapping audio by maintaining sequential ordering
+        if (this.scheduledBuffers === 0) {
+
+          // First chunk: start with minimal delay just enough to avoid scheduling in the past
+          if (this.nextStartTime < currentTime) {
+
+            this.nextStartTime = currentTime + this.MAX_LOOKAHEAD_SECONDS;
+
+          }
+
+          console.log('🎵 Starting playback with minimal delay:', this.nextStartTime);
+
+        } else {
+
+          // Subsequent chunks: ensure nextStartTime is not in the past, but never decrease it
+          // This maintains sequential playback - each chunk starts after the previous one
+          const minStartTime = currentTime + this.MAX_LOOKAHEAD_SECONDS;
+
+          this.nextStartTime = Math.max(this.nextStartTime, minStartTime);
+
+        }
+
+        
+
+        // Schedule this chunk to start at nextStartTime
+
+        source.start(this.nextStartTime);
+
+        
+
+        // Calculate when the next chunk should start (seamless, no gaps)
+        // This ensures sequential playback - each chunk starts after the previous one
+
+        this.nextStartTime += preparedFrame.duration;
+
+        
+
+        // Round to prevent floating point accumulation errors
+
+        this.nextStartTime = Math.round(this.nextStartTime * 1000000) / 1000000;
+
+        
+
+        // Log timing for first few chunks (debugging)
+
+        if (this.scheduledBuffers < 3) {
+
+          const startTime = this.nextStartTime - preparedFrame.duration;
+
+          console.log(`🎵 AudioPlayer: Scheduled prepared frame ${this.scheduledBuffers + 1} at ${startTime.toFixed(4)}s, next at ${this.nextStartTime.toFixed(4)}s`);
+
+          console.log(`   Duration: ${preparedFrame.duration.toFixed(4)}s (${(preparedFrame.duration * 1000).toFixed(2)}ms), Scheduled ahead: ${this.scheduledBuffers}`);
+
+        }
+
+        
+
+        this.scheduledBuffers++;
+        scheduledCount++; // Track how many we've scheduled in this batch
+
+        
+
+        // Track when this buffer finishes (for cleanup only)
+
+        source.onended = () => {
+
+          // Remove from tracked sources
+
+          this.scheduledSources.delete(source);
+
+          
+
+          this.scheduledBuffers--;
+
+          
+
+          // If no more scheduled buffers and no prepared frames, playback is complete
+
+          if (this.scheduledBuffers === 0 && this.preparedBuffer.length === 0 && this.pcmChunkQueue.length === 0) {
+
+            this.isPlaying = false;
+
+            this.isSchedulingFrames = false;
+
+            console.log('🛑 AudioPlayer: Emitting playbackStopped event (all buffers finished)');
+
+            this.emit('playbackStopped');
+
+          } else if (this.preparedBuffer.length > 0) {
+
+            // More frames available, schedule them immediately
+
+            // Use setTimeout to avoid blocking, but schedule quickly
+
+            setTimeout(() => {
+
+              if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames) {
+
+                this.schedulePreparedFrames();
+
+              }
+
+            }, 0);
+
+          }
+
+        };
+
+        
+
+        if (!this.isPlaying) {
+
+          this.isPlaying = true;
+
+          console.log('🎵 AudioPlayer: Emitting playbackStarted event');
+
+          this.emit('playbackStarted');
+
+        }
+
+      }
+
+      
+
+      // All prepared frames scheduled, reset flag
+
+      this.isSchedulingFrames = false;
+
+      
+
+      // If more frames arrive while we were processing, schedule them now
+
+      // Use requestAnimationFrame for smooth scheduling without blocking
+
+      if (this.preparedBuffer.length > 0) {
+
+        // More frames arrived, schedule them immediately
+
+        requestAnimationFrame(() => {
+
+          if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames) {
+
+            this.schedulePreparedFrames();
+
+          }
+
+        });
+
+      } else if (this.scheduledBuffers > 0) {
+
+        // Still have scheduled buffers playing, but no more prepared frames
+
+        // Set up a periodic check to schedule new frames as they arrive
+
+        // This ensures continuous playback even if frames arrive slowly
+
+        setTimeout(() => {
+
+          if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames && this.scheduledBuffers > 0) {
+
+            this.schedulePreparedFrames();
+
+          }
+
+        }, 25); // Check every 25ms for new frames (reduced from 50ms for smaller frame durations)
+
+      }
+
+      
+
+    } catch (error) {
+
+      console.error('❌ AudioPlayer v2: Error scheduling frames:', error);
+
+      this.emit('playbackError', error);
+
+      this.isSchedulingFrames = false;
 
     }
 
@@ -1129,7 +1624,7 @@ class AudioPlayer extends EventEmitter {
       // Try to create with specific sample rate
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
         sampleRate: desiredSampleRate,
-        latencyHint: 'interactive' // ✅ Reduces buffering issues
+        latencyHint: 'playback' // ✅ Better for streaming audio - prioritizes smooth playback over low latency
       });
       
       console.log(`✅ AudioContext created at ${this.audioContext.sampleRate}Hz (requested: ${desiredSampleRate}Hz)`);
@@ -1373,15 +1868,29 @@ class AudioPlayer extends EventEmitter {
 
   stopImmediate() {
 
-    const wasPlaying = this.isPlaying || this.currentSource !== null;
+    const wasPlaying = this.isPlaying || this.currentSource !== null || this.scheduledSources.size > 0;
 
     
 
-    // Stop current source
+    console.log('🛑 AudioPlayer.stopImmediate() called');
+
+    console.log('   isPlaying:', this.isPlaying);
+
+    console.log('   currentSource:', this.currentSource !== null);
+
+    console.log('   scheduledSources.size:', this.scheduledSources.size);
+
+    console.log('   scheduledBuffers:', this.scheduledBuffers);
+
+    
+
+    // Stop current source (legacy queue-based system)
 
     if (this.currentSource) {
 
       try {
+
+        console.log('   Stopping currentSource...');
 
         this.currentSource.stop();
 
@@ -1389,9 +1898,47 @@ class AudioPlayer extends EventEmitter {
 
         // Ignore if already stopped
 
+        console.log('   currentSource already stopped or error:', e.message);
+
       }
 
       this.currentSource = null;
+
+    }
+
+    
+
+    // Stop ALL scheduled AudioBufferSource nodes (new lookahead system)
+
+    // This is critical for barge-in to work properly
+
+    if (this.scheduledSources.size > 0) {
+
+      console.log(`   Stopping ${this.scheduledSources.size} scheduled sources...`);
+
+      let stoppedCount = 0;
+
+      for (const source of this.scheduledSources) {
+
+        try {
+
+          source.stop();
+
+          stoppedCount++;
+
+        } catch (e) {
+
+          // Ignore if already stopped or not started yet
+
+          console.log('   Source already stopped or not started:', e.message);
+
+        }
+
+      }
+
+      console.log(`   Stopped ${stoppedCount} sources`);
+
+      this.scheduledSources.clear();
 
     }
 
@@ -1407,11 +1954,15 @@ class AudioPlayer extends EventEmitter {
 
     
 
-    // Clear PCM chunk queue
+    // Clear PCM chunk queue and prepared buffer
 
     this.pcmChunkQueue = [];
 
+    this.preparedBuffer = [];
+
     this.isProcessingPcmQueue = false;
+
+    this.isSchedulingFrames = false;
 
     
 
@@ -1423,9 +1974,11 @@ class AudioPlayer extends EventEmitter {
 
     
 
-    // Emit stopped event
+    // Emit stopped event - CRITICAL for barge-in
 
     if (wasPlaying) {
+
+      console.log('🛑 AudioPlayer: Emitting playbackStopped event (stopImmediate called)');
 
       this.emit('playbackStopped');
 
@@ -1453,7 +2006,13 @@ class AudioPlayer extends EventEmitter {
 
       audioContextState: this.audioContext ? this.audioContext.state : 'closed',
 
-      outputFormat: this.outputFormat
+      outputFormat: this.outputFormat,
+
+      scheduledBuffers: this.scheduledBuffers,
+
+      preparedBufferLength: this.preparedBuffer.length,
+
+      scheduledSourcesCount: this.scheduledSources.size
 
     };
 
