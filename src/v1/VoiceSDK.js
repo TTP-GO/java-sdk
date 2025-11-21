@@ -33,6 +33,12 @@ export default class VoiceSDK extends EventEmitter {
     this.isRecording = false;
     this.isPlaying = false;
     this.isDestroyed = false;
+    // Track greeting playback for v1
+    this.helloAckReceived = false;
+    this.greetingPlayed = false;
+    this.connectionTime = null;
+    this.helloAckTime = null;
+    this.firstBinaryAudioTime = null;
     
     // Components
     this.webSocketManager = new WebSocketManager({
@@ -53,6 +59,9 @@ export default class VoiceSDK extends EventEmitter {
     // WebSocket events
     this.webSocketManager.on('connected', () => {
       this.isConnected = true;
+      this.connectionTime = Date.now();
+      this.helloAckReceived = false;
+      this.greetingPlayed = false;
       this.sendHelloMessage();
       this.emit('connected');
     });
@@ -89,9 +98,19 @@ export default class VoiceSDK extends EventEmitter {
     });
     
     this.webSocketManager.on('message', (message) => {
-      // Handle greeting audio message
+      // Handle hello_ack - greeting audio may come right after
+      if (message.t === 'hello_ack') {
+        this.helloAckReceived = true;
+        this.helloAckTime = Date.now();
+        console.log('📥 VoiceSDK v1: Received hello_ack, waiting for greeting...');
+        this.emit('message', message);
+        return;
+      }
+      
+      // Handle greeting audio message (legacy base64 format)
       if (message.t === 'greeting_audio' && message.data) {
         try {
+          console.log('🎵 VoiceSDK v1: Received greeting_audio (base64 format)');
           // Convert base64 audio data to Uint8Array
           const binaryString = atob(message.data);
           const audioData = new Uint8Array(binaryString.length);
@@ -100,6 +119,7 @@ export default class VoiceSDK extends EventEmitter {
           }
           
           this.audioPlayer.playAudio(audioData);
+          this.greetingPlayed = true;
           this.emit('greetingStarted');
         } catch (error) {
           console.error('VoiceSDK: Error playing greeting audio:', error);
@@ -109,8 +129,55 @@ export default class VoiceSDK extends EventEmitter {
       }
     });
     
+    // Handle binary audio (greeting and regular audio chunks)
+    // In v1, greeting is the FIRST binary audio received after connection
     this.webSocketManager.on('binaryAudio', (audioData) => {
-      this.audioPlayer.playAudio(audioData);
+      const now = Date.now();
+      const timeSinceConnection = this.connectionTime ? (now - this.connectionTime) : Infinity;
+      
+      // Track first binary audio
+      const isFirstAudio = !this.firstBinaryAudioTime;
+      if (isFirstAudio) {
+        this.firstBinaryAudioTime = now;
+      }
+      
+      // SIMPLE RULE: First binary audio after connection is ALWAYS the greeting
+      // This is the most reliable way to detect greeting in v1
+      if (!this.greetingPlayed && isFirstAudio) {
+        this.greetingPlayed = true;
+        console.log('🎵 VoiceSDK v1: Detected greeting audio (first binary after connection)', {
+          timeSinceConnection: timeSinceConnection < Infinity ? timeSinceConnection + 'ms' : 'N/A',
+          helloAckReceived: this.helloAckReceived,
+          audioSize: audioData.byteLength + ' bytes'
+        });
+        this.emit('greetingStarted');
+      } else if (!this.greetingPlayed && timeSinceConnection < 10000) {
+        // Fallback: if we haven't detected greeting yet and it's within 10s of connection, treat as greeting
+        this.greetingPlayed = true;
+        console.log('🎵 VoiceSDK v1: Detected greeting audio (fallback - within 10s of connection)', {
+          timeSinceConnection: timeSinceConnection < Infinity ? timeSinceConnection + 'ms' : 'N/A',
+          helloAckReceived: this.helloAckReceived,
+          audioSize: audioData.byteLength + ' bytes'
+        });
+        this.emit('greetingStarted');
+      } else {
+        console.log('🔊 VoiceSDK v1: Playing regular audio chunk', {
+          greetingPlayed: this.greetingPlayed,
+          helloAckReceived: this.helloAckReceived,
+          timeSinceConnection: timeSinceConnection < Infinity ? timeSinceConnection + 'ms' : 'N/A',
+          audioSize: audioData.byteLength + ' bytes'
+        });
+      }
+      
+      // Always play the audio - this is critical!
+      console.log('🎵 VoiceSDK v1: Calling audioPlayer.playAudio() with', audioData.byteLength, 'bytes');
+      try {
+        this.audioPlayer.playAudio(audioData);
+        console.log('✅ VoiceSDK v1: Audio queued successfully');
+      } catch (error) {
+        console.error('❌ VoiceSDK v1: Error playing audio:', error);
+        this.emit('playbackError', error);
+      }
     });
     
     this.webSocketManager.on('bargeIn', (message) => {
@@ -249,12 +316,44 @@ export default class VoiceSDK extends EventEmitter {
   /**
    * Disconnect from the voice server
    */
-  disconnect() {
+  async disconnect() {
     if (this.isDestroyed) {
       return; // Prevent disconnect after destroy
     }
-    this.stopRecording();
+    
+    console.log('🔌 VoiceSDK v1: Disconnecting...');
+    
+    // Stop recording if active
+    if (this.isRecording) {
+      try {
+        await this.stopRecording();
+      } catch (error) {
+        console.error('VoiceSDK: Error stopping recording on disconnect:', error);
+      }
+    }
+    
+    // Stop audio playback
+    if (this.audioPlayer) {
+      this.audioPlayer.stopImmediate();
+    }
+    
+    // Update state BEFORE disconnecting WebSocket
+    this.isConnected = false;
+    
+    // Reset greeting state
+    this.greetingPlayed = false;
+    this.helloAckReceived = false;
+    this.helloAckTime = null;
+    this.firstBinaryAudioTime = null;
+    this.connectionTime = null;
+    
+    // Disconnect WebSocket
     this.webSocketManager.disconnect();
+    
+    // Emit disconnected event immediately (ensure it's always emitted on manual disconnect)
+    // The WebSocketManager might not emit it if the connection was already closed
+    console.log('🔌 VoiceSDK v1: Emitting disconnected event');
+    this.emit('disconnected');
   }
   
   /**

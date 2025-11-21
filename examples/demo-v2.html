@@ -10,7 +10,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>VoiceSDK v2 Demo - Multi-Codec Support</title>
+  <title>VoiceSDK Demo - v1 & v2 Support</title>
 
   <style>
 
@@ -548,6 +548,22 @@
 
       <div class="config-group">
 
+        <label>SDK Version</label>
+
+        <select id="sdkVersion">
+
+          <option value="v2" selected>v2 (Multi-Codec Support)</option>
+
+          <option value="v1">v1 (Legacy)</option>
+
+        </select>
+
+      </div>
+
+      
+
+      <div class="config-group">
+
         <label>WebSocket URL</label>
 
         <input type="text" id="websocketUrl" value="wss://speech.bidme.co.il/ws/conv">
@@ -578,11 +594,11 @@
 
       
 
-      <div class="config-row">
+      <div class="config-row" id="v2OnlyConfig">
 
         <div class="config-group">
 
-          <label>Output Container</label>
+          <label>Output Container (v2 only)</label>
 
           <select id="outputContainer">
 
@@ -777,16 +793,21 @@
 
   <script>
 
-    // Get VoiceSDK_v2 from global TTPAgentSDK (UMD export)
+    // Get SDK classes from global TTPAgentSDK (UMD export)
+    const TTPAgentSDK = window.TTPAgentSDK || window.default;
+    const VoiceSDK_v2 = TTPAgentSDK?.VoiceSDK_v2 || TTPAgentSDK?.default?.VoiceSDK_v2;
+    const VoiceSDK = TTPAgentSDK?.VoiceSDK || TTPAgentSDK?.default?.VoiceSDK;
 
-    const VoiceSDK_v2 = window.TTPAgentSDK?.VoiceSDK_v2;
-
-    if (!VoiceSDK_v2) {
-
-      console.error('VoiceSDK_v2 not found in TTPAgentSDK. Available exports:', Object.keys(window.TTPAgentSDK || {}));
-
-      alert('Error: VoiceSDK_v2 not found. Please check the console for details.');
-
+    if (!VoiceSDK_v2 && !VoiceSDK) {
+      console.error('SDK not found in TTPAgentSDK. Available exports:', Object.keys(TTPAgentSDK || {}));
+      console.error('TTPAgentSDK object:', TTPAgentSDK);
+      alert('Error: SDK not found. Please check the console for details.');
+    } else {
+      console.log('✅ SDK loaded:', {
+        hasVoiceSDK_v2: !!VoiceSDK_v2,
+        hasVoiceSDK: !!VoiceSDK,
+        allExports: Object.keys(TTPAgentSDK || {})
+      });
     }
 
     
@@ -825,7 +846,21 @@
 
     let sdk = null;
 
+    // Toggle v2-only config visibility
+    const sdkVersionSelect = document.getElementById('sdkVersion');
+    const v2OnlyConfig = document.getElementById('v2OnlyConfig');
     
+    function updateConfigVisibility() {
+      const version = sdkVersionSelect?.value;
+      if (v2OnlyConfig) {
+        v2OnlyConfig.style.display = version === 'v2' ? 'flex' : 'none';
+      }
+    }
+    
+    if (sdkVersionSelect && v2OnlyConfig) {
+      sdkVersionSelect.addEventListener('change', updateConfigVisibility);
+      updateConfigVisibility(); // Initial state
+    }
 
     // Logger
 
@@ -855,59 +890,59 @@
 
       try {
 
-        // Get config from form
-
-        const config = {
-
+        // Get selected SDK version
+        const sdkVersion = document.getElementById('sdkVersion').value;
+        
+        // Base config
+        const baseConfig = {
           websocketUrl: document.getElementById('websocketUrl').value,
-
           agentId: document.getElementById('agentId').value,
-
           appId: document.getElementById('appId').value,
-
-          
-
-          // Output format
-
-          outputContainer: document.getElementById('outputContainer').value,
-
-          outputEncoding: document.getElementById('outputEncoding').value,
-
-          outputSampleRate: parseInt(document.getElementById('outputSampleRate').value),
-
-          outputBitDepth: parseInt(document.getElementById('outputBitDepth').value),
-
-          outputChannels: 1,
-
-          outputFrameDurationMs: parseInt(document.getElementById('outputFrameDurationMs').value),
-
-          
-
-          // Input format
-
-          sampleRate: 16000,
-
-          channels: 1,
-
-          bitDepth: 16,
-
-          
-
-          // Disable auto-reconnect for demo (prevents infinite retry loop on connection failure)
-
           autoReconnect: false
-
         };
-
         
-
-        log('Initializing SDK v2...', 'info');
-
+        let config;
         
-
-        // Create SDK instance
-
-        sdk = new VoiceSDK_v2(config);
+        if (sdkVersion === 'v2') {
+          if (!VoiceSDK_v2) {
+            throw new Error('VoiceSDK_v2 not available. Please rebuild the SDK.');
+          }
+          log('Initializing SDK v2...', 'info');
+          
+          // v2 config with output format
+          config = {
+            ...baseConfig,
+            protocolVersion: 2,
+            // Output format
+            outputContainer: document.getElementById('outputContainer').value,
+            outputEncoding: document.getElementById('outputEncoding').value,
+            outputSampleRate: parseInt(document.getElementById('outputSampleRate').value),
+            outputBitDepth: parseInt(document.getElementById('outputBitDepth').value),
+            outputChannels: 1,
+            outputFrameDurationMs: parseInt(document.getElementById('outputFrameDurationMs').value),
+            // Input format
+            sampleRate: 16000,
+            channels: 1,
+            bitDepth: 16
+          };
+          
+          // Create SDK instance
+          sdk = new VoiceSDK_v2(config);
+        } else {
+          if (!VoiceSDK) {
+            throw new Error('VoiceSDK (v1) not available. Please rebuild the SDK.');
+          }
+          log('Initializing SDK v1...', 'info');
+          
+          // v1 config (no output format options)
+          config = {
+            ...baseConfig,
+            sampleRate: 16000
+          };
+          
+          // Create SDK instance
+          sdk = new VoiceSDK(config);
+        }
 
         
 
@@ -949,13 +984,25 @@
 
     // Disconnect button
 
-    btnDisconnect.addEventListener('click', () => {
+    btnDisconnect.addEventListener('click', async () => {
 
       if (sdk) {
 
-        sdk.disconnect();
+        try {
 
-        log('Disconnecting...', 'info');
+          log('Disconnecting...', 'info');
+
+          await sdk.disconnect();
+
+          log('Disconnected successfully', 'success');
+
+        } catch (error) {
+
+          log(`Error disconnecting: ${error.message}`, 'error');
+
+          console.error('Disconnect error:', error);
+
+        }
 
       }
 
@@ -1048,7 +1095,15 @@
         
 
         formatInfo.style.display = 'none';
+        
+        // Clear SDK instance
+        sdk = null;
 
+      });
+      
+      // Handle greeting (v1 and v2)
+      sdk.on('greetingStarted', () => {
+        log('🎵 Greeting audio started', 'success');
       });
 
       
