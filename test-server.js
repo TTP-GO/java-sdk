@@ -33,9 +33,9 @@ const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url);
   let pathname = parsedUrl.pathname;
   
-  // Default to test-text-chat.html for root
+  // Default to index.html (documentation) for root
   if (pathname === '/') {
-    pathname = '/examples/test-text-chat.html';
+    pathname = '/index.html';
   }
   
   // Remove leading slash and resolve path
