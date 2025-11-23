@@ -1,189 +1,282 @@
-# TTP Agent SDK - Java
+# TalkToPC Voice SDK - Java
 
-Backend SDK for the TTP Agent WebSocket API. Designed for server-side applications that need to forward audio to phone systems or process audio without browser dependencies.
+Simple Java SDK for converting text to speech using TalkToPC's TTS API.
 
-## Key Features
+## Features
 
-- ✅ **Format Negotiation** - Protocol v2 with automatic format negotiation
-- ✅ **Raw Audio Pass-through** - Receive PCMU/PCMA audio without decoding (perfect for phone systems)
-- ✅ **WebSocket Communication** - Full WebSocket API support
-- ✅ **Event-Driven** - Clean event listener API
-- ✅ **Auto-Reconnect** - Automatic reconnection on disconnect
+- ✅ **Simple TTS** - Convert text to complete audio file
+- ✅ **Streaming TTS** - Receive audio chunks in real-time
+- ✅ **Multiple Voices** - Support for all TalkToPC voices
+- ✅ **Voice Speed Control** - Adjust playback speed
+- ✅ **Zero Dependencies** - Uses Java 11+ HttpClient (no external libs)
+- ✅ **Phone System Ready** - Perfect for PCMU/PCMA phone integration
 
 ## Installation
 
 ### Maven
 
 ```xml
-<dependency>
-    <groupId>com.talktopc</groupId>
-    <artifactId>ttp-agent-sdk-java</artifactId>
-    <version>1.0.0</version>
-</dependency>
+<repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/TTP-GO/talktopc-voice-sdk</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.talktopc</groupId>
+        <artifactId>talktopc-voice-sdk</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+</dependencies>
 ```
 
 ### Gradle
 
-```gradle
+```groovy
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/TTP-GO/talktopc-voice-sdk")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+    }
+}
+
 dependencies {
-    implementation 'com.talktopc:ttp-agent-sdk-java:1.0.0'
+    implementation 'com.talktopc:talktopc-voice-sdk:1.0.0'
 }
 ```
 
 ## Quick Start
 
-### Phone System Integration (PCMU)
+### 1. Initialize SDK
 
 ```java
 import com.talktopc.sdk.VoiceSDK;
-import com.talktopc.sdk.VoiceSDKConfig;
-import com.talktopc.sdk.AudioFormat;
 
-// Configure for phone system
-VoiceSDKConfig config = new VoiceSDKConfig();
-config.setWebsocketUrl("wss://speech.talktopc.com/ws/conv?agentId=xxx&appId=yyy");
-config.setOutputEncoding("pcmu");      // Phone systems use PCMU
-config.setOutputSampleRate(8000);       // Phone standard
-config.setOutputChannels(1);
-config.setProtocolVersion(2);
-
-VoiceSDK sdk = new VoiceSDK(config);
-
-// Listen for raw PCMU audio (NOT decoded!)
-sdk.onAudioDataWithFormat((audioData, format) -> {
-    // Forward directly to phone system - no conversion needed!
-    phoneSystem.sendAudio(audioData);
-});
-
-sdk.connect();
+VoiceSDK sdk = VoiceSDK.builder()
+    .apiKey("your-api-key-here")
+    .baseUrl("https://api.talktopc.com")  // Optional
+    .build();
 ```
 
-### General Use (PCM)
+### 2. Simple TTS (Blocking)
 
 ```java
-VoiceSDKConfig config = new VoiceSDKConfig();
-config.setWebsocketUrl("wss://speech.talktopc.com/ws/conv?agentId=xxx&appId=yyy");
-config.setOutputEncoding("pcm");
-config.setOutputSampleRate(16000);
-config.setOutputChannels(1);
+// Generate complete audio file
+byte[] audio = sdk.textToSpeech("Hello world", "mamre");
 
-VoiceSDK sdk = new VoiceSDK(config);
+// Save to file
+Files.write(Paths.get("output.wav"), audio);
 
-sdk.onAudioData(audioData -> {
-    // Process PCM audio
-    processAudio(audioData);
-});
-
-sdk.onFormatNegotiated(format -> {
-    System.out.println("Format: " + format);
-});
-
-sdk.connect();
+// Or play immediately
+phoneSystem.playAudio(audio);
 ```
 
-## Configuration
+### 3. Streaming TTS (Real-time)
 
-### VoiceSDKConfig Options
+```java
+// Stream audio chunks as they're generated
+sdk.textToSpeechStream(
+    "Hello world, this is a longer text that will be streamed",
+    "mamre",
+    audioChunk -> {
+        // Receive chunks in real-time
+        phoneSystem.playAudio(audioChunk);
+    }
+);
+```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `websocketUrl` | *required* | WebSocket URL with agentId and appId |
-| `outputEncoding` | `"pcm"` | `"pcm"`, `"pcmu"`, or `"pcma"` |
-| `outputSampleRate` | `16000` | Sample rate in Hz (8000 for phones, 16000/44100 for general) |
-| `outputBitDepth` | `16` | Bit depth (16 or 24) |
-| `outputChannels` | `1` | Channel count (1 = mono) |
-| `outputContainer` | `"raw"` | `"raw"` or `"wav"` |
-| `protocolVersion` | `2` | Protocol version (use 2) |
-| `autoReconnect` | `true` | Auto-reconnect on disconnect |
+## Examples
+
+### Basic Usage
+
+```java
+VoiceSDK sdk = VoiceSDK.builder()
+    .apiKey(System.getenv("TALKTOPC_API_KEY"))
+    .build();
+
+// Simple TTS
+byte[] audio = sdk.textToSpeech("Welcome to TalkToPC", "mamre");
+System.out.println("Generated " + audio.length + " bytes of audio");
+```
+
+### With Speed Control
+
+```java
+// Faster speech (1.5x speed)
+byte[] fastAudio = sdk.textToSpeech("Quick message", "mamre", 1.5);
+
+// Slower speech (0.8x speed)
+byte[] slowAudio = sdk.textToSpeech("Slow and clear", "mamre", 0.8);
+```
+
+### Streaming with Metadata
+
+```java
+sdk.textToSpeechStream(
+    TTSRequest.builder()
+        .text("Streaming example with full configuration")
+        .voiceId("mamre")
+        .speed(1.0)
+        .build(),
+    audioChunk -> {
+        // Handle each audio chunk
+        System.out.println("Received chunk: " + audioChunk.length + " bytes");
+        phoneSystem.playAudio(audioChunk);
+    },
+    metadata -> {
+        // Handle completion
+        System.out.println("Stream completed: " + metadata);
+        System.out.println("Total chunks: " + metadata.getTotalChunks());
+        System.out.println("Credits used: " + metadata.getCreditsUsed());
+    },
+    error -> {
+        // Handle errors
+        System.err.println("Stream error: " + error.getMessage());
+    }
+);
+```
+
+### Phone System Integration
+
+```java
+// For phone systems (PCMU @ 8kHz)
+VoiceSDK sdk = VoiceSDK.builder()
+    .apiKey(apiKey)
+    .build();
+
+// Stream to phone system
+sdk.textToSpeechStream(
+    "Hello caller, how can I help you today?",
+    "en-US-female",  // Use appropriate voice
+    audioChunk -> {
+        // Convert to PCMU if needed and send to phone
+        byte[] pcmuAudio = convertToPCMU(audioChunk);
+        phoneConnection.sendAudio(pcmuAudio);
+    }
+);
+```
+
+### Error Handling
+
+```java
+import com.talktopc.sdk.exception.TtsException;
+
+try {
+    byte[] audio = sdk.textToSpeech("Test", "mamre");
+} catch (TtsException e) {
+    System.err.println("TTS Error [" + e.getStatusCode() + "]: " + e.getErrorMessage());
+    
+    if (e.getStatusCode() == 401) {
+        System.err.println("Invalid API key");
+    } else if (e.getStatusCode() == 402) {
+        System.err.println("Insufficient credits");
+    }
+}
+```
+
+### Full Configuration
+
+```java
+import com.talktopc.sdk.models.TTSRequest;
+import com.talktopc.sdk.models.TTSResponse;
+
+// Build request with all options
+TTSRequest request = TTSRequest.builder()
+    .text("Full configuration example")
+    .voiceId("mamre")
+    .speed(1.2)
+    .build();
+
+// Get response with metadata
+TTSResponse response = sdk.synthesize(request);
+
+System.out.println("Audio: " + response.getAudioSizeBytes() + " bytes");
+System.out.println("Sample rate: " + response.getSampleRate() + " Hz");
+System.out.println("Duration: " + response.getDurationMs() + " ms");
+System.out.println("Credits: " + response.getCreditsUsed());
+
+// Save audio
+Files.write(Paths.get("output.wav"), response.getAudio());
+```
 
 ## API Reference
 
 ### VoiceSDK
 
-#### Methods
+Main SDK entry point.
 
-- `CompletableFuture<Void> connect()` - Connect to WebSocket server
-- `void disconnect()` - Disconnect from server
-- `void sendAudio(byte[] audioData)` - Send audio data to server
-- `void sendMessage(String message)` - Send text message
-- `void sendMessage(JsonObject message)` - Send JSON message
-- `boolean isConnected()` - Check connection status
-- `AudioFormat getNegotiatedOutputFormat()` - Get negotiated format
+**Builder Methods:**
+- `apiKey(String)` - Your TalkToPC API key (required)
+- `baseUrl(String)` - API base URL (default: https://api.talktopc.com)
+- `connectTimeout(int)` - Connection timeout in ms (default: 30000)
+- `readTimeout(int)` - Read timeout in ms (default: 60000)
 
-#### Event Listeners
+**Methods:**
+- `textToSpeech(String text, String voiceId)` - Simple TTS (blocking)
+- `textToSpeech(String text, String voiceId, double speed)` - TTS with speed
+- `textToSpeech(TTSRequest)` - TTS with full configuration
+- `synthesize(TTSRequest)` - Get full response with metadata
+- `textToSpeechStream(...)` - Streaming TTS (multiple overloads)
 
-- `onAudioData(Consumer<byte[]> listener)` - Raw audio data
-- `onAudioDataWithFormat(AudioDataWithFormatListener listener)` - Audio with format info
-- `onFormatNegotiated(Consumer<AudioFormat> listener)` - Format negotiation complete
-- `onMessage(Consumer<JsonObject> listener)` - Text messages
-- `onConnected(Runnable listener)` - Connection established
-- `onDisconnected(Runnable listener)` - Connection closed
-- `onError(Consumer<Throwable> listener)` - Error occurred
+### TTSRequest
 
-## Examples
-
-See the `examples/` directory:
-
-- `PhoneForwardingExample.java` - Forward PCMU audio to phone system
-- `SimpleChatExample.java` - Basic chat with PCM audio
-
-## Key Differences from Frontend SDK
-
-| Feature | Frontend SDK | Backend SDK (Java) |
-|---------|-------------|-------------------|
-| **Audio Decoding** | Decodes PCMU/PCMA to PCM | Pass-through raw audio |
-| **Use Case** | Browser playback | Phone systems, server processing |
-| **Environment** | Browser (JavaScript) | Server (JVM) |
-| **Format Conversion** | Converts to browser format | No conversion (pass-through) |
-
-## Phone System Integration
-
-The backend SDK is designed for phone system integration:
-
-1. **Request PCMU/PCMA** - Configure `outputEncoding` to `"pcmu"` or `"pcma"`
-2. **Receive Raw Audio** - Audio arrives as raw PCMU/PCMA bytes
-3. **Forward Directly** - Send directly to phone system without conversion
+Request configuration builder.
 
 ```java
-// Request PCMU
-config.setOutputEncoding("pcmu");
-config.setOutputSampleRate(8000);
-
-// Receive raw PCMU bytes
-sdk.onAudioData(pcmuBytes -> {
-    // Forward to phone - no conversion!
-    phoneSystem.sendAudio(pcmuBytes);
-});
+TTSRequest request = TTSRequest.builder()
+    .text("Hello")              // Required
+    .voiceId("mamre")           // Required
+    .speed(1.0)                 // Optional (0.1 - 3.0)
+    .format("raw")              // Optional ("raw" or "base64")
+    .build();
 ```
 
-## Protocol v2 Format Negotiation
+### TTSResponse
 
-The SDK automatically handles format negotiation:
+Response with audio and metadata.
 
-1. **Send Hello** - SDK sends format request in `hello` message
-2. **Receive Ack** - Server responds with `hello_ack` and negotiated format
-3. **Audio Streaming** - Audio arrives in negotiated format
+**Fields:**
+- `byte[] getAudio()` - Audio data
+- `int getSampleRate()` - Sample rate (Hz)
+- `long getDurationMs()` - Playback duration
+- `long getAudioSizeBytes()` - Audio size
+- `double getCreditsUsed()` - Credits consumed
+- `String getConversationId()` - Unique conversation ID
 
-The negotiated format is available via `getNegotiatedOutputFormat()` or the `onFormatNegotiated` event.
+## Available Voices
+
+See [TalkToPC Documentation](https://docs.talktopc.com/voices) for the complete list of available voices.
+
+Common voices:
+- `mamre` - High quality voice (44100 Hz)
+- `en-US-female` - English female voice
+- `en-US-male` - English male voice
+
+## Error Handling
+
+The SDK throws `TtsException` for all errors:
+
+- **401 Unauthorized** - Invalid API key
+- **402 Payment Required** - Insufficient credits
+- **400 Bad Request** - Invalid parameters
+- **500 Internal Server Error** - Server error
 
 ## Requirements
 
 - Java 11 or higher
-- Maven or Gradle
-- WebSocket connection to TTP Agent API
-
-## Dependencies
-
-- Tyrus WebSocket Client (JSR-356)
-- Gson (JSON processing)
-- SLF4J (Logging)
+- Valid TalkToPC API key
 
 ## License
 
-MIT License
+Proprietary - For use with TalkToPC applications only.
 
 ## Support
 
-- Documentation: https://cdn.talktopc.com/
-- Issues: https://github.com/yinon11/ttp-sdk-front/issues
-
+- Documentation: https://docs.talktopc.com
+- Issues: https://github.com/TTP-GO/talktopc-voice-sdk/issues
+- Email: support@talktopc.com

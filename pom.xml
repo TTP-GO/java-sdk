@@ -1,78 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.talktopc</groupId>
     <artifactId>ttp-agent-sdk-java</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
 
-    <name>TTP Agent SDK - Java</name>
-    <description>Backend SDK for TTP Agent WebSocket API - Supports format negotiation and audio streaming (PCMU/PCMA) for phone systems</description>
-    <url>https://github.com/yinon11/ttp-sdk-front</url>
+    <name>TTP Agent SDK Java</name>
+    <description>Backend SDK for the TTP Agent WebSocket API. Designed for server-side applications that need to forward audio to phone systems or process audio without browser dependencies.</description>
+    <url>https://github.com/TTP-GO/java-sdk</url>
 
+    <!-- PROPRIETARY LICENSE - Restricts usage to TalkToPC applications only -->
     <licenses>
         <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
+            <name>Proprietary License</name>
+            <comments>
+                This software may only be used with TalkToPC applications and services.
+                Unauthorized use, modification, or redistribution is strictly prohibited.
+                Commercial use requires explicit written permission from TalkToPC.
+            </comments>
         </license>
     </licenses>
 
     <developers>
         <developer>
-            <id>yinon11</id>
-            <name>TTP Agent Team</name>
-            <email>support@talktopc.com</email>
+            <organization>TTP-GO</organization>
+            <organizationUrl>https://github.com/TTP-GO</organizationUrl>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/yinon11/ttp-sdk-front.git</connection>
-        <developerConnection>scm:git:ssh://github.com/yinon11/ttp-sdk-front.git</developerConnection>
-        <url>https://github.com/yinon11/ttp-sdk-front</url>
-        <tag>HEAD</tag>
+        <connection>scm:git:git://github.com/TTP-GO/java-sdk.git</connection>
+        <developerConnection>scm:git:ssh://github.com:TTP-GO/java-sdk.git</developerConnection>
+        <url>https://github.com/TTP-GO/java-sdk</url>
     </scm>
+
+    <!-- GitHub Packages Distribution Management -->
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub TTP-GO Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/TTP-GO/java-sdk</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <!-- Dependency versions -->
+        <tyrus.version>2.1.3</tyrus.version>
+        <gson.version>2.10.1</gson.version>
+        <slf4j.version>2.0.9</slf4j.version>
     </properties>
 
     <dependencies>
-        <!-- WebSocket Client (Tyrus - JSR-356 Reference Implementation) -->
+        <!-- WebSocket API -->
         <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-client</artifactId>
-            <version>2.1.3</version>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>1.1</version>
         </dependency>
-        
-        <!-- JSON Processing -->
+
+        <!-- Tyrus Standalone Client - Use version 1.x for better compatibility -->
+        <dependency>
+            <groupId>org.glassfish.tyrus.bundles</groupId>
+            <artifactId>tyrus-standalone-client</artifactId>
+            <version>1.19</version>
+        </dependency>
+
+        <!-- JSON Processing (Gson) -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-        
-        <!-- SLF4J for Logging -->
+
+        <!-- Logging (SLF4J) -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.9</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>2.0.9</version>
-        </dependency>
-        
-        <!-- JUnit for Testing -->
+
+        <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -80,7 +95,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
+    
     <build>
         <plugins>
             <!-- Compiler Plugin -->
@@ -95,7 +110,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Source JAR -->
+            <!-- Source Plugin - Attach source JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -104,26 +119,17 @@
                     <execution>
                         <id>attach-sources</id>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Javadoc JAR -->
+            <!-- Javadoc Plugin - Attach javadoc JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <source>11</source>
-                    <encoding>UTF-8</encoding>
-                    <charset>UTF-8</charset>
-                    <docencoding>UTF-8</docencoding>
-                    <additionalOptions>
-                        <additionalOption>-Xdoclint:none</additionalOption>
-                    </additionalOptions>
-                </configuration>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -132,61 +138,33 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <doclint>none</doclint>
+                    <source>11</source>
+                </configuration>
             </plugin>
 
-            <!-- GPG Signing (for Maven Central) -->
+            <!-- JAR Plugin - Configure main JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire Plugin - Run tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.2</version>
             </plugin>
         </plugins>
     </build>
-
-    <!-- Distribution Management (for Maven Central) -->
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <name>OSSRH Snapshots</name>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <!-- Profiles -->
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <!-- Nexus Staging Plugin (for Maven Central) -->
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.5.0</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <publishingServerId>central</publishingServerId>
-                            <autoPublish>true</autoPublish>
-                            <waitUntil>published</waitUntil>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
-

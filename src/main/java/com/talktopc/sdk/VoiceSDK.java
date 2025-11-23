@@ -1,381 +1,284 @@
 package com.talktopc.sdk;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.talktopc.sdk.client.TtsRestClient;
+import com.talktopc.sdk.client.TtsStreamClient;
+import com.talktopc.sdk.config.SDKConfig;
+import com.talktopc.sdk.models.TTSRequest;
+import com.talktopc.sdk.models.TTSResponse;
 
-import javax.websocket.*;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
- * VoiceSDK - Backend SDK for TTP Agent WebSocket API
+ * TalkToPC Voice SDK - Backend Edition
  * 
- * Key Features:
- * - Format negotiation (v2 protocol)
- * - Audio streaming with pass-through (no decoding)
- * - Support for PCMU/PCMA for phone systems
+ * Simple Java SDK for text-to-speech conversion using TalkToPC's TTS API.
  * 
- * Usage:
+ * Features:
+ * - Simple TTS (complete audio file)
+ * - Streaming TTS (real-time chunks)
+ * - Multiple voice support
+ * - Automatic authentication
+ * 
+ * Example usage:
  * <pre>
- * VoiceSDKConfig config = new VoiceSDKConfig();
- * config.setWebsocketUrl("wss://speech.talktopc.com/ws/conv?agentId=xxx&appId=yyy");
- * config.setOutputEncoding("pcmu");  // For phone systems
- * config.setOutputSampleRate(8000);
+ * VoiceSDK sdk = VoiceSDK.builder()
+ *     .apiKey("your-api-key")
+ *     .baseUrl("https://api.talktopc.com")
+ *     .build();
  * 
- * VoiceSDK sdk = new VoiceSDK(config);
- * sdk.onAudioData(audioData -> {
- *     // Forward raw PCMU audio to phone system
+ * // Simple TTS
+ * byte[] audio = sdk.textToSpeech("Hello world", "mamre");
+ * 
+ * // Streaming TTS
+ * sdk.textToSpeechStream("Hello world", "mamre", chunk -> {
+ *     phoneSystem.playAudio(chunk);
  * });
- * sdk.connect();
  * </pre>
  */
-@ClientEndpoint
 public class VoiceSDK {
-    private static final Logger logger = LoggerFactory.getLogger(VoiceSDK.class);
-    private static final Gson gson = new Gson();
-
-    private final VoiceSDKConfig config;
-    private Session session;
-    private AudioFormat negotiatedOutputFormat;
-    private boolean isConnected = false;
-    private CompletableFuture<Void> connectFuture;
-
-    // Event listeners
-    private final List<Consumer<byte[]>> audioDataListeners = new CopyOnWriteArrayList<>();
-    private final List<Consumer<AudioFormat>> formatNegotiatedListeners = new CopyOnWriteArrayList<>();
-    private final List<Consumer<JsonObject>> messageListeners = new CopyOnWriteArrayList<>();
-    private final List<Runnable> connectedListeners = new CopyOnWriteArrayList<>();
-    private final List<Runnable> disconnectedListeners = new CopyOnWriteArrayList<>();
-    private final List<Consumer<Throwable>> errorListeners = new CopyOnWriteArrayList<>();
-
-    public VoiceSDK(VoiceSDKConfig config) {
+    
+    private final TtsRestClient restClient;
+    private final TtsStreamClient streamClient;
+    private final SDKConfig config;
+    
+    /**
+     * Private constructor - use builder() to create instances
+     */
+    private VoiceSDK(SDKConfig config) {
         this.config = config;
+        this.restClient = new TtsRestClient(config);
+        this.streamClient = new TtsStreamClient(config);
     }
-
+    
     /**
-     * Connect to WebSocket server
-     * @return CompletableFuture that completes when connected
+     * Create a new SDK builder
+     * 
+     * @return SDK builder
      */
-    public CompletableFuture<Void> connect() {
-        if (connectFuture != null && !connectFuture.isDone()) {
-            logger.warn("Connection already in progress");
-            return connectFuture;
-        }
-
-        connectFuture = new CompletableFuture<>();
-
-        try {
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            URI uri = URI.create(config.getWebsocketUrl());
-            
-            logger.info("Connecting to: {}", uri);
-            
-            container.connectToServer(this, uri);
-            
-        } catch (Exception e) {
-            logger.error("Failed to connect", e);
-            connectFuture.completeExceptionally(e);
-            notifyError(e);
-        }
-
-        return connectFuture;
+    public static Builder builder() {
+        return new Builder();
     }
-
-    @OnOpen
-    public void onOpen(Session session) {
-        logger.info("WebSocket connected");
-        this.session = session;
-        this.isConnected = true;
-        
-        // Complete connection future
-        if (connectFuture != null && !connectFuture.isDone()) {
-            connectFuture.complete(null);
-        }
-        
-        // Send hello message with format negotiation
-        sendHelloMessage();
-        
-        // Notify listeners
-        connectedListeners.forEach(Runnable::run);
-    }
-
-    @OnClose
-    public void onClose(Session session, CloseReason closeReason) {
-        logger.info("WebSocket closed: {} - {}", closeReason.getCloseCode(), closeReason.getReasonPhrase());
-        this.isConnected = false;
-        this.session = null;
-        this.connectFuture = null;
-        
-        // Notify listeners
-        disconnectedListeners.forEach(Runnable::run);
-        
-        // Auto-reconnect if enabled
-        if (config.isAutoReconnect() && closeReason.getCloseCode() != CloseReason.CloseCodes.NORMAL_CLOSURE) {
-            logger.info("Auto-reconnecting in 3 seconds...");
-            new Thread(() -> {
-                try {
-                    Thread.sleep(3000);
-                    connect();
-                } catch (Exception e) {
-                    logger.error("Auto-reconnect failed", e);
-                }
-            }).start();
-        }
-    }
-
-    @OnError
-    public void onError(Session session, Throwable error) {
-        logger.error("WebSocket error", error);
-        notifyError(error);
-    }
-
-    @OnMessage
-    public void onMessage(String message) {
-        // Text message (JSON)
-        try {
-            JsonObject json = gson.fromJson(message, JsonObject.class);
-            String type = json.has("t") ? json.get("t").getAsString() : null;
-            
-            logger.debug("Received message: {}", type);
-            
-            if ("hello_ack".equals(type)) {
-                handleHelloAck(json);
-            }
-            
-            // Notify message listeners
-            messageListeners.forEach(listener -> listener.accept(json));
-            
-        } catch (Exception e) {
-            logger.error("Error parsing message", e);
-            notifyError(e);
-        }
-    }
-
-    @OnMessage
-    public void onMessage(ByteBuffer buffer) {
-        // Binary message (audio data)
-        byte[] audioData = new byte[buffer.remaining()];
-        buffer.get(audioData);
-        
-        logger.debug("Received audio: {} bytes, format: {}", 
-                    audioData.length, negotiatedOutputFormat);
-        
-        // ✅ KEY: Pass through raw audio (NO decoding!)
-        // Frontend SDK would decode PCMU/PCMA here, but backend doesn't
-        notifyAudioData(audioData);
-    }
-
+    
     /**
-     * Send hello message with format negotiation
+     * Simple text-to-speech conversion (blocking)
+     * Returns complete audio file as byte array
+     * 
+     * @param text Text to synthesize
+     * @param voiceId Voice ID (e.g., "mamre", "en-US-female")
+     * @return Complete audio data as byte array
+     * @throws com.talktopc.sdk.exception.TtsException if synthesis fails
      */
-    private void sendHelloMessage() {
-        JsonObject hello = new JsonObject();
-        hello.addProperty("t", "hello");
-        hello.addProperty("v", config.getProtocolVersion());
-        
-        // Input format
-        JsonObject inputFormat = new JsonObject();
-        inputFormat.addProperty("encoding", config.getInputEncoding());
-        inputFormat.addProperty("sampleRate", config.getInputSampleRate());
-        inputFormat.addProperty("channels", config.getInputChannels());
-        inputFormat.addProperty("bitDepth", config.getInputBitDepth());
-        hello.add("inputFormat", inputFormat);
-        
-        // Requested output format
-        JsonObject requestedOutputFormat = new JsonObject();
-        requestedOutputFormat.addProperty("encoding", config.getOutputEncoding());
-        requestedOutputFormat.addProperty("sampleRate", config.getOutputSampleRate());
-        requestedOutputFormat.addProperty("channels", config.getOutputChannels());
-        requestedOutputFormat.addProperty("bitDepth", config.getOutputBitDepth());
-        requestedOutputFormat.addProperty("container", config.getOutputContainer());
-        hello.add("requestedOutputFormat", requestedOutputFormat);
-        
-        hello.addProperty("outputFrameDurationMs", config.getOutputFrameDurationMs());
-        
-        sendMessage(hello.toString());
-        
-        logger.info("Sent hello message: {}", hello);
+    public byte[] textToSpeech(String text, String voiceId) {
+        return textToSpeech(TTSRequest.builder()
+            .text(text)
+            .voiceId(voiceId)
+            .build());
     }
-
+    
     /**
-     * Handle hello_ack message
+     * Simple text-to-speech conversion with speed control (blocking)
+     * 
+     * @param text Text to synthesize
+     * @param voiceId Voice ID
+     * @param speed Voice speed (0.5 to 2.0, default 1.0)
+     * @return Complete audio data as byte array
      */
-    private void handleHelloAck(JsonObject message) {
-        if (message.has("outputAudioFormat")) {
-            JsonObject formatJson = message.getAsJsonObject("outputAudioFormat");
-            
-            negotiatedOutputFormat = new AudioFormat(
-                formatJson.get("container").getAsString(),
-                formatJson.get("encoding").getAsString(),
-                formatJson.get("sampleRate").getAsInt(),
-                formatJson.get("bitDepth").getAsInt(),
-                formatJson.get("channels").getAsInt()
-            );
-            
-            logger.info("Format negotiated: {}", negotiatedOutputFormat);
-            
-            // Notify listeners
-            formatNegotiatedListeners.forEach(listener -> 
-                listener.accept(negotiatedOutputFormat));
-        }
+    public byte[] textToSpeech(String text, String voiceId, double speed) {
+        return textToSpeech(TTSRequest.builder()
+            .text(text)
+            .voiceId(voiceId)
+            .speed(speed)
+            .build());
     }
-
+    
     /**
-     * Send audio data to server
+     * Text-to-speech with full request configuration (blocking)
+     * 
+     * @param request TTS request configuration
+     * @return Complete audio data as byte array
      */
-    public void sendAudio(byte[] audioData) {
-        if (!isConnected || session == null) {
-            logger.warn("Cannot send audio - not connected");
-            return;
-        }
-        
-        try {
-            session.getBasicRemote().sendBinary(ByteBuffer.wrap(audioData));
-        } catch (IOException e) {
-            logger.error("Error sending audio", e);
-            notifyError(e);
-        }
+    public byte[] textToSpeech(TTSRequest request) {
+        TTSResponse response = restClient.synthesize(request);
+        return response.getAudio();
     }
-
+    
     /**
-     * Send text message to server
+     * Get full TTS response with metadata (blocking)
+     * 
+     * @param request TTS request configuration
+     * @return TTS response with audio and metadata
      */
-    public void sendMessage(String message) {
-        if (!isConnected || session == null) {
-            logger.warn("Cannot send message - not connected");
-            return;
-        }
-        
-        try {
-            session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            logger.error("Error sending message", e);
-            notifyError(e);
-        }
+    public TTSResponse synthesize(TTSRequest request) {
+        return restClient.synthesize(request);
     }
-
+    
     /**
-     * Send JSON message to server
+     * Streaming text-to-speech (non-blocking)
+     * Audio chunks are delivered to the handler as they're generated
+     * 
+     * @param text Text to synthesize
+     * @param voiceId Voice ID
+     * @param chunkHandler Handler for audio chunks
      */
-    public void sendMessage(JsonObject message) {
-        sendMessage(gson.toJson(message));
+    public void textToSpeechStream(String text, String voiceId, Consumer<byte[]> chunkHandler) {
+        textToSpeechStream(TTSRequest.builder()
+            .text(text)
+            .voiceId(voiceId)
+            .build(), chunkHandler);
     }
-
+    
     /**
-     * Disconnect from server
+     * Streaming text-to-speech with speed control (non-blocking)
+     * 
+     * @param text Text to synthesize
+     * @param voiceId Voice ID
+     * @param speed Voice speed (0.5 to 2.0)
+     * @param chunkHandler Handler for audio chunks
      */
-    public void disconnect() {
-        if (session != null) {
-            try {
-                session.close();
-            } catch (IOException e) {
-                logger.error("Error closing session", e);
-            }
-        }
+    public void textToSpeechStream(String text, String voiceId, double speed, Consumer<byte[]> chunkHandler) {
+        textToSpeechStream(TTSRequest.builder()
+            .text(text)
+            .voiceId(voiceId)
+            .speed(speed)
+            .build(), chunkHandler);
     }
-
-    // Event listener registration
-
+    
     /**
-     * Listen for audio data (raw PCMU/PCMA bytes, NOT decoded!)
+     * Streaming text-to-speech with full configuration (non-blocking)
+     * 
+     * @param request TTS request configuration
+     * @param chunkHandler Handler for audio chunks
      */
-    public void onAudioData(Consumer<byte[]> listener) {
-        audioDataListeners.add(listener);
+    public void textToSpeechStream(TTSRequest request, Consumer<byte[]> chunkHandler) {
+        streamClient.stream(request, chunkHandler);
     }
-
+    
     /**
-     * Listen for audio data with format info
+     * Streaming text-to-speech with completion callback (non-blocking)
+     * 
+     * @param request TTS request configuration
+     * @param chunkHandler Handler for audio chunks
+     * @param onComplete Callback when streaming completes (receives metadata)
+     * @param onError Error handler
      */
-    public void onAudioDataWithFormat(AudioDataWithFormatListener listener) {
-        audioDataListeners.add(data -> {
-            listener.onAudioData(data, negotiatedOutputFormat);
-        });
+    public void textToSpeechStream(
+            TTSRequest request,
+            Consumer<byte[]> chunkHandler,
+            Consumer<StreamMetadata> onComplete,
+            Consumer<Throwable> onError) {
+        streamClient.stream(request, chunkHandler, onComplete, onError);
     }
-
+    
     /**
-     * Listen for format negotiation
+     * Get SDK configuration
+     * 
+     * @return SDK configuration
      */
-    public void onFormatNegotiated(Consumer<AudioFormat> listener) {
-        formatNegotiatedListeners.add(listener);
-    }
-
-    /**
-     * Listen for text messages
-     */
-    public void onMessage(Consumer<JsonObject> listener) {
-        messageListeners.add(listener);
-    }
-
-    /**
-     * Listen for connection events
-     */
-    public void onConnected(Runnable listener) {
-        connectedListeners.add(listener);
-    }
-
-    /**
-     * Listen for disconnection events
-     */
-    public void onDisconnected(Runnable listener) {
-        disconnectedListeners.add(listener);
-    }
-
-    /**
-     * Listen for errors
-     */
-    public void onError(Consumer<Throwable> listener) {
-        errorListeners.add(listener);
-    }
-
-    // Private notification methods
-
-    private void notifyAudioData(byte[] audioData) {
-        audioDataListeners.forEach(listener -> {
-            try {
-                listener.accept(audioData);
-            } catch (Exception e) {
-                logger.error("Error in audio data listener", e);
-            }
-        });
-    }
-
-    private void notifyError(Throwable error) {
-        errorListeners.forEach(listener -> {
-            try {
-                listener.accept(error);
-            } catch (Exception e) {
-                logger.error("Error in error listener", e);
-            }
-        });
-    }
-
-    // Getters
-
-    public boolean isConnected() {
-        return isConnected;
-    }
-
-    public AudioFormat getNegotiatedOutputFormat() {
-        return negotiatedOutputFormat;
-    }
-
-    public VoiceSDKConfig getConfig() {
+    public SDKConfig getConfig() {
         return config;
     }
-
+    
     /**
-     * Helper interface for audio data with format
+     * Stream metadata returned on completion
      */
-    @FunctionalInterface
-    public interface AudioDataWithFormatListener {
-        void onAudioData(byte[] audioData, AudioFormat format);
+    public static class StreamMetadata {
+        private final String conversationId;
+        private final long totalChunks;
+        private final long totalBytes;
+        private final long durationMs;
+        private final double creditsUsed;
+        
+        public StreamMetadata(String conversationId, long totalChunks, long totalBytes, 
+                            long durationMs, double creditsUsed) {
+            this.conversationId = conversationId;
+            this.totalChunks = totalChunks;
+            this.totalBytes = totalBytes;
+            this.durationMs = durationMs;
+            this.creditsUsed = creditsUsed;
+        }
+        
+        public String getConversationId() { return conversationId; }
+        public long getTotalChunks() { return totalChunks; }
+        public long getTotalBytes() { return totalBytes; }
+        public long getDurationMs() { return durationMs; }
+        public double getCreditsUsed() { return creditsUsed; }
+        
+        @Override
+        public String toString() {
+            return String.format("StreamMetadata{conversationId='%s', chunks=%d, bytes=%d, duration=%dms, credits=%.2f}",
+                conversationId, totalChunks, totalBytes, durationMs, creditsUsed);
+        }
+    }
+    
+    /**
+     * SDK Builder
+     */
+    public static class Builder {
+        private String apiKey;
+        private String baseUrl = "https://api.talktopc.com";
+        private int connectTimeout = 30000; // 30 seconds
+        private int readTimeout = 60000; // 60 seconds
+        
+        /**
+         * Set API key (required)
+         * 
+         * @param apiKey Your TalkToPC API key
+         * @return Builder
+         */
+        public Builder apiKey(String apiKey) {
+            this.apiKey = apiKey;
+            return this;
+        }
+        
+        /**
+         * Set base URL (optional)
+         * Default: https://api.talktopc.com
+         * 
+         * @param baseUrl Base URL of TalkToPC API
+         * @return Builder
+         */
+        public Builder baseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+        
+        /**
+         * Set connection timeout (optional)
+         * Default: 30 seconds
+         * 
+         * @param timeout Timeout in milliseconds
+         * @return Builder
+         */
+        public Builder connectTimeout(int timeout) {
+            this.connectTimeout = timeout;
+            return this;
+        }
+        
+        /**
+         * Set read timeout (optional)
+         * Default: 60 seconds
+         * 
+         * @param timeout Timeout in milliseconds
+         * @return Builder
+         */
+        public Builder readTimeout(int timeout) {
+            this.readTimeout = timeout;
+            return this;
+        }
+        
+        /**
+         * Build the SDK instance
+         * 
+         * @return VoiceSDK instance
+         * @throws IllegalArgumentException if API key is missing
+         */
+        public VoiceSDK build() {
+            if (apiKey == null || apiKey.trim().isEmpty()) {
+                throw new IllegalArgumentException("API key is required");
+            }
+            
+            SDKConfig config = new SDKConfig(apiKey, baseUrl, connectTimeout, readTimeout);
+            return new VoiceSDK(config);
+        }
     }
 }
-
