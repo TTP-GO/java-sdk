@@ -3411,18 +3411,9 @@ app.post('/api/generate-speech', async (req, res) => {
     &lt;/dependency&gt;
 &lt;/dependencies&gt;</code></pre>
 
-          <div class="warning-box">
-            <strong>⚠️ GitHub Packages Authentication:</strong>
-            <p>You'll need to authenticate with GitHub Packages. Add credentials to your <code>~/.m2/settings.xml</code>:</p>
-            <pre><code>&lt;settings&gt;
-    &lt;servers&gt;
-        &lt;server&gt;
-            &lt;id&gt;github&lt;/id&gt;
-            &lt;username&gt;YOUR_GITHUB_USERNAME&lt;/username&gt;
-            &lt;password&gt;YOUR_GITHUB_TOKEN&lt;/password&gt;
-        &lt;/server&gt;
-    &lt;/servers&gt;
-&lt;/settings&gt;</code></pre>
+          <div class="info-box">
+            <strong>💡 Note:</strong>
+            <p>Since this is a public repository, authentication is not required to download the package. However, if you encounter any issues accessing the repository, you may need to authenticate with GitHub Packages using a personal access token.</p>
           </div>
 
           <h3>Gradle</h3>
@@ -3880,3 +3871,4 @@ Files.write(Paths.get("output.wav"), response.getAudio());</code></pre>
 </html>
 
 
+<!-- Cloudflare Pages rebuild trigger -->
