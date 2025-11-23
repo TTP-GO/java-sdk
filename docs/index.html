@@ -23,7 +23,7 @@
           <img src="https://talktopc.com/logo192.png" alt="TTP Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <div>
             <h1 style="margin: 0; font-size: 1.4rem;">TTP Agent SDK</h1>
-            <p class="version" style="margin: 0;">v2.3.1</p>
+            <p class="version" style="margin: 0;">v2.3.18</p>
           </div>
         </div>
       </div>
@@ -44,6 +44,7 @@
             <li><a href="#authentication" class="nav-link">Authentication</a></li>
             <li><a href="#agent-override" class="nav-link">Agent Override</a></li>
             <li><a href="#events" class="nav-link">Events & Callbacks</a></li>
+            <li><a href="#protocol-v2" class="nav-link">Protocol v2 - Format Negotiation</a></li>
           </ul>
         </div>
 
@@ -54,6 +55,17 @@
             <li><a href="#vanilla-js" class="nav-link">Vanilla JavaScript</a></li>
             <li><a href="#react" class="nav-link">React Integration</a></li>
             <li><a href="#voice-button" class="nav-link">VoiceButton Component</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <h3>Backend SDKs</h3>
+          <ul>
+            <li><a href="#java-sdk" class="nav-link">Java SDK</a></li>
+            <li><a href="#java-sdk-installation" class="nav-link">Installation</a></li>
+            <li><a href="#java-sdk-quick-start" class="nav-link">Quick Start</a></li>
+            <li><a href="#java-sdk-api" class="nav-link">API Reference</a></li>
+            <li><a href="#java-sdk-examples" class="nav-link">Examples</a></li>
           </ul>
         </div>
 
@@ -125,6 +137,13 @@
                 <div class="quick-link-icon">🔊</div>
                 <h3>Text To Speech</h3>
                 <p>REST API for voice synthesis</p>
+                <span class="quick-link-arrow">→</span>
+              </a>
+              
+              <a href="#java-sdk" class="quick-link-card">
+                <div class="quick-link-icon">☕</div>
+                <h3>Java SDK</h3>
+                <p>Backend SDK for server-side TTS</p>
                 <span class="quick-link-arrow">→</span>
               </a>
             </div>
@@ -239,7 +258,13 @@ const { signedUrl } = await response.json();</code></pre>
 const voiceSDK = new VoiceSDK({
   websocketUrl: signedUrl,  // Signed URL from step 1
   appId: 'your_app_id',     // Your application ID
-  agentId: 'agent_123'      // The AI agent to connect to
+  agentId: 'agent_123',     // The AI agent to connect to
+  
+  // Optional: Configure audio formats (v2 protocol)
+  outputContainer: 'raw',      // 'raw' or 'wav'
+  outputEncoding: 'pcm',       // 'pcm', 'pcmu', 'pcma'
+  outputSampleRate: 44100,     // Higher quality audio
+  protocolVersion: 2           // Use v2 protocol for format negotiation
 });
 
 // Listen to events
@@ -247,8 +272,13 @@ voiceSDK.on('connected', () => {
   console.log('✅ Connected to agent');
 });
 
+voiceSDK.on('formatNegotiated', (format) => {
+  console.log('✅ Format negotiated:', format);
+  // Format contains: container, encoding, sampleRate, channels, bitDepth
+});
+
 voiceSDK.on('message', (msg) => {
-  if (msg.type === 'agent_response') {
+  if (msg.t === 'agent_response') {
     console.log('Agent:', msg.agent_response);
   }
 });</code></pre>
@@ -667,6 +697,12 @@ voiceSDK.on('bargeIn', (message) => {
   console.log('User interrupted the agent');
 });
 
+// Format negotiation (v2 protocol only)
+voiceSDK.on('formatNegotiated', (format) => {
+  console.log('Format negotiated:', format);
+  // format: { container, encoding, sampleRate, channels, bitDepth }
+});
+
 // Greeting audio
 voiceSDK.on('greetingStarted', () => {
   console.log('Playing greeting message');
@@ -676,6 +712,173 @@ voiceSDK.on('greetingStarted', () => {
 voiceSDK.on('domainError', (error) => {
   console.error('Domain not whitelisted:', error.reason);
 });</code></pre>
+        </section>
+
+        <!-- Protocol v2 Features -->
+        <section id="protocol-v2" class="doc-section">
+          <h1>Protocol v2 - Format Negotiation</h1>
+          <p>The SDK v2 introduces format negotiation, allowing you to specify exactly what audio format you want to receive from the server.</p>
+
+          <div class="info-box">
+            <strong>🎯 Key Benefits:</strong>
+            <ul style="margin-top: 10px;">
+              <li><strong>Format Control:</strong> Request specific audio formats (container, encoding, sample rate, bit depth)</li>
+              <li><strong>Automatic Conversion:</strong> SDK automatically converts audio if backend sends different format</li>
+              <li><strong>Quality Optimization:</strong> Choose optimal formats for your use case (e.g., 48kHz for high quality, 8kHz for bandwidth savings)</li>
+              <li><strong>Backward Compatible:</strong> Works with v1 protocol (set protocolVersion: 1)</li>
+            </ul>
+          </div>
+
+          <h2>Supported Formats</h2>
+          
+          <h3>Input Formats (What SDK Sends)</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Supported Values</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>encoding</code></td>
+                <td>'pcm', 'pcmu' (μ-law), 'pcma' (A-law)</td>
+              </tr>
+              <tr>
+                <td><code>sampleRate</code></td>
+                <td>8000, 16000, 24000, 48000 Hz</td>
+              </tr>
+              <tr>
+                <td><code>bitDepth</code></td>
+                <td>8, 16, 24 bits</td>
+              </tr>
+              <tr>
+                <td><code>channels</code></td>
+                <td>1 (mono only)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Output Formats (What SDK Receives)</h3>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Supported Values</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>container</code></td>
+                <td>'raw' (no header), 'wav' (with WAV header)</td>
+              </tr>
+              <tr>
+                <td><code>encoding</code></td>
+                <td>'pcm', 'pcmu' (μ-law), 'pcma' (A-law)</td>
+              </tr>
+              <tr>
+                <td><code>sampleRate</code></td>
+                <td>8000, 16000, 22050, 24000, 44100, 48000 Hz</td>
+              </tr>
+              <tr>
+                <td><code>bitDepth</code></td>
+                <td>8, 16, 24 bits</td>
+              </tr>
+              <tr>
+                <td><code>channels</code></td>
+                <td>1 (mono only)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Format Negotiation Flow</h2>
+          <div class="flow-diagram">
+            <div class="flow-step">
+              <div class="flow-box" style="background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);">
+                <strong>1. SDK Initialization</strong>
+                <p>Configure requested output format</p>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                <strong>2. Connect & Send Hello</strong>
+                <p>SDK sends format request in hello message</p>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                <strong>3. Server Response</strong>
+                <p>Server sends hello_ack with negotiated format</p>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);">
+                <strong>4. Format Negotiated Event</strong>
+                <p>SDK emits 'formatNegotiated' event</p>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-box" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);">
+                <strong>5. Automatic Conversion</strong>
+                <p>If formats differ, SDK converts automatically</p>
+              </div>
+            </div>
+          </div>
+
+          <h2>Example: High-Quality Audio</h2>
+          <pre><code>const voiceSDK = new VoiceSDK({
+  websocketUrl: signedUrl,
+  appId: 'your_app_id',
+  agentId: 'agent_123',
+  
+  // Request high-quality audio
+  outputContainer: 'raw',        // Raw PCM for lower latency
+  outputEncoding: 'pcm',         // Uncompressed PCM
+  outputSampleRate: 48000,       // 48kHz for high quality
+  outputBitDepth: 16,            // 16-bit depth
+  outputChannels: 1,             // Mono
+  outputFrameDurationMs: 600,    // 600ms frames
+  
+  protocolVersion: 2             // Enable format negotiation
+});
+
+voiceSDK.on('formatNegotiated', (format) => {
+  console.log('Negotiated format:', format);
+  // If backend sends different format, SDK will convert automatically
+});</code></pre>
+
+          <h2>Example: Bandwidth-Optimized Audio</h2>
+          <pre><code>const voiceSDK = new VoiceSDK({
+  websocketUrl: signedUrl,
+  appId: 'your_app_id',
+  agentId: 'agent_123',
+  
+  // Request compressed, low-bandwidth audio
+  outputContainer: 'raw',
+  outputEncoding: 'pcmu',        // μ-law compression (8kHz equivalent)
+  outputSampleRate: 8000,        // 8kHz for bandwidth savings
+  outputBitDepth: 16,
+  outputChannels: 1,
+  
+  protocolVersion: 2
+});</code></pre>
+
+          <h2>Format Conversion</h2>
+          <p>If the backend sends audio in a different format than requested, the SDK automatically converts it:</p>
+          <ul>
+            <li><strong>Container:</strong> WAV ↔ Raw PCM extraction/wrapping</li>
+            <li><strong>Encoding:</strong> PCM ↔ PCMU/PCMA encoding/decoding</li>
+            <li><strong>Sample Rate:</strong> Automatic resampling using Web Audio API</li>
+            <li><strong>Bit Depth:</strong> 8-bit ↔ 16-bit ↔ 24-bit conversion</li>
+            <li><strong>Channels:</strong> Mono/stereo conversion (if needed)</li>
+          </ul>
+
+          <div class="info-box">
+            <strong>💡 Best Practices:</strong>
+            <ul style="margin-top: 10px;">
+              <li>Use <code>protocolVersion: 2</code> for new projects</li>
+              <li>Request formats that match your use case (quality vs. bandwidth)</li>
+              <li>48kHz is recommended for best quality (matches most browser defaults)</li>
+              <li>Raw PCM is lower latency than WAV (no header overhead)</li>
+              <li>Listen to <code>formatNegotiated</code> event to verify format</li>
+            </ul>
+          </div>
         </section>
 
         <!-- Voice & Chat Widget -->
@@ -2248,7 +2451,61 @@ function App() {
                 <td><code>sampleRate</code></td>
                 <td>number</td>
                 <td>No</td>
-                <td>Audio sample rate (default: 16000)</td>
+                <td>Input audio sample rate: 8000, 16000, 24000, or 48000 Hz (default: 16000)</td>
+              </tr>
+              <tr>
+                <td><code>channels</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Input audio channels (default: 1, mono only)</td>
+              </tr>
+              <tr>
+                <td><code>bitDepth</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Input audio bit depth: 8, 16, or 24 bits (default: 16)</td>
+              </tr>
+              <tr>
+                <td><code>outputContainer</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Output container format: 'raw' or 'wav' (default: 'raw')</td>
+              </tr>
+              <tr>
+                <td><code>outputEncoding</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Output audio encoding: 'pcm', 'pcmu' (μ-law), or 'pcma' (A-law) (default: 'pcm')</td>
+              </tr>
+              <tr>
+                <td><code>outputSampleRate</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Output audio sample rate: 8000, 16000, 22050, 24000, 44100, or 48000 Hz (default: 16000)</td>
+              </tr>
+              <tr>
+                <td><code>outputChannels</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Output audio channels (default: 1, mono only)</td>
+              </tr>
+              <tr>
+                <td><code>outputBitDepth</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Output audio bit depth: 8, 16, or 24 bits (default: 16)</td>
+              </tr>
+              <tr>
+                <td><code>outputFrameDurationMs</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Frame duration for raw PCM streaming in milliseconds (default: 600)</td>
+              </tr>
+              <tr>
+                <td><code>protocolVersion</code></td>
+                <td>number</td>
+                <td>No</td>
+                <td>Protocol version: 1 (legacy) or 2 (format negotiation) (default: 2)</td>
               </tr>
               <tr>
                 <td><code>autoReconnect</code></td>
@@ -2258,6 +2515,51 @@ function App() {
               </tr>
             </tbody>
           </table>
+
+          <h3>Audio Format Configuration (v2 Protocol)</h3>
+          <p>The SDK v2 supports format negotiation with the backend. You can specify both input and output audio formats:</p>
+          
+          <div class="info-box">
+            <strong>📋 Format Support:</strong>
+            <ul style="margin-top: 10px;">
+              <li><strong>Input Encodings:</strong> PCM, PCMU (μ-law), PCMA (A-law)</li>
+              <li><strong>Input Sample Rates:</strong> 8000, 16000, 24000, 48000 Hz</li>
+              <li><strong>Input Bit Depths:</strong> 8, 16, 24 bits</li>
+              <li><strong>Output Containers:</strong> 'raw' (no header) or 'wav' (with header)</li>
+              <li><strong>Output Encodings:</strong> PCM, PCMU (μ-law), PCMA (A-law)</li>
+              <li><strong>Output Sample Rates:</strong> 8000, 16000, 22050, 24000, 44100, 48000 Hz</li>
+              <li><strong>Output Bit Depths:</strong> 8, 16, 24 bits</li>
+            </ul>
+          </div>
+
+          <h4>Example: Custom Audio Format</h4>
+          <pre><code>const voiceSDK = new VoiceSDK({
+  websocketUrl: signedUrl,
+  appId: 'your_app_id',
+  agentId: 'agent_123',
+  
+  // Input format (what we send to server)
+  sampleRate: 16000,
+  channels: 1,
+  bitDepth: 16,
+  
+  // Output format (what we want from server)
+  outputContainer: 'raw',        // 'raw' or 'wav'
+  outputEncoding: 'pcm',          // 'pcm', 'pcmu', 'pcma'
+  outputSampleRate: 44100,       // Higher quality
+  outputChannels: 1,
+  outputBitDepth: 16,
+  outputFrameDurationMs: 600,    // Frame duration for streaming
+  
+  // Protocol version
+  protocolVersion: 2              // Use v2 protocol for format negotiation
+});
+
+// Listen for format negotiation
+voiceSDK.on('formatNegotiated', (format) => {
+  console.log('Format negotiated:', format);
+  // format contains: { container, encoding, sampleRate, channels, bitDepth }
+});</code></pre>
         </section>
 
         <!-- Methods -->
@@ -2304,7 +2606,68 @@ function App() {
             <p>Get current connection and recording status.</p>
             <p><strong>Returns:</strong> <code>Object</code></p>
             <pre><code>const status = voiceSDK.getStatus();
-// Returns: { isConnected, isRecording, isPlaying }</code></pre>
+// Returns: {
+//   version: '2.0.0',
+//   isConnected: boolean,
+//   isRecording: boolean,
+//   isPlaying: boolean,
+//   outputFormat: object,      // Negotiated output format (v2)
+//   audioPlayer: object,       // AudioPlayer status
+//   audioRecorder: object      // AudioRecorder status
+// }</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>validateInputFormat(format)</code></h3>
+            <p><strong>v2 only:</strong> Validate input audio format configuration.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+              <li><code>format</code> (object) - Format object with encoding, sampleRate, bitDepth, channels</li>
+            </ul>
+            <p><strong>Returns:</strong> <code>string|null</code> - Error message if invalid, null if valid</p>
+            <pre><code>const error = voiceSDK.validateInputFormat({
+  encoding: 'pcm',
+  sampleRate: 16000,
+  bitDepth: 16,
+  channels: 1
+});
+if (error) {
+  console.error('Invalid format:', error);
+}</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>validateOutputFormat(format)</code></h3>
+            <p><strong>v2 only:</strong> Validate output audio format configuration.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+              <li><code>format</code> (object) - Format object with container, encoding, sampleRate, bitDepth, channels</li>
+            </ul>
+            <p><strong>Returns:</strong> <code>string|null</code> - Error message if invalid, null if valid</p>
+            <pre><code>const error = voiceSDK.validateOutputFormat({
+  container: 'raw',
+  encoding: 'pcm',
+  sampleRate: 44100,
+  bitDepth: 16,
+  channels: 1
+});
+if (error) {
+  console.error('Invalid format:', error);
+}</code></pre>
+          </div>
+
+          <div class="method-card">
+            <h3><code>updateConfig(newConfig)</code></h3>
+            <p>Update SDK configuration dynamically.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+              <li><code>newConfig</code> (object) - Partial configuration object to merge with existing config</li>
+            </ul>
+            <p><strong>Returns:</strong> <code>void</code></p>
+            <pre><code>voiceSDK.updateConfig({
+  outputSampleRate: 48000,
+  outputEncoding: 'pcmu'
+});</code></pre>
           </div>
 
           <div class="method-card">
@@ -2409,6 +2772,11 @@ function App() {
                 <td><code>stopPlaying</code></td>
                 <td><code>message</code></td>
                 <td>Emitted when server requests to stop audio</td>
+              </tr>
+              <tr>
+                <td><code>formatNegotiated</code></td>
+                <td><code>format</code></td>
+                <td><strong>v2 only:</strong> Emitted when audio format is negotiated with server. Format object contains: container, encoding, sampleRate, channels, bitDepth</td>
               </tr>
               <tr>
                 <td><code>greetingStarted</code></td>
@@ -3001,6 +3369,490 @@ app.post('/api/generate-speech', async (req, res) => {
               <p>Create voice-overs for educational materials</p>
             </div>
           </div>
+        </section>
+
+        <!-- Java SDK Section -->
+        <section id="java-sdk" class="doc-section">
+          <h1>Java SDK</h1>
+          <p class="lead">Server-side Java SDK for text-to-speech conversion. Perfect for backend applications, phone systems, and server-to-server integrations.</p>
+
+          <div class="info-box">
+            <strong>🎯 Use Cases:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+              <li><strong>Backend TTS:</strong> Generate speech on your server without exposing API keys</li>
+              <li><strong>Phone Systems:</strong> Integrate with Twilio, Telnyx, or custom VoIP systems</li>
+              <li><strong>Server-to-Server:</strong> Automated voice generation for notifications, alerts, or content</li>
+              <li><strong>Audio Format Control:</strong> Request specific formats (PCMU, PCMA, PCM) for phone systems</li>
+            </ul>
+          </div>
+
+          <h2 id="java-sdk-installation">Installation</h2>
+
+          <h3>Maven</h3>
+          <pre><code>&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;github&lt;/id&gt;
+        &lt;url&gt;https://maven.pkg.github.com/TTP-GO/java-sdk&lt;/url&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;
+
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.talktopc&lt;/groupId&gt;
+        &lt;artifactId&gt;ttp-agent-sdk-java&lt;/artifactId&gt;
+        &lt;version&gt;1.0.5&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+
+          <div class="warning-box">
+            <strong>⚠️ GitHub Packages Authentication:</strong>
+            <p>You'll need to authenticate with GitHub Packages. Add credentials to your <code>~/.m2/settings.xml</code>:</p>
+            <pre><code>&lt;settings&gt;
+    &lt;servers&gt;
+        &lt;server&gt;
+            &lt;id&gt;github&lt;/id&gt;
+            &lt;username&gt;YOUR_GITHUB_USERNAME&lt;/username&gt;
+            &lt;password&gt;YOUR_GITHUB_TOKEN&lt;/password&gt;
+        &lt;/server&gt;
+    &lt;/servers&gt;
+&lt;/settings&gt;</code></pre>
+          </div>
+
+          <h3>Gradle</h3>
+          <pre><code>repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/TTP-GO/java-sdk")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.talktopc:ttp-agent-sdk-java:1.0.5'
+}</code></pre>
+
+          <h2 id="java-sdk-quick-start">Quick Start</h2>
+
+          <h3>1. Initialize SDK</h3>
+          <pre><code>import com.talktopc.sdk.VoiceSDK;
+
+// Get API key from environment variable
+String apiKey = System.getenv("TALKTOPC_API_KEY");
+
+VoiceSDK sdk = VoiceSDK.builder()
+    .apiKey(apiKey)
+    .baseUrl("https://api.talktopc.com")  // Optional
+    .build();</code></pre>
+
+          <h3>2. Simple TTS (Blocking)</h3>
+          <pre><code>// Generate complete audio file
+byte[] audio = sdk.textToSpeech("Hello world", "mamre");
+
+// Save to file
+Files.write(Paths.get("output.wav"), audio);
+
+// Or send to phone system
+phoneSystem.playAudio(audio);</code></pre>
+
+          <h3>3. Streaming TTS (Real-time)</h3>
+          <pre><code>// Stream audio chunks as they're generated
+sdk.textToSpeechStream(
+    "Hello world, this is a longer text that will be streamed",
+    "mamre",
+    audioChunk -> {
+        // Receive chunks in real-time
+        phoneSystem.playAudio(audioChunk);
+    }
+);</code></pre>
+
+          <h2 id="java-sdk-api">API Reference</h2>
+
+          <h3>VoiceSDK</h3>
+          <p>Main SDK entry point for text-to-speech operations.</p>
+
+          <h4>Builder Methods</h4>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>apiKey(String)</code></td>
+                <td>String</td>
+                <td>Your TalkToPC API key (required)</td>
+              </tr>
+              <tr>
+                <td><code>baseUrl(String)</code></td>
+                <td>String</td>
+                <td>API base URL (default: https://api.talktopc.com)</td>
+              </tr>
+              <tr>
+                <td><code>connectTimeout(int)</code></td>
+                <td>int</td>
+                <td>Connection timeout in milliseconds (default: 30000)</td>
+              </tr>
+              <tr>
+                <td><code>readTimeout(int)</code></td>
+                <td>int</td>
+                <td>Read timeout in milliseconds (default: 60000)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Methods</h4>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>textToSpeech(String text, String voiceId)</code></td>
+                <td>Simple TTS (blocking) - returns complete audio as byte array</td>
+              </tr>
+              <tr>
+                <td><code>textToSpeech(String text, String voiceId, double speed)</code></td>
+                <td>TTS with speed control (0.1 - 3.0)</td>
+              </tr>
+              <tr>
+                <td><code>textToSpeech(TTSRequest request)</code></td>
+                <td>TTS with full configuration (format, speed, etc.)</td>
+              </tr>
+              <tr>
+                <td><code>synthesize(TTSRequest request)</code></td>
+                <td>Get full response with metadata (sample rate, duration, credits)</td>
+              </tr>
+              <tr>
+                <td><code>textToSpeechStream(String text, String voiceId, Consumer&lt;byte[]&gt; chunkHandler)</code></td>
+                <td>Streaming TTS - chunks delivered to handler as they're generated</td>
+              </tr>
+              <tr>
+                <td><code>textToSpeechStream(TTSRequest request, Consumer&lt;byte[]&gt; chunkHandler, Consumer&lt;StreamMetadata&gt; onComplete, Consumer&lt;Throwable&gt; onError)</code></td>
+                <td>Streaming TTS with completion and error callbacks</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>TTSRequest Builder</h3>
+          <p>Configure TTS requests with audio format options.</p>
+
+          <h4>Basic Configuration</h4>
+          <pre><code>TTSRequest request = TTSRequest.builder()
+    .text("Hello world")              // Required
+    .voiceId("mamre")                // Required
+    .speed(1.0)                      // Optional (0.1 - 3.0)
+    .build();</code></pre>
+
+          <h4>Audio Format Configuration</h4>
+          <pre><code>TTSRequest request = TTSRequest.builder()
+    .text("Hello world")
+    .voiceId("mamre")
+    .outputContainer("raw")          // "raw" or "wav"
+    .outputEncoding("pcm")           // "pcm", "pcmu", "pcma"
+    .outputSampleRate(16000)         // Hz (8000, 16000, 22050, 44100)
+    .outputBitDepth(16)              // bits (8, 16, 24)
+    .outputChannels(1)               // 1 (mono) or 2 (stereo)
+    .outputFrameDurationMs(600)     // ms per frame (for streaming)
+    .build();</code></pre>
+
+          <h4>Preset Methods</h4>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Format</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>phoneSystem()</code></td>
+                <td>PCMU @ 8kHz, 20ms frames</td>
+                <td>Phone systems (Twilio, Telnyx, VoIP)</td>
+              </tr>
+              <tr>
+                <td><code>highQuality()</code></td>
+                <td>WAV @ 44.1kHz</td>
+                <td>High-quality audio files</td>
+              </tr>
+              <tr>
+                <td><code>standardQuality()</code></td>
+                <td>PCM @ 22.05kHz</td>
+                <td>Standard quality audio</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>TTSResponse</h3>
+          <p>Response object containing audio and metadata.</p>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Return Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>getAudio()</code></td>
+                <td>byte[]</td>
+                <td>Audio data</td>
+              </tr>
+              <tr>
+                <td><code>getSampleRate()</code></td>
+                <td>int</td>
+                <td>Sample rate in Hz</td>
+              </tr>
+              <tr>
+                <td><code>getDurationMs()</code></td>
+                <td>long</td>
+                <td>Playback duration in milliseconds</td>
+              </tr>
+              <tr>
+                <td><code>getAudioSizeBytes()</code></td>
+                <td>long</td>
+                <td>Audio size in bytes</td>
+              </tr>
+              <tr>
+                <td><code>getCreditsUsed()</code></td>
+                <td>double</td>
+                <td>Credits consumed</td>
+              </tr>
+              <tr>
+                <td><code>getConversationId()</code></td>
+                <td>String</td>
+                <td>Unique conversation ID</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="java-sdk-examples">Examples</h2>
+
+          <h3>Basic Usage</h3>
+          <pre><code>VoiceSDK sdk = VoiceSDK.builder()
+    .apiKey(System.getenv("TALKTOPC_API_KEY"))
+    .build();
+
+// Simple TTS
+byte[] audio = sdk.textToSpeech("Welcome to TalkToPC", "mamre");
+System.out.println("Generated " + audio.length + " bytes of audio");
+
+// Save to file
+Files.write(Paths.get("output.wav"), audio);</code></pre>
+
+          <h3>With Speed Control</h3>
+          <pre><code>// Faster speech (1.5x speed)
+byte[] fastAudio = sdk.textToSpeech("Quick message", "mamre", 1.5);
+
+// Slower speech (0.8x speed)
+byte[] slowAudio = sdk.textToSpeech("Slow and clear", "mamre", 0.8);</code></pre>
+
+          <h3>Streaming with Metadata</h3>
+          <pre><code>sdk.textToSpeechStream(
+    TTSRequest.builder()
+        .text("Streaming example with full configuration")
+        .voiceId("mamre")
+        .speed(1.0)
+        .build(),
+    audioChunk -> {
+        // Handle each audio chunk
+        System.out.println("Received chunk: " + audioChunk.length + " bytes");
+        phoneSystem.playAudio(audioChunk);
+    },
+    metadata -> {
+        // Handle completion
+        System.out.println("Stream completed:");
+        System.out.println("  Total chunks: " + metadata.getTotalChunks());
+        System.out.println("  Total bytes: " + metadata.getTotalBytes());
+        System.out.println("  Duration: " + metadata.getDurationMs() + " ms");
+        System.out.println("  Credits: " + metadata.getCreditsUsed());
+    },
+    error -> {
+        // Handle errors
+        System.err.println("Stream error: " + error.getMessage());
+    }
+);</code></pre>
+
+          <h3>Phone System Integration</h3>
+          <p>Perfect for Twilio, Telnyx, or custom VoIP systems.</p>
+
+          <h4>Standard Phone System (PCMU @ 8kHz)</h4>
+          <pre><code>// Using convenient phoneSystem() preset
+TTSRequest request = TTSRequest.builder()
+    .text("Hello, thank you for calling. How can I help you today?")
+    .voiceId("en-US-female")
+    .phoneSystem()  // ✅ PCMU @ 8kHz, 20ms frames
+    .build();
+
+sdk.textToSpeechStream(
+    request,
+    audioChunk -> {
+        // audioChunk is PCMU @ 8kHz, 20ms frames (160 bytes)
+        // Ready to send directly to phone connection
+        phoneConnection.sendAudio(audioChunk);
+    }
+);</code></pre>
+
+          <h4>Twilio Integration</h4>
+          <pre><code>TTSRequest request = TTSRequest.builder()
+    .text("Your appointment is confirmed for tomorrow at 3 PM")
+    .voiceId("en-US-male")
+    .outputContainer("raw")
+    .outputEncoding("pcmu")      // μ-law for Twilio
+    .outputSampleRate(8000)       // 8kHz
+    .outputBitDepth(16)
+    .outputChannels(1)            // Mono
+    .outputFrameDurationMs(20)    // 20ms frames
+    .build();
+
+sdk.textToSpeechStream(
+    request,
+    audioChunk -> {
+        // Send to Twilio Media Stream
+        twilioStream.sendMedia(audioChunk);
+    }
+);</code></pre>
+
+          <h3>Custom Audio Format</h3>
+          <pre><code>TTSRequest request = TTSRequest.builder()
+    .text("Custom format example")
+    .voiceId("mamre")
+    .outputContainer("raw")
+    .outputEncoding("pcm")
+    .outputSampleRate(16000)      // 16kHz
+    .outputBitDepth(16)           // 16-bit
+    .outputChannels(1)            // Mono
+    .outputFrameDurationMs(100)   // 100ms frames
+    .build();
+
+byte[] audio = sdk.textToSpeech(request);
+// Expected: 16kHz PCM, 16-bit, mono</code></pre>
+
+          <h3>High Quality Audio</h3>
+          <pre><code>TTSRequest request = TTSRequest.builder()
+    .text("This is a high quality recording")
+    .voiceId("mamre")
+    .highQuality()  // WAV @ 44.1kHz
+    .build();
+
+byte[] audio = sdk.textToSpeech(request);
+Files.write(Paths.get("high_quality.wav"), audio);</code></pre>
+
+          <h3>Error Handling</h3>
+          <pre><code>import com.talktopc.sdk.exception.TtsException;
+
+try {
+    byte[] audio = sdk.textToSpeech("Test", "mamre");
+} catch (TtsException e) {
+    System.err.println("TTS Error [" + e.getStatusCode() + "]: " + e.getErrorMessage());
+    
+    switch (e.getStatusCode()) {
+        case 401:
+            System.err.println("→ Invalid API key");
+            break;
+        case 402:
+            System.err.println("→ Insufficient credits");
+            break;
+        case 400:
+            System.err.println("→ Invalid parameters");
+            break;
+        default:
+            System.err.println("→ Other error");
+    }
+}</code></pre>
+
+          <h3>Full Configuration Example</h3>
+          <pre><code>import com.talktopc.sdk.models.TTSRequest;
+import com.talktopc.sdk.models.TTSResponse;
+
+// Build request with all options
+TTSRequest request = TTSRequest.builder()
+    .text("Full configuration example")
+    .voiceId("mamre")
+    .speed(1.2)
+    .outputContainer("wav")
+    .outputEncoding("pcm")
+    .outputSampleRate(44100)
+    .outputBitDepth(16)
+    .outputChannels(1)
+    .build();
+
+// Get response with metadata
+TTSResponse response = sdk.synthesize(request);
+
+System.out.println("Audio: " + response.getAudioSizeBytes() + " bytes");
+System.out.println("Sample rate: " + response.getSampleRate() + " Hz");
+System.out.println("Duration: " + response.getDurationMs() + " ms");
+System.out.println("Credits: " + response.getCreditsUsed());
+
+// Save audio
+Files.write(Paths.get("output.wav"), response.getAudio());</code></pre>
+
+          <h2>Supported Audio Formats</h2>
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Format</th>
+                <th>Encoding</th>
+                <th>Sample Rates</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PCM</td>
+                <td><code>pcm</code></td>
+                <td>8000, 16000, 22050, 24000, 44100 Hz</td>
+                <td>General purpose, high quality</td>
+              </tr>
+              <tr>
+                <td>PCMU (μ-law)</td>
+                <td><code>pcmu</code></td>
+                <td>8000 Hz</td>
+                <td>Phone systems (Twilio, Telnyx, VoIP)</td>
+              </tr>
+              <tr>
+                <td>PCMA (A-law)</td>
+                <td><code>pcma</code></td>
+                <td>8000 Hz</td>
+                <td>Phone systems (European standards)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Requirements</h2>
+          <ul>
+            <li><strong>Java 11 or higher</strong></li>
+            <li><strong>Valid TalkToPC API key</strong></li>
+            <li><strong>No external dependencies</strong> - Uses Java 11+ HttpClient</li>
+          </ul>
+
+          <div class="info-box">
+            <strong>💡 Key Differences from Frontend SDK:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+              <li><strong>Backend-only:</strong> Designed for server-side use, not browser</li>
+              <li><strong>Format Pass-through:</strong> Can request PCMU/PCMA and forward directly to phone systems</li>
+              <li><strong>No Audio Playback:</strong> Returns raw audio bytes - you handle playback/forwarding</li>
+              <li><strong>REST API:</strong> Uses REST endpoints instead of WebSocket</li>
+            </ul>
+          </div>
+
+          <h2>Resources</h2>
+          <ul>
+            <li><strong>GitHub Repository:</strong> <a href="https://github.com/TTP-GO/java-sdk" target="_blank">TTP-GO/java-sdk</a></li>
+            <li><strong>Maven Package:</strong> <code>com.talktopc:ttp-agent-sdk-java:1.0.5</code></li>
+            <li><strong>Documentation:</strong> See <code>README.md</code> in the repository</li>
+            <li><strong>Examples:</strong> Check <code>src/main/java/com/talktopc/sdk/examples/</code></li>
+          </ul>
         </section>
       </div>
 

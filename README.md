@@ -1,5 +1,12 @@
 # TTP Agent SDK
 
+This repository contains SDKs for integrating with the TTP Agent API:
+
+- **Frontend SDK (JavaScript)** - Browser-based SDK for web applications
+- **Backend SDK (Java)** - Server-side SDK for phone systems and backend processing
+
+## Frontend SDK (JavaScript)
+
 A comprehensive JavaScript SDK for voice interaction with AI agents. Provides real-time audio recording, WebSocket communication, and audio playback with queue management.
 
 ## Features
@@ -298,6 +305,34 @@ npm test
 ## License
 
 MIT
+
+## Backend SDK (Java)
+
+For server-side applications, phone system integration, or backend processing, see the [Java SDK documentation](java-sdk/README.md).
+
+**Key Features:**
+- ✅ Format negotiation (Protocol v2)
+- ✅ Raw audio pass-through (PCMU/PCMA for phone systems)
+- ✅ No audio decoding (perfect for forwarding to phone systems)
+- ✅ Event-driven API
+
+**Quick Start:**
+
+```java
+VoiceSDKConfig config = new VoiceSDKConfig();
+config.setWebsocketUrl("wss://speech.talktopc.com/ws/conv?agentId=xxx&appId=yyy");
+config.setOutputEncoding("pcmu");  // For phone systems
+config.setOutputSampleRate(8000);
+
+VoiceSDK sdk = new VoiceSDK(config);
+sdk.onAudioData(audioData -> {
+    // Forward raw PCMU to phone system
+    phoneSystem.sendAudio(audioData);
+});
+sdk.connect();
+```
+
+See [java-sdk/README.md](java-sdk/README.md) for full documentation.
 
 ## Support
 
