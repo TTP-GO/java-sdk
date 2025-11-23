@@ -198,6 +198,9 @@ public class TTSRequest {
             if (speed != null && (speed < 0.1 || speed > 3.0)) {
                 throw new IllegalArgumentException("Speed must be between 0.1 and 3.0");
             }
+            if(outputContainer == null || outputContainer.trim().isEmpty()) {
+                this.outputContainer = "raw";
+            }  
             return new TTSRequest(this);
         }
     }
