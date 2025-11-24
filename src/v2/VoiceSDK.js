@@ -56,7 +56,7 @@ class VoiceSDK_v2 extends EventEmitter {
 
   static SUPPORTED_INPUT_ENCODINGS = ['pcm', 'pcmu', 'pcma'];
 
-  static SUPPORTED_INPUT_SAMPLE_RATES = [8000, 16000, 24000, 48000];
+  static SUPPORTED_INPUT_SAMPLE_RATES = [8000, 16000, 22050, 24000, 44100, 48000];
 
   static SUPPORTED_INPUT_BIT_DEPTHS = [8, 16, 24];
 

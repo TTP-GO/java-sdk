@@ -746,7 +746,7 @@ voiceSDK.on('domainError', (error) => {
               </tr>
               <tr>
                 <td><code>sampleRate</code></td>
-                <td>8000, 16000, 24000, 48000 Hz</td>
+                <td>8000, 16000, 22050, 24000, 44100, 48000 Hz</td>
               </tr>
               <tr>
                 <td><code>bitDepth</code></td>
@@ -2451,7 +2451,7 @@ function App() {
                 <td><code>sampleRate</code></td>
                 <td>number</td>
                 <td>No</td>
-                <td>Input audio sample rate: 8000, 16000, 24000, or 48000 Hz (default: 16000)</td>
+                <td>Input audio sample rate: 8000, 16000, 22050, 24000, 44100, or 48000 Hz (default: 16000)</td>
               </tr>
               <tr>
                 <td><code>channels</code></td>
@@ -2523,7 +2523,7 @@ function App() {
             <strong>📋 Format Support:</strong>
             <ul style="margin-top: 10px;">
               <li><strong>Input Encodings:</strong> PCM, PCMU (μ-law), PCMA (A-law)</li>
-              <li><strong>Input Sample Rates:</strong> 8000, 16000, 24000, 48000 Hz</li>
+              <li><strong>Input Sample Rates:</strong> 8000, 16000, 22050, 24000, 44100, 48000 Hz</li>
               <li><strong>Input Bit Depths:</strong> 8, 16, 24 bits</li>
               <li><strong>Output Containers:</strong> 'raw' (no header) or 'wav' (with header)</li>
               <li><strong>Output Encodings:</strong> PCM, PCMU (μ-law), PCMA (A-law)</li>
