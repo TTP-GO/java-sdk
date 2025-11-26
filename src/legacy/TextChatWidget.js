@@ -26,7 +26,13 @@ export class TTPChatWidget {
       ...this.config.voice,
       language: this.config.voice?.language || this.config.language || 'en',
       websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
-      translations: this.translations
+      translations: this.translations,
+      // Output format defaults for widget: 44100 Hz, 16-bit, PCM, raw
+      outputContainer: this.config.voice?.outputContainer || 'raw',
+      outputEncoding: this.config.voice?.outputEncoding || 'pcm',
+      outputSampleRate: this.config.voice?.outputSampleRate || 44100,
+      outputChannels: this.config.voice?.outputChannels || 1,
+      outputBitDepth: this.config.voice?.outputBitDepth || 16
     };
     this.voiceInterface = new VoiceInterface(voiceConfig);
     // Text interface needs text config merged with main config
@@ -1343,7 +1349,13 @@ export class TTPChatWidget {
       ...this.config.voice,
       language: currentLanguage, // Use the current language from merged config
       websocketUrl: this.config.voice?.websocketUrl || this.config.websocketUrl || 'wss://speech.talktopc.com/ws/conv',
-      translations: this.translations
+      translations: this.translations,
+      // Output format defaults for widget: 44100 Hz, 16-bit, PCM, raw
+      outputContainer: this.config.voice?.outputContainer || 'raw',
+      outputEncoding: this.config.voice?.outputEncoding || 'pcm',
+      outputSampleRate: this.config.voice?.outputSampleRate || 44100,
+      outputChannels: this.config.voice?.outputChannels || 1,
+      outputBitDepth: this.config.voice?.outputBitDepth || 16
     };
     this.voiceInterface = new VoiceInterface(voiceConfig);
     const textConfig = {

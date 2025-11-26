@@ -326,8 +326,12 @@ class AudioPlayer extends EventEmitter {
     if (preparedFrame) {
 
       // Add prepared frame to buffer
-
       this.preparedBuffer.push(preparedFrame);
+      
+      // Log frame arrival for debugging
+      if (this.preparedBuffer.length <= 3 || this.preparedBuffer.length % 10 === 0) {
+        console.log(`📥 AudioPlayer: Frame received, queued: ${this.preparedBuffer.length}, scheduled: ${this.scheduledBuffers}, isScheduling: ${this.isSchedulingFrames}`);
+      }
 
       
 
@@ -347,7 +351,9 @@ class AudioPlayer extends EventEmitter {
 
         // The scheduling loop will pick it up, but we can also trigger a re-check
 
-        requestAnimationFrame(() => {
+        // Use a short timeout to ensure we check again after current scheduling completes
+
+        setTimeout(() => {
 
           if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames) {
 
@@ -355,7 +361,7 @@ class AudioPlayer extends EventEmitter {
 
           }
 
-        });
+        }, 5); // Very short delay to check after current scheduling completes
 
       }
 
@@ -567,10 +573,15 @@ class AudioPlayer extends EventEmitter {
 
     this.isSchedulingFrames = true;
     
-    // REMOVED: Dynamic lookahead calculation
-    // Now we only schedule 1-2 frames ahead to avoid gaps, but not far in advance
-    // This preserves audio quality by avoiding browser resampling/timing issues
-    let targetLookaheadFrames = 1; // Schedule only 1 frame ahead (just enough to avoid gaps)
+    // Schedule multiple frames ahead to ensure continuous playback
+    // This prevents gaps when frames arrive slowly or there are timing delays
+    // We schedule more frames ahead to maintain smooth playback
+    // Increase lookahead if we have many frames queued
+    let queuedFrames = this.preparedBuffer.length;
+    let targetLookaheadFrames = Math.min(queuedFrames, 5); // Schedule up to 5 frames ahead, or all available if less
+    if (targetLookaheadFrames === 0 && queuedFrames > 0) {
+      targetLookaheadFrames = 1; // At least schedule 1 frame
+    }
 
     
 
@@ -597,8 +608,7 @@ class AudioPlayer extends EventEmitter {
       
 
       // Schedule frames up to target lookahead (ensures smooth playback)
-      // For small frames (200ms), we need more frames scheduled ahead
-      // For large frames (1200ms), fewer frames are needed
+      // Keep scheduling frames as long as we have them and haven't reached the lookahead limit
       let scheduledCount = 0;
       while (this.preparedBuffer.length > 0 && scheduledCount < targetLookaheadFrames) {
 
@@ -651,11 +661,17 @@ class AudioPlayer extends EventEmitter {
 
         } else {
 
-          // Subsequent chunks: ensure nextStartTime is not in the past, but never decrease it
-          // This maintains sequential playback - each chunk starts after the previous one
+          // Subsequent chunks: ensure nextStartTime is not in the past
+          // If nextStartTime is already in the future, use it (seamless playback)
+          // If it's in the past, schedule with minimal delay
           const minStartTime = currentTime + this.MAX_LOOKAHEAD_SECONDS;
 
-          this.nextStartTime = Math.max(this.nextStartTime, minStartTime);
+          if (this.nextStartTime < minStartTime) {
+            // We've fallen behind, catch up but maintain seamless playback
+            this.nextStartTime = minStartTime;
+            console.warn(`⚠️ AudioPlayer: Fell behind schedule, adjusting nextStartTime to ${this.nextStartTime.toFixed(4)}s`);
+          }
+          // Always use nextStartTime (which is already calculated for seamless playback)
 
         }
 
@@ -680,16 +696,11 @@ class AudioPlayer extends EventEmitter {
 
         
 
-        // Log timing for first few chunks (debugging)
-
-        if (this.scheduledBuffers < 3) {
-
-          const startTime = this.nextStartTime - preparedFrame.duration;
-
-          console.log(`🎵 AudioPlayer: Scheduled prepared frame ${this.scheduledBuffers + 1} at ${startTime.toFixed(4)}s, next at ${this.nextStartTime.toFixed(4)}s`);
-
-          console.log(`   Duration: ${preparedFrame.duration.toFixed(4)}s (${(preparedFrame.duration * 1000).toFixed(2)}ms), Scheduled ahead: ${this.scheduledBuffers}`);
-
+        // Log timing for debugging (more verbose logging)
+        const startTime = this.nextStartTime - preparedFrame.duration;
+        if (this.scheduledBuffers < 5) {
+          console.log(`🎵 AudioPlayer: Scheduled frame ${this.scheduledBuffers + 1} at ${startTime.toFixed(4)}s, next at ${this.nextStartTime.toFixed(4)}s`);
+          console.log(`   Duration: ${preparedFrame.duration.toFixed(4)}s (${(preparedFrame.duration * 1000).toFixed(2)}ms), Queued: ${this.preparedBuffer.length}, Scheduled: ${this.scheduledBuffers}`);
         }
 
         
@@ -741,6 +752,32 @@ class AudioPlayer extends EventEmitter {
 
             }, 0);
 
+          } else if (this.scheduledBuffers > 0) {
+
+            // No more prepared frames but still have scheduled buffers playing
+
+            // Set up a check to schedule new frames when they arrive
+
+            // Keep checking periodically until we have no more scheduled buffers
+
+            const checkForMoreFrames = () => {
+
+              if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames && this.scheduledBuffers > 0) {
+
+                this.schedulePreparedFrames();
+
+              } else if (this.scheduledBuffers > 0) {
+
+                // Keep checking - frames might arrive soon
+
+                setTimeout(checkForMoreFrames, 10);
+
+              }
+
+            };
+
+            setTimeout(checkForMoreFrames, 10); // Check more frequently (10ms) to catch new frames quickly
+
           }
 
         };
@@ -785,23 +822,39 @@ class AudioPlayer extends EventEmitter {
 
         });
 
-      } else if (this.scheduledBuffers > 0) {
-
-        // Still have scheduled buffers playing, but no more prepared frames
+      }
+      
+      // Always set up a periodic check if we have scheduled buffers playing
+      // This ensures continuous playback even if frames arrive slowly
+      if (this.scheduledBuffers > 0) {
 
         // Set up a periodic check to schedule new frames as they arrive
-
-        // This ensures continuous playback even if frames arrive slowly
-
+        // Use a shorter interval to catch new frames quickly
         setTimeout(() => {
 
           if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames && this.scheduledBuffers > 0) {
 
             this.schedulePreparedFrames();
 
+          } else if (this.scheduledBuffers > 0) {
+
+            // Keep checking even if no frames yet - they might arrive soon
+
+            // Recursively check until we have no more scheduled buffers
+
+            setTimeout(() => {
+
+              if (this.preparedBuffer.length > 0 && !this.isSchedulingFrames && this.scheduledBuffers > 0) {
+
+                this.schedulePreparedFrames();
+
+              }
+
+            }, 10);
+
           }
 
-        }, 25); // Check every 25ms for new frames (reduced from 50ms for smaller frame durations)
+        }, 10); // Check every 10ms for new frames
 
       }
 

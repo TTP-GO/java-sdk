@@ -37,13 +37,20 @@ export class AgentSDK {
       }
       
       // Create VoiceSDK v2 instance
+      // Allow configurable output format, with defaults optimized for widget
       this.voiceSDK = new VoiceSDK_v2({
         websocketUrl: signedUrl,
         autoReconnect: false,
         agentId: this.config.agentId,
         appId: this.config.appId,
         language: this.config.language || 'en',
-        protocolVersion: 2 // Use v2 protocol
+        protocolVersion: 2, // Use v2 protocol
+        // Output format configuration (can be overridden via config)
+        outputContainer: this.config.outputContainer || 'raw', // Default: raw for lower latency
+        outputEncoding: this.config.outputEncoding || 'pcm', // Default: PCM
+        outputSampleRate: this.config.outputSampleRate || 44100, // Default: 44100 Hz (CD quality)
+        outputChannels: this.config.outputChannels || 1, // Default: mono
+        outputBitDepth: this.config.outputBitDepth || 16 // Default: 16-bit
       });
       
       // Set up event handlers to map to legacy callbacks

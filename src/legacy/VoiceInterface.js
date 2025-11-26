@@ -16,13 +16,20 @@ export class VoiceInterface {
     this.isActive = false;
     
     // Initialize AgentSDK for voice connection
+    // Pass through output format configuration if provided
     this.sdk = new AgentSDK({
       agentId: config.agentId,
       appId: config.appId,
       getSessionUrl: config.getSessionUrl,
       websocketUrl: config.websocketUrl,
       variables: config.variables || {},
-      language: config.language || 'en'
+      language: config.language || 'en',
+      // Output format configuration (defaults to 44100 Hz, 16-bit, PCM, raw)
+      outputContainer: config.outputContainer,
+      outputEncoding: config.outputEncoding,
+      outputSampleRate: config.outputSampleRate,
+      outputChannels: config.outputChannels,
+      outputBitDepth: config.outputBitDepth
     });
     
     // Setup SDK event handlers

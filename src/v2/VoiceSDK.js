@@ -1357,6 +1357,9 @@ class VoiceSDK_v2 extends EventEmitter {
     
 
     console.log('📥 VoiceSDK v2: Received audio:', arrayBuffer.byteLength, 'bytes');
+    console.log('   Current outputFormat:', this.outputAudioFormat);
+    console.log('   AudioPlayer outputFormat:', this.audioPlayer?.outputFormat);
+    console.log('   Format converter:', this.formatConverter ? 'active' : 'none');
 
     
 
