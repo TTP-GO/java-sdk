@@ -1,11 +1,11 @@
 /**
  * Legacy AgentSDK - Backward Compatibility Layer
  * 
- * This maintains the original AgentSDK API while using the new VoiceSDK internally.
+ * This maintains the original AgentSDK API while using VoiceSDK v2 internally.
  * This ensures existing integrations continue to work without changes.
  */
 
-import { VoiceSDK } from '../index.js';
+import { VoiceSDK_v2 } from '../index.js';
 
 export class AgentSDK {
   constructor(config) {
@@ -36,13 +36,14 @@ export class AgentSDK {
         this.voiceSDK = null;
       }
       
-      // Create VoiceSDK instance
-      this.voiceSDK = new VoiceSDK({
+      // Create VoiceSDK v2 instance
+      this.voiceSDK = new VoiceSDK_v2({
         websocketUrl: signedUrl,
         autoReconnect: false,
         agentId: this.config.agentId,
         appId: this.config.appId,
-        language: this.config.language || 'en'
+        language: this.config.language || 'en',
+        protocolVersion: 2 // Use v2 protocol
       });
       
       // Set up event handlers to map to legacy callbacks
@@ -105,13 +106,17 @@ export class AgentSDK {
 
   handleWebSocketMessage(message) {
     // Map new message format to legacy format
-    switch (message.type) {
+    // v2 SDK uses 't' field for message type instead of 'type'
+    const messageType = message.t || message.type;
+    
+    switch (messageType) {
       case 'connected':
+      case 'hello_ack':
         console.log('Session started successfully');
         break;
         
       case 'user_transcript':
-        this.onTranscript(message.user_transcription || message.text);
+        this.onTranscript(message.user_transcription || message.text || message.transcript);
         break;
         
       case 'agent_response':
@@ -127,7 +132,11 @@ export class AgentSDK {
         break;
         
       case 'error':
-        this.onError(new Error(message.message));
+        this.onError(new Error(message.message || message.error || 'Unknown error'));
+        break;
+        
+      default:
+        // Handle other message types
         break;
     }
   }
@@ -158,7 +167,8 @@ export class AgentSDK {
   updateVariables(variables) {
     if (this.voiceSDK && this.isConnected) {
       // Send variables update message
-      this.voiceSDK.webSocketManager.sendMessage({
+      // v2 SDK uses sendMessage directly on the SDK instance
+      this.voiceSDK.sendMessage({
         t: 'update_variables',
         variables
       });

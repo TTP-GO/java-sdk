@@ -175,6 +175,8 @@ class VoiceSDK_v2 extends EventEmitter {
 
     this.websocket = null;
 
+    this.conversationId = null; // Conversation ID from server
+
     
 
     // Components
@@ -1098,6 +1100,13 @@ class VoiceSDK_v2 extends EventEmitter {
 
       
 
+      // Fallback: capture conversationId if present on any message (if not already set)
+      if (!this.conversationId && message.conversationId) {
+        this.conversationId = message.conversationId;
+        console.log('🔍 VoiceSDK v2: Captured conversationId from message:', this.conversationId);
+        this.emit('conversationIdChanged', this.conversationId);
+      }
+
       switch (message.t) {
 
         case 'hello_ack':
@@ -1171,8 +1180,16 @@ class VoiceSDK_v2 extends EventEmitter {
     console.log('📥 VoiceSDK v2: Received hello_ack:', {
       hasOutputFormat: !!message.outputAudioFormat,
       outputFormat: message.outputAudioFormat,
+      hasConversationId: !!message.conversationId,
       messageType: message.t
     });
+
+    // Capture conversation ID if provided
+    if (message.conversationId) {
+      this.conversationId = message.conversationId;
+      console.log('🔍 VoiceSDK v2: Received conversationId:', this.conversationId);
+      this.emit('conversationIdChanged', this.conversationId);
+    }
 
     
 
@@ -1736,6 +1753,8 @@ class VoiceSDK_v2 extends EventEmitter {
       isPlaying: this.isPlaying,
 
       outputFormat: this.outputAudioFormat,
+
+      conversationId: this.conversationId,
 
       audioPlayer: this.audioPlayer.getStatus(),
 
